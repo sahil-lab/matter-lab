@@ -1,0 +1,15 @@
+{
+  "name": "@matterlab/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Shared MATTER LAB Astra lab contracts: the experiment domain model, apparatus/capability contract, solver client contract and event/snapshot schemas that all ten agents code against (00_SHARED_INTEGRATION_CONTRACT.md Section 3-5). Owned jointly by Agent 07 (simulation semantics) and Agent 09 (persistence).",
+  "exports": {
+    ".": "./lab/index.ts"
+  },
+  "types": "./lab/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}
