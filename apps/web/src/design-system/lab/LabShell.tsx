@@ -1,6 +1,7 @@
 import { ArrowLeft, BookOpen, Columns2, Expand, Footprints, Gauge, Grid2X2, Maximize2, Minimize2, Orbit, PanelBottomClose, PanelBottomOpen, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Settings2 } from 'lucide-react';
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type { LabCameraMode, SceneQualityPreset } from '../../lab/environment';
 import { clampPanelSize, changePanelVisibility, DEFAULT_LAB_PANELS, LAB_PANEL_LIMITS, resizePanelWithKey } from './layout';
 import { LabMotionProvider, useLabMotion } from './motion';
 import { LabButton, LabDialog, LabHelpHint } from './primitives';
@@ -8,8 +9,8 @@ import type { LabInteractionFeedback, LabMotionPreference, LabPanelId, LabPanelV
 import './tokens.css';
 import './lab.css';
 
-export type LabViewMode = 'orbit' | 'first-person' | 'top-down' | 'inspection';
-export type LabQualityPreset = 'low' | 'balanced' | 'high';
+export type LabViewMode = LabCameraMode;
+export type LabQualityPreset = SceneQualityPreset;
 
 export interface LabShellProps extends LabShellSlots {
   readonly title?: string;

@@ -115,6 +115,98 @@ not lab data. Native dialogs manage focus, Escape and restoration.
   records UI requests without dispatching domain actions. Supply real read-only
   scientific panels through `scientificContent`; it fabricates no pH fixtures.
 
+## Canonical science presentation
+
+The science components import **types only** from `@matterlab/contracts` 1.1.0.
+They have no solver, inventory writer, network client or shadow scene DTO.
+Camera/quality type aliases come from Agent02's environment exports.
+
+```tsx
+const scope = {
+  runId: snapshot.runId,
+  stationId: activeStationId,
+  epoch: snapshot.stationStates[activeStationId].epoch,
+  apparatusId: receivingVesselId,
+};
+const ph = latestObservation(snapshot.observations, scope, 'PH');
+const indicator = latestObservation(snapshot.observations, scope, 'INDICATOR');
+const remaining = latestObservation(
+  snapshot.observations,
+  { ...scope, apparatusId: buretteId },
+  'VOLUME',
+);
+
+<TitrationHUD
+  scope={scope}
+  ph={ph}
+  remaining={remaining}
+  sourceInstanceId={buretteId}
+  indicator={indicator}
+  status={observationStatus}
+  statusMessage={runtimeMessage}
+  equivalence={reportedEquivalence}
+  endpoint={reportedEndpoint}
+  onExplain={openExplanation}
+/>
+<ObservationTimeline records={snapshot.observations} scope={scope} />
+```
+
+- `ObservationScope`: canonical `{runId,stationId,epoch}` plus optional
+  `apparatusId`. `latestObservation(records,scope,type)` chooses the greatest
+  matching sequence, not the last array item or the resettable clock.
+- `ObservationReadout({label,observation?,availability?,compact?})` quotes a
+  canonical `Observation`. Availability is
+  `current | stale | loading | empty | unsupported | error`. Zero is not missing;
+  declared zero uncertainty is preserved. Nonfinite and unsupported quantities
+  are withheld. `LabEvidenceBadge({evidence})` carries canonical source taxonomy.
+- `TitrationHUD({scope,ph?,remaining?,sourceInstanceId?,status?,statusMessage?,
+  indicator?,indicatorLabel?,equivalence?,endpoint?,onExplain?})`: all three data
+  props are `ObservationRecord`s. Status is
+  `ready | loading | empty | offline | error | unsupported`. Delivery comes
+  **only** from `ph.observation.titration.deliveredVolumeL`, labelled “at this pH
+  sample”; never from subtracting container volumes. Remaining volume requires a
+  matching source VOLUME record. Indicator color requires a scoped, time-matched
+  INDICATOR record with optional canonical `indicatorState`; old records lacking
+  it show unavailable, not a synthesized color. Converting supplied sRGB channels
+  to CSS percentages is rendering, not an indicator calculation.
+- A milestone is `{state:'unknown'|'pending'|'reached'|'unsupported',detail?,
+  evidence?}` supplied by the domain/challenge adapter. The UI never tests a pH
+  threshold or equates indicator endpoint with equivalence.
+- `ObservationTimeline({records,scope,status?,statusMessage?,onSelect?,
+  selectedId?,maxPlotSamples?,defaultView?})`: `defaultView` is `plot | table`.
+  D3 uses only exact runtime-stamped pH/delivery pairs. It separates source pairs,
+  methods, evidence and resets; missing/unverified/unsupported samples break
+  lines. The chart explicitly labels L→mL as display-only conversion and lines
+  as guides between recorded samples, not extra evaluations. Default plot window
+  is 2000 samples (hard UI ceiling 5000); truncation is announced. The ledger
+  retains every supplied record in original units with 50-row pages and keyboard
+  selection callbacks. Failed/unsupported/unfinished operations have no current
+  plot; prior ledger entries remain explicitly historical.
+- `ScientificExplanationPanel({run,provenance?,summary?,methodLabel?,equations?,
+  conditions?,references?,observations?,depth?,defaultDepth?,onDepthChange?,
+  onOpenLedger?,retry?})`: `run` is `RunResult | null`; provenance is
+  `ScientificProvenance`; observations may select a canonical subset. With no run
+  envelope, supplied observations are labelled recorded history, never a completed
+  experiment. A supplied failed/unsupported run suppresses leftover results and
+  stale summaries. Depth is `summary | advanced`. Equations are
+  `{label,expression,explanation?}` **supplied by the method**, never generated.
+  Conditions use `LabProperty`. References are
+  `{id,title,authors?,url?,doi?,version?,license?}`; unresolved source IDs remain
+  visible and only HTTP(S) reference URLs are linked. Advanced view quotes
+  diagnostics and frozen input hash; missing assumptions, uncertainty and
+  limitations are stated honestly.
+- `equipmentLibraryItem(definition,presentation?)` projects canonical
+  `ApparatusDefinition` metadata; `presentation` can supply Agent03's thumbnail,
+  description and an unavailable reason. It never fetches/builds assets.
+  `apparatusProperties(instance)` projects identity and meter geometry from
+  canonical `ApparatusInstance`; neither function touches inventory.
+
+Compose selectors and runtime subscriptions in **Agent10's `lab/Laboratory.tsx`**.
+Pass immutable snapshots at the runtime's observation cadence, not every render
+frame. Use the `toolbar` slot for Agent09's save/duplicate/offline/conflict UI and
+`tutorial` for Agent08's real goals. The gallery can receive these same live,
+read-only science panels through `scientificContent`.
+
 ## Verification
 
 Node/Vitest tests use React server rendering and pure UI transitions. They cover
