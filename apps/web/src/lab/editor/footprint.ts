@@ -28,6 +28,54 @@ export function addVec3(a: Vec3, b: Vec3): Vec3 {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
+export function subVec3(a: Vec3, b: Vec3): Vec3 {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+export function distanceVec3(a: Vec3, b: Vec3): number {
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
+export function dotVec3(a: Vec3, b: Vec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+export function scaleVec3(a: Vec3, s: number): Vec3 {
+  return [a[0] * s, a[1] * s, a[2] * s];
+}
+
+/** The closest point to `point` on the plane through `planePoint` with unit normal `planeNormal`. */
+export function projectPointOntoPlane(point: Vec3, planePoint: Vec3, planeNormal: Vec3): Vec3 {
+  const offset = dotVec3(subVec3(point, planePoint), planeNormal);
+  return subVec3(point, scaleVec3(planeNormal, offset));
+}
+
+export type Quat = readonly [number, number, number, number];
+
+export function multiplyQuat(a: Quat, b: Quat): Quat {
+  const [ax, ay, az, aw] = a;
+  const [bx, by, bz, bw] = b;
+  return [
+    aw * bx + ax * bw + ay * bz - az * by,
+    aw * by - ax * bz + ay * bw + az * bx,
+    aw * bz + ax * by - ay * bx + az * bw,
+    aw * bw - ax * bx - ay * by - az * bz,
+  ];
+}
+
+/** The inverse (conjugate) of a unit quaternion. */
+export function conjugateQuat(q: Quat): Quat {
+  return [-q[0], -q[1], -q[2], q[3]];
+}
+
+/** Carries a socket's local transform through its owning instance's world transform. */
+export function composeTransform(parent: Transform, local: Transform): Transform {
+  return {
+    positionM: worldPointFor(local.positionM, parent),
+    quaternion: multiplyQuat(parent.quaternion, local.quaternion),
+  };
+}
+
 export function worldPointFor(local: Vec3, transform: Transform): Vec3 {
   return addVec3(transform.positionM, rotateVec3(local, transform.quaternion));
 }

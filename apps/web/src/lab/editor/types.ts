@@ -45,6 +45,10 @@ export interface ResolvedSocket {
   readonly accepts: readonly string[];
   readonly worldTransform: Transform;
   readonly occupied: boolean;
+  /** A `'planar'` socket (a benchtop) snaps anywhere on its surface; a `'point'` socket snaps at one fixed anchor. */
+  readonly surface: 'point' | 'planar';
+  /** Whether more than one connection may use this socket at once. */
+  readonly multiple: boolean;
 }
 
 export type SnapRejectReason =
