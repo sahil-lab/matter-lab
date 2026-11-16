@@ -1,0 +1,64 @@
+.lab-editor {
+  --editor-accent: var(--ml-accent, #a1e8cc);
+  --editor-border: var(--ml-border, #343b3b);
+  --editor-panel: var(--ml-panel, #171e20);
+  color: var(--ml-text, #e9efea);
+  font: 400 0.82rem/1.5 var(--ml-font-body, Inter, system-ui, sans-serif);
+  min-width: 0;
+}
+.lab-editor *, .lab-editor *::before, .lab-editor *::after { box-sizing: border-box; }
+.lab-editor :is(button, input, select, summary) { font: inherit; }
+.lab-editor :is(button, input, select) {
+  min-height: 34px; max-width: 100%; border: 1px solid var(--editor-border); border-radius: 7px;
+  background: var(--editor-panel); color: inherit; padding: 6px 9px;
+}
+.lab-editor button { cursor: pointer; text-align: left; transition: border-color 120ms, background 120ms; }
+.lab-editor button:hover:not(:disabled), .lab-editor button[aria-pressed=true] { border-color: var(--editor-accent); background: #233630; }
+.lab-editor :is(button, input, select, summary):focus-visible { outline: 2px solid var(--editor-accent); outline-offset: 3px; }
+.lab-editor :disabled { opacity: 0.5; cursor: not-allowed; }
+.lab-editor input[readonly] { opacity: 0.65; }
+.lab-editor label { display: grid; gap: 5px; min-width: 0; }
+.lab-editor label > :is(input, select) { width: 100%; }
+.lab-editor input[type=range] { accent-color: var(--editor-accent); padding: 0; }
+.lab-editor input[type=checkbox] { width: 18px; min-height: 18px; accent-color: var(--editor-accent); }
+.lab-editor select[multiple] { min-height: 150px; }
+.lab-editor :is(h3, h4, p) { margin: 0 0 10px; }
+.lab-editor h3 { font-weight: 550; letter-spacing: -0.02em; font-size: 1.05rem; }
+.lab-editor h4 { font-size: 0.92rem; }
+.lab-editor small, .lab-editor-muted { color: var(--ml-text-muted, #a7b6b1); font-size: 0.74rem; }
+.lab-editor-toolbar, .lab-editor-inspector, .lab-editor-palette { display: grid; gap: 12px; }
+.lab-editor-row { display: flex; flex-wrap: wrap; align-items: end; gap: 7px; }
+.lab-editor-row > label { flex: 1 1 70px; }
+.lab-editor-card { min-width: 0; margin: 0; padding: 12px; border: 1px solid var(--editor-border); border-radius: 9px; }
+.lab-editor-card legend { padding: 0 6px; color: var(--editor-accent); }
+.lab-editor-form { display: grid; gap: 9px; margin: 5px 0 14px; }
+.lab-editor-form:last-child { margin-bottom: 0; }
+.lab-editor-palette-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 8px; }
+.lab-editor-equipment { display: grid; gap: 5px; min-height: 72px !important; touch-action: none; user-select: none; }
+.lab-editor-equipment small { font-size: 0.68rem; }
+.lab-editor-feedback { margin: 0 !important; padding: 8px 10px; border-left: 2px solid var(--editor-border); background: #152023; }
+.lab-editor-feedback-valid { border-color: var(--editor-accent); }
+.lab-editor-feedback-invalid { border-color: #ff9987; color: #ffd8ce; }
+.lab-editor-feedback-warning, .lab-editor-warning { border-color: #e4c28e; color: #f6e3c0; }
+.lab-editor-warning { border: 1px solid; border-radius: 6px; padding: 10px; }
+.lab-editor-check { display: flex !important; align-items: center; gap: 8px; }
+.lab-editor-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px; }
+.lab-editor-connection { border-top: 1px solid var(--editor-border); padding: 8px 0; overflow-wrap: anywhere; }
+.lab-editor-connection form { display: grid; gap: 6px; margin-top: 8px; }
+.lab-editor-connection > span { font-size: 0.73rem; }
+.lab-editor-shortcuts { display: grid; gap: 9px; }
+.lab-editor-shortcuts dt { color: var(--editor-accent); font-family: var(--ml-font-mono, monospace); }
+.lab-editor-shortcuts dd { margin: 2px 0; color: var(--ml-text-muted, #a7b6b1); }
+.lab-editor summary { cursor: pointer; padding: 7px 0; }
+.lab-editor-context {
+  position: fixed; z-index: 100; width: 222px; padding: 7px; display: grid; gap: 3px;
+  background: #171e20; border: 1px solid var(--editor-border); border-radius: 10px;
+  box-shadow: 0 12px 40px #0008; pointer-events: auto;
+}
+.lab-editor-context button { min-height: 30px; border-color: transparent; padding: 4px 8px; }
+@media (prefers-reduced-motion: reduce) { .lab-editor button { transition: none; } }
+@media (max-width: 600px) {
+  .lab-editor-row > label { flex-basis: 85px; }
+  .lab-editor :is(button, input, select) { min-height: 42px; }
+  .lab-editor-context button { min-height: 34px; }
+}
