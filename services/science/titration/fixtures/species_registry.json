@@ -1,0 +1,175 @@
+{
+  "species": [
+    {
+      "species_id": "water",
+      "name": "Water",
+      "formula": "H2O",
+      "role": "water",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "hydrochloric-acid",
+      "name": "Hydrochloric acid",
+      "formula": "HCl",
+      "role": "strong_acid",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "nitric-acid",
+      "name": "Nitric acid",
+      "formula": "HNO3",
+      "role": "strong_acid",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "hydrobromic-acid",
+      "name": "Hydrobromic acid",
+      "formula": "HBr",
+      "role": "strong_acid",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "sodium-hydroxide",
+      "name": "Sodium hydroxide",
+      "formula": "NaOH",
+      "role": "strong_base",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "potassium-hydroxide",
+      "name": "Potassium hydroxide",
+      "formula": "KOH",
+      "role": "strong_base",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "acetic-acid",
+      "name": "Acetic acid",
+      "formula": "CH3COOH",
+      "role": "weak_acid",
+      "pKa_298_15k": 4.756,
+      "system_id": "acetic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "formic-acid",
+      "name": "Formic acid",
+      "formula": "HCOOH",
+      "role": "weak_acid",
+      "pKa_298_15k": 3.75,
+      "system_id": "formic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "benzoic-acid",
+      "name": "Benzoic acid",
+      "formula": "C6H5COOH",
+      "role": "weak_acid",
+      "pKa_298_15k": 4.2,
+      "system_id": "benzoic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "ammonia",
+      "name": "Ammonia",
+      "formula": "NH3",
+      "role": "weak_base",
+      "pKa_298_15k": 9.25,
+      "system_id": "ammonia",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "sodium-acetate",
+      "name": "Sodium acetate",
+      "formula": "CH3COONa",
+      "role": "weak_acid_conjugate_salt",
+      "pKa_298_15k": 4.756,
+      "system_id": "acetic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "ammonium-chloride",
+      "name": "Ammonium chloride",
+      "formula": "NH4Cl",
+      "role": "weak_base_conjugate_salt",
+      "pKa_298_15k": 9.25,
+      "system_id": "ammonia",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "sodium-chloride",
+      "name": "Sodium chloride",
+      "formula": "NaCl",
+      "role": "neutral_electrolyte",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "potassium-nitrate",
+      "name": "Potassium nitrate",
+      "formula": "KNO3",
+      "role": "neutral_electrolyte",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "sulfuric-acid",
+      "name": "Sulfuric acid",
+      "formula": "H2SO4",
+      "role": "unsupported_polyprotic",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": "Diprotic (two acidic protons with distinct Ka1/Ka2); the v1 solver supports monoprotic acids only."
+    },
+    {
+      "species_id": "phosphoric-acid",
+      "name": "Phosphoric acid",
+      "formula": "H3PO4",
+      "role": "unsupported_polyprotic",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": "Triprotic (three acidic protons with distinct Ka1/Ka2/Ka3); the v1 solver supports monoprotic acids only."
+    },
+    {
+      "species_id": "carbonic-acid",
+      "name": "Carbonic acid",
+      "formula": "H2CO3",
+      "role": "unsupported_polyprotic",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": "Diprotic (Ka1/Ka2) and involves CO2(aq)/CO2(g) phase equilibria; the v1 solver supports monoprotic acids only."
+    },
+    {
+      "species_id": "oxalic-acid",
+      "name": "Oxalic acid",
+      "formula": "C2H2O4",
+      "role": "unsupported_polyprotic",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": "Diprotic (two acidic protons with distinct Ka1/Ka2); the v1 solver supports monoprotic acids only."
+    },
+    {
+      "species_id": "calcium-hydroxide",
+      "name": "Calcium hydroxide",
+      "formula": "Ca(OH)2",
+      "role": "unsupported_polyprotic",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": "Diacidic (releases two hydroxide ions per formula unit, and is only sparingly soluble); the v1 solver supports monoacidic strong bases only."
+    }
+  ]
+}

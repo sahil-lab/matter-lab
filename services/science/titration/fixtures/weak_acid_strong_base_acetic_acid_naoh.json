@@ -1,0 +1,115 @@
+{
+  "case_id": "weak_acid_strong_base_acetic_acid_naoh",
+  "description": "25.00 mL of 0.100 M acetic acid titrated by 0.100 M NaOH at 25 degC: pH approx pKa (4.756) at half-equivalence, pH > 7 at equivalence (brief benchmark #2).",
+  "setup": {
+    "analyte_species_id": "acetic-acid",
+    "analyte_concentration_molar": 0.1,
+    "analyte_volume_l": 0.025,
+    "titrant_species_id": "sodium-hydroxide",
+    "titrant_concentration_molar": 0.1,
+    "temperature_k": 298.15
+  },
+  "equivalence_volume_l": 0.025000000000000005,
+  "half_equivalence_volume_l": 0.012500000000000002,
+  "points": [
+    {
+      "fraction_of_equivalence": 0.0,
+      "delivered_volume_l": 0.0,
+      "total_volume_l": 0.025,
+      "pH": 2.88087574882631,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.2,
+      "delivered_volume_l": 0.005000000000000001,
+      "total_volume_l": 0.030000000000000002,
+      "pH": 4.1562096363241725,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.4,
+      "delivered_volume_l": 0.010000000000000002,
+      "total_volume_l": 0.035,
+      "pH": 4.580574097220956,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.5,
+      "delivered_volume_l": 0.012500000000000002,
+      "total_volume_l": 0.037500000000000006,
+      "pH": 4.756456525381417,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.6,
+      "delivered_volume_l": 0.015000000000000003,
+      "total_volume_l": 0.04000000000000001,
+      "pH": 4.932429530667187,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.8,
+      "delivered_volume_l": 0.020000000000000004,
+      "total_volume_l": 0.045000000000000005,
+      "pH": 5.358274034235122,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.96,
+      "delivered_volume_l": 0.024000000000000004,
+      "total_volume_l": 0.049,
+      "pH": 6.136370168368955,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.999,
+      "delivered_volume_l": 0.024975000000000004,
+      "total_volume_l": 0.049975000000000006,
+      "pH": 7.750848934543378,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.0,
+      "delivered_volume_l": 0.025000000000000005,
+      "total_volume_l": 0.05,
+      "pH": 8.727537982749062,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.001,
+      "delivered_volume_l": 0.025025000000000002,
+      "total_volume_l": 0.050025,
+      "pH": 9.703626691598371,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.04,
+      "delivered_volume_l": 0.026000000000000006,
+      "total_volume_l": 0.051000000000000004,
+      "pH": 11.292432982141078,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.2,
+      "delivered_volume_l": 0.030000000000000006,
+      "total_volume_l": 0.05500000000000001,
+      "pH": 11.958607451084811,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.6,
+      "delivered_volume_l": 0.04000000000000001,
+      "total_volume_l": 0.065,
+      "pH": 12.363177920304588,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 2.0,
+      "delivered_volume_l": 0.05000000000000001,
+      "total_volume_l": 0.07500000000000001,
+      "pH": 12.522878752712822,
+      "status": "SUCCEEDED"
+    }
+  ],
+  "tolerance_pH": 1e-06
+}

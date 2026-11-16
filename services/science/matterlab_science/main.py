@@ -38,6 +38,7 @@ Conventions
 TAGS = [
     {"name": "service", "description": "Liveness, health and the engine inventory."},
     {"name": "chemistry", "description": "Synchronous RDKit operations on one structure."},
+    {"name": "titration", "description": "Acid/base equilibrium solver and titration curves (Agent 06): mass-balance/electroneutrality root-finding, never a hardcoded curve. Stateless; needs no database."},
     {"name": "jobs", "description": "Asynchronous calculations in worker processes, persisted in the `calculations` table."},
     {"name": "reference data", "description": "Elements, isotopes, functional groups, solvents, catalysts and their sources."},
     {"name": "catalogue", "description": "The local compound catalogue and its exact, substructure and similarity searches."},
@@ -92,9 +93,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     install_error_handlers(app)
 
-    from .api import chem, compounds, discoveries, excel, experiments, jobs, reactions, reference, system
+    from .api import chem, compounds, discoveries, excel, experiments, jobs, reactions, reference, system, titration
 
-    for router in (system.router, chem.router, jobs.info_router):
+    for router in (system.router, chem.router, jobs.info_router, titration.router):
         app.include_router(router)
     # Everything below reads or writes PostgreSQL and answers 503 while it cannot be reached.
     for router in (jobs.router, reference.router, compounds.router, reactions.router, experiments.router, discoveries.router):

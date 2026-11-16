@@ -1,0 +1,159 @@
+{
+  "cases": [
+    {
+      "case_id": "sulfuric_acid_unsupported",
+      "description": "Diprotic acid, outside v1 monoprotic scope.",
+      "input": {
+        "species": [
+          {
+            "species_id": "sulfuric-acid",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "Sulfuric acid (H2SO4) is outside the v1 titration solver's scope: Diprotic (two acidic protons with distinct Ka1/Ka2); the v1 solver supports monoprotic acids only"
+      }
+    },
+    {
+      "case_id": "phosphoric_acid_unsupported",
+      "description": "Triprotic acid, outside v1 monoprotic scope.",
+      "input": {
+        "species": [
+          {
+            "species_id": "phosphoric-acid",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "Phosphoric acid (H3PO4) is outside the v1 titration solver's scope: Triprotic (three acidic protons with distinct Ka1/Ka2/Ka3); the v1 solver supports monoprotic acids only"
+      }
+    },
+    {
+      "case_id": "weak_acid_mixture_unsupported",
+      "description": "Two distinct weak-acid systems dosed together.",
+      "input": {
+        "species": [
+          {
+            "species_id": "acetic-acid",
+            "moles": 0.001
+          },
+          {
+            "species_id": "formic-acid",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "weak-acid system"
+      }
+    },
+    {
+      "case_id": "weak_acid_weak_base_mixture_unsupported",
+      "description": "A weak acid and a weak base dosed together.",
+      "input": {
+        "species": [
+          {
+            "species_id": "acetic-acid",
+            "moles": 0.001
+          },
+          {
+            "species_id": "ammonia",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "dosed together"
+      }
+    },
+    {
+      "case_id": "temperature_out_of_range_unsupported",
+      "description": "500 K exceeds the validated aqueous equilibrium range.",
+      "input": {
+        "species": [
+          {
+            "species_id": "hydrochloric-acid",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 500.0
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "outside the validated range"
+      }
+    },
+    {
+      "case_id": "unknown_species_unsupported",
+      "description": "Species id not in the registry.",
+      "input": {
+        "species": [
+          {
+            "species_id": "definitely-not-a-real-species",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": 0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "UNSUPPORTED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "is not a resolved chemical species"
+      }
+    },
+    {
+      "case_id": "negative_volume_failed",
+      "description": "Malformed physical input: negative volume.",
+      "input": {
+        "species": [
+          {
+            "species_id": "hydrochloric-acid",
+            "moles": 0.001
+          }
+        ],
+        "volume_l": -0.1,
+        "temperature_k": 298.15
+      },
+      "expected": {
+        "status": "FAILED",
+        "pH": null,
+        "evidence": "UNSUPPORTED",
+        "tolerance_pH": 1e-06,
+        "reason_contains": "must be a positive"
+      }
+    }
+  ]
+}
