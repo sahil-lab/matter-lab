@@ -11,6 +11,8 @@ import type { ScienceWorkerScope } from '../src/worker.js';
 
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const cliPath = fileURLToPath(new URL('../dist/cli.mjs', import.meta.url));
+// Shared-host process startup is not the pure solver's numerical latency budget.
+const childTimeoutMs = 45_000;
 
 beforeAll(async () => {
   await build({
@@ -18,17 +20,17 @@ beforeAll(async () => {
     configFile: fileURLToPath(new URL('../vite.config.ts', import.meta.url)),
     logLevel: 'silent',
   });
-  execFileSync(process.execPath, [fileURLToPath(new URL('../tools/export-catalog.mjs', import.meta.url))], { timeout: 10_000 });
-}, 30_000);
+  await import(new URL('../tools/export-catalog.mjs', import.meta.url).href);
+}, 60_000);
 
 describe('deterministic JSON entry and bounded Node CLI', () => {
   it.each([fixtures.cases[3], fixtures.cases[7], fixtures.cases[11]])('CLI matches the pure solver byte-for-byte for $id', (fixture) => {
     const input = JSON.stringify({ schemaVersion: 1, operation: 'equilibrium', input: fixture.input });
     const output = execFileSync(process.execPath, [cliPath], {
-      input, encoding: 'utf8', timeout: 10_000, maxBuffer: 512_000,
+      input, encoding: 'utf8', timeout: childTimeoutMs, maxBuffer: 512_000,
     });
     expect(output).toBe(`${solveJson(input)}\n`);
-  }, 20_000);
+  }, 60_000);
 
   it('handles malformed JSON, unknown operations, incompatible schema and oversized UTF-8 input explicitly', () => {
     for (const input of ['{bad', '{"schemaVersion":2,"operation":"catalog"}', '{"schemaVersion":1,"operation":"unknown"}',
@@ -39,19 +41,19 @@ describe('deterministic JSON entry and bounded Node CLI', () => {
       expect(result).not.toHaveProperty('pH');
     }
     const output = execFileSync(process.execPath, [cliPath], {
-      input: 'x'.repeat(300_000), encoding: 'utf8', timeout: 10_000, maxBuffer: 512_000,
+      input: 'x'.repeat(300_000), encoding: 'utf8', timeout: childTimeoutMs, maxBuffer: 512_000,
     });
     expect(JSON.parse(output).error.code).toBe('INVALID_INPUT');
-  }, 20_000);
+  }, 60_000);
 
   it('prepares the same inventory through the JSON protocol without a second implementation', () => {
     const request = JSON.stringify({
       schemaVersion: 1, operation: 'prepare', input: { reagentId: 'hcl', volumeL: 0.025, concentrationMolL: 0.1 },
     });
-    const output = execFileSync(process.execPath, [cliPath], { input: request, encoding: 'utf8', timeout: 10_000 });
+    const output = execFileSync(process.execPath, [cliPath], { input: request, encoding: 'utf8', timeout: childTimeoutMs });
     expect(output.trimEnd()).toBe(solveJson(request));
     expect(JSON.parse(output).contents.species).toEqual([{ speciesId: 'ion:chloride', moles: expect.closeTo(0.0025, 14) }]);
-  }, 20_000);
+  }, 60_000);
 
   it('generates backend catalogues from exactly the exported authority, with resolvable source IDs', async () => {
     const [reagents, sources] = await Promise.all([

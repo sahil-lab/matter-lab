@@ -111,7 +111,9 @@ Each crossing volume is obtained by evaluating actual hypothetical analytical mi
 
 ## 5. Tests and bounded timing
 
-**91 automated tests** in four package-local test files cover:
+**91 automated tests passed** across the final 83-test numerical/model/reference run and the focused 8-test transport rerun. The transport harness initially hit 5/10-second process-start deadlines on the shared host; its child processes remain bounded at 45 seconds, with a 60-second test deadline. Unnecessary catalogue-generator process startup was removed. These are test-harness allowances, not solver latency or production job-budget changes.
+
+The four package-local test files cover:
 
 - an independent stable strong-electrolyte quadratic before/after and very near sharp equivalence;
 - dilution and `1e−9 M` water-autoionization behavior;
