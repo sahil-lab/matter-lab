@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -13,12 +14,12 @@ import { fileURLToPath } from 'node:url';
 export function validationReporter(name: string): (key: string, data: unknown) => void {
   const records: Record<string, unknown> = {};
   const enabled = process.env.QUANTUM_REPORT === '1';
-  const directory = fileURLToPath(new URL('../../reports/', import.meta.url));
+  const directory = process.env.QUANTUM_REPORT_DIR ?? fileURLToPath(new URL('../../reports/', import.meta.url));
   return (key, data) => {
     records[key] = data;
     if (!enabled) return;
     mkdirSync(directory, { recursive: true });
     const body = { report: name, generated: new Date().toISOString(), node: process.version, records };
-    writeFileSync(`${directory}${name}.json`, `${JSON.stringify(body, null, 2)}\n`);
+    writeFileSync(join(directory, `${name}.json`), `${JSON.stringify(body, null, 2)}\n`);
   };
 }

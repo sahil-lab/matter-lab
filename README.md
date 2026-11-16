@@ -44,6 +44,10 @@ science service. The complete list, feature by feature, is in
 [docs/feature-status.md](docs/feature-status.md); what each result can and cannot be trusted for is
 in [docs/scientific-limitations.md](docs/scientific-limitations.md).
 
+A [Tauri Windows desktop scaffold](apps/desktop/README.md) and
+[CI/verification gates](qa/README.md) are now prepared. The desktop is **not built or verified**:
+the local Rust/Cargo toolchain and a reviewed Cargo dependency lock are still missing.
+
 ## Requirements
 
 - **Node.js 22.12 or newer** (24 was used) with its bundled npm.
@@ -71,7 +75,12 @@ From the repository root:
 | `npm run build` | Type-checks and builds the application into `apps/web/dist` |
 | `npm run preview` | Serves that build at http://127.0.0.1:4273/ |
 | `npm run typecheck` | `tsc --noEmit` for every workspace |
-| `npm test` | Unit tests of the packages and the application (Vitest) |
+| `npm test` | Correctness tests followed by the separate serial CPU performance suite (Vitest); either phase can fail the command |
+| `npm run test:unit`, `test:performance` | Explicit correctness-only and CPU-performance-only gates |
+| `npm run verify` | Hygiene, typechecks, harness/inventory checks, correctness and production-artifact validation |
+| `npm run test:smoke` | Production browser smoke on isolated port 6173, with actual screenshots |
+| `npm run release:web` | Build, inspect and checksum the static release |
+| `npm run desktop:check` | Report desktop prerequisites honestly; no implicit toolchain installation |
 | `npm run test:e2e` | Browser tests against the development server; it starts one if none is running |
 | `npm run test:e2e:build` | The same browser tests against a fresh production build |
 | `npm run screenshots` | Captures `docs/screenshots` again from the running application |
@@ -80,12 +89,13 @@ From the repository root:
 
 ### Tests
 
-- **Unit tests.** `npm test` runs every package and the pure parts of the application. One project
-  at a time: `vitest run --project core` (or `forcefield`, `quantum`, `reactions`, `web`). The
-  force-field and quantum packages include performance tests with absolute time limits
-  (`test/performance.test.ts`). On a busy or battery-powered machine they can fail while everything
-  else passes; run that file alone (`vitest run packages/quantum/test/performance.test.ts`) before
-  concluding anything.
+- **Correctness and CPU performance.** `npm test` runs every package and the pure application
+  tests in two sequential phases. `npm run test:unit` runs correctness with at most two workers;
+  `npm run test:performance` runs the original force-field/quantum timing files with one worker,
+  one file at a time. Absolute timing assertions are unchanged, remain fatal, and are not silently
+  excluded from the default test command. Use an otherwise idle machine; scheduling cannot make
+  genuinely slow hardware pass. `npm run test:partition` proves the two suites cover all dynamically
+  collected cases. Full gate/report details are in [qa/README.md](qa/README.md).
 - **Browser tests.** They drive the real application in headless Edge with real mouse and keyboard
   input, on the real GPU, one test at a time. The whole suite takes the better part of an hour. To
   run part of it, from `apps\web`:
