@@ -72,7 +72,7 @@ not a hidden pop of a history stack.
 | `TRANSFER` | the source `CONTAINER` | `{ toInstanceId, volumeL }` | **the only action that moves conserved inventory**; requires an enabled `FLUID` connection between the two; clamps to available volume / receiver headroom with a `warnings` entry, never silently loses or fabricates volume |
 | `START_STIRRER` | the `STIRRING` instance | `{ running, rpm }` | rpm clamped to the control's declared max |
 | `SET_PROBE` | the `PH_SENSOR` instance | `{ targetApparatusId, depthM? }` | probe and target must share a station |
-| `RESET` | a station id (`STATION` scope) or `''` (`SCENE` scope) | `{ scope, stationId?, clearConnections? }` | `STATION` clears chemistry, keeps the rig (equipment survives) unless `clearConnections: true`; `SCENE` wipes every station's apparatus/connections/contents |
+| `RESET` | a station id (`STATION` scope) or `''` (`SCENE` scope) | `{ scope, stationId?, clearConnections? }` | `STATION` clears chemistry, keeps the rig (equipment survives) unless `clearConnections: true`; `SCENE` wipes every station's apparatus/connections/contents; `ExperimentEngine.dispatch` also zeroes and pauses the clock(s) it scopes |
 | `CUSTOM` | subject-defined | `{ kind: 'CREATE_STATION', name }` today; anything else is logged but a no-op | the forward-compatible extension point (brief item 9) |
 
 Every payload is parsed and validated in `runtime/actionPayloads.ts`; a malformed payload is

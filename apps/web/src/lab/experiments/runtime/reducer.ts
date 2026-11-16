@@ -289,8 +289,12 @@ function handleReset(scene: ExperimentScene, action: LabAction): ReducerOutcome 
   const stationInstanceIds = new Set(scene.apparatus.filter((a) => a.stationId === stationId).map((a) => a.id));
 
   const containerStates = { ...scene.containerStates };
+  const resetContainerIds: UUID[] = [];
   for (const id of stationInstanceIds) {
-    if (containerStates[id]) containerStates[id] = emptyContainerContents();
+    if (containerStates[id]) {
+      containerStates[id] = emptyContainerContents();
+      resetContainerIds.push(id);
+    }
   }
   const apparatus = scene.apparatus.map((a) => {
     if (!stationInstanceIds.has(a.id)) return a;
@@ -302,7 +306,7 @@ function handleReset(scene: ExperimentScene, action: LabAction): ReducerOutcome 
     ? scene.connections.filter((c) => !stationInstanceIds.has(c.from.instanceId) && !stationInstanceIds.has(c.to.instanceId))
     : scene.connections;
 
-  return success({ ...scene, apparatus, connections, containerStates }, [...stationInstanceIds]);
+  return success({ ...scene, apparatus, connections, containerStates }, resetContainerIds);
 }
 
 function handleCustom(scene: ExperimentScene, action: LabAction): ReducerOutcome {

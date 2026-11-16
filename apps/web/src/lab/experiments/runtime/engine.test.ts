@@ -8,7 +8,7 @@ import {
   ORIGIN_TRANSFORM,
   type TitrationRigIds,
 } from '../testFixtures';
-import { buildAttachAction, buildFillAction, buildPlaceAction, buildSetValveAction } from './actions';
+import { buildAttachAction, buildFillAction, buildPlaceAction, buildResetStationAction, buildSetValveAction } from './actions';
 import { ExperimentEngine, type EngineEvent, type ExperimentEngineDeps } from './engine';
 import { generateUUID } from './ids';
 import { totalMoles } from './inventory';
@@ -112,6 +112,25 @@ describe('ExperimentEngine: full titration vertical slice', () => {
     engine.resumeStation(rig.stationId);
     engine.tick(rig.stationId);
     expect(engine.getScene().containerStates[rig.buretteId]!.volumeL).toBeLessThan(volumeAfterOneTick);
+  });
+
+  it('a successful RESET also zeroes and pauses the station clock it scopes', () => {
+    const engine = createEngine();
+    const rig = assembleTitrationStation(engine, 'Station 1');
+    fillTitrationRig(engine, rig);
+    engine.dispatchOrThrow(buildSetValveAction(rig.buretteId, 1));
+    engine.resumeStation(rig.stationId);
+    engine.tick(rig.stationId);
+    engine.tick(rig.stationId);
+    expect(engine.getClock(rig.stationId)!.simulationS).toBeGreaterThan(0);
+
+    engine.dispatchOrThrow(buildResetStationAction(rig.stationId));
+
+    const clock = engine.getClock(rig.stationId)!;
+    expect(clock.status).toBe('IDLE');
+    expect(clock.simulationS).toBe(0);
+    expect(engine.getScene().containerStates[rig.flaskId]!.volumeL).toBe(0); // chemistry cleared too
+    expect(engine.getScene().apparatus).toHaveLength(7); // rig itself survives
   });
 
   it('duplicate actionId is idempotent: the second dispatch is recorded as DUPLICATE and does not re-apply', () => {

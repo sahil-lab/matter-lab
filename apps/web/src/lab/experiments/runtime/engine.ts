@@ -173,6 +173,7 @@ export class ExperimentEngine {
     this.scene = outcome.scene;
     this.syncClocksWithStations();
     const pendingObservationRequestIds = this.recomputeAffected(outcome.affectedContainerIds, action.atSimulationS);
+    if (action.type === 'RESET') this.resetClocksFor(action.payload);
     const { events, record } = appendEvent(this.events, {
       action,
       sceneRevisionBefore: before,
@@ -185,6 +186,15 @@ export class ExperimentEngine {
     this.events = events;
     this.emit({ kind: 'ACTION_RECORDED', record });
     return record;
+  }
+
+  /** A successful `RESET` also zeroes and pauses the clock(s) it affects — scope `STATION` resets just that station's clock, `SCENE` resets every known station's clock — so "reset" reads as one user-facing operation even though the reducer (scene/chemistry) and the clock (simulation time) are tracked separately. */
+  private resetClocksFor(payload: Readonly<Record<string, unknown>>): void {
+    if (payload.scope === 'SCENE') {
+      for (const stationId of this.clocksByStation.keys()) this.resetStationClock(stationId);
+    } else if (payload.scope === 'STATION' && typeof payload.stationId === 'string') {
+      this.resetStationClock(payload.stationId);
+    }
   }
 
   /** Throws with the rejection reason instead of returning a record; for trusted call sites (tests, engine-internal helpers) that want to fail loudly. `dispatch` is the safe primitive for untrusted input. */
@@ -211,7 +221,7 @@ export class ExperimentEngine {
     if (clock) this.clocksByStation.set(stationId, setClockSpeed(clock, speed));
   }
 
-  /** Resets only the clock (simulation time back to zero, paused); does not touch scene contents. Use `RESET` (via `dispatch`) to also clear a station's chemistry. */
+  /** Resets simulation time for one station back to zero, paused, without touching scene contents. Called automatically by a successful `RESET` `LabAction` for the station(s) it scopes; exposed directly too, for a caller that wants to rewind only the clock (e.g. scrubbing playback back to the start without clearing chemistry). */
   resetStationClock(stationId: UUID): void {
     const clock = this.clocksByStation.get(stationId);
     if (clock) this.clocksByStation.set(stationId, resetClock(clock));
