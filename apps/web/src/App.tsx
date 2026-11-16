@@ -1,7 +1,9 @@
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
 import { startQuantumWatch } from './compute/quantum';
 import { startComputeWatch } from './compute/store';
+import { LabModuleBoundary, LabModuleLoading } from './design-system/lab';
 import { ChamberControls, ChamberLegend } from './reaction/ChamberBar';
 import { ReactionLab } from './reaction/ReactionLab';
 import { MatterCanvas, getDeviceInfo } from './render/MatterCanvas';
@@ -19,6 +21,7 @@ import { IconButton } from './ui/kit';
 import { ContextBar, ToolRail } from './ui/Tools';
 import { TopBar } from './ui/TopBar';
 import { AxisGizmo, PerfHud, ScaleBar, ViewBar } from './ui/ViewControls';
+import { openLaboratory, returnToMolecular, useWorkbenchNavigation } from './ui/workbenchNavigation';
 import { VaultBanner, VaultLab } from './vault/VaultLab';
 
 const TOAST_ICONS = { info: Info, success: CircleCheck, warning: TriangleAlert, error: CircleAlert };
@@ -46,12 +49,23 @@ function Toasts() {
   );
 }
 
-export function App({ hasQualityPreference }: { hasQualityPreference: boolean }) {
+export interface LaboratoryEntryProps {
+  readonly onExit?: () => void;
+}
+
+export interface AppProps {
+  readonly hasQualityPreference: boolean;
+  /** Inject Agent10's real Laboratory export; no launch control is shown without it. */
+  readonly laboratory?: ComponentType<LaboratoryEntryProps>;
+}
+
+export function App({ hasQualityPreference, laboratory: Laboratory }: AppProps) {
   const dialog = useLab((s) => s.dialog);
   const showPerf = useLab((s) => s.showPerf);
   const inspectorOpen = useLab((s) => s.inspectorOpen);
   const workspace = useLab((s) => s.workspace);
   const sidePanelOpen = useLab((s) => s.sidePanelOpen);
+  const surface = useWorkbenchNavigation((s) => s.surface);
   const [dropping, setDropping] = useState(false);
 
   useEffect(() => startAutosave(), []);
@@ -71,6 +85,16 @@ export function App({ hasQualityPreference }: { hasQualityPreference: boolean })
     }, 150);
     return () => window.clearInterval(timer);
   }, [hasQualityPreference]);
+
+  if (Laboratory && surface === 'laboratory') {
+    return (
+      <LabModuleBoundary title="Laboratory" onBack={returnToMolecular} fullPage>
+        <Suspense fallback={<LabModuleLoading onBack={returnToMolecular} />}>
+          <Laboratory onExit={returnToMolecular} />
+        </Suspense>
+      </LabModuleBoundary>
+    );
+  }
 
   return (
     <div
@@ -94,7 +118,7 @@ export function App({ hasQualityPreference }: { hasQualityPreference: boolean })
     >
       <MatterCanvas />
       <div className="ml-overlay">
-        <TopBar>{workspace === 'reactions' ? <ChamberLegend /> : workspace === 'vault' ? <VaultBanner /> : null}</TopBar>
+        <TopBar onOpenLaboratory={Laboratory ? openLaboratory : undefined}>{workspace === 'reactions' ? <ChamberLegend /> : workspace === 'vault' ? <VaultBanner /> : null}</TopBar>
         {workspace === 'architect' && (
           <>
             <ToolRail />

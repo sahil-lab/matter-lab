@@ -1,11 +1,13 @@
 import { validateScene } from '@matterlab/core';
 import {
   Activity,
+  Beaker,
   CircleAlert,
   CircleCheck,
   CircleHelp,
   CircleSlash,
   Download,
+  Database,
   FileInput,
   FilePlus2,
   FlaskConical,
@@ -24,8 +26,9 @@ import {
   Vault,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { LabDialog, LabModuleBoundary, LabStateNotice } from '../design-system/lab';
 import { getDeviceInfo } from '../render/MatterCanvas';
 import { QUALITY } from '../render/quality';
 import { cancelJob, clearFinishedJobs, isRunning, useJobs } from '../science/jobs';
@@ -37,6 +40,8 @@ import { lab, useLab } from '../state/store';
 import type { EditMode, QualityId, Workspace } from '../state/store';
 import { Button, IconButton, Segmented, cx, useDismiss } from './kit';
 import { useSettledScene } from '../state/useSettledScene';
+
+const BackendPanel = lazy(() => import('./backend').then(({ BackendPanel }) => ({ default: BackendPanel })));
 
 function BrandMark() {
   return (
@@ -94,7 +99,9 @@ function FileMenu() {
 
 function SettingsMenu() {
   const [open, setOpen] = useState(false);
+  const [backendOpen, setBackendOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
+  const closeBackend = useCallback(() => setBackendOpen(false), []);
   const ref = useDismiss(open, close);
   const quality = useLab((s) => s.quality);
   const ambientMotion = useLab((s) => s.ambientMotion);
@@ -126,6 +133,10 @@ function SettingsMenu() {
           <button className="ml-menu__item" role="menuitemcheckbox" aria-checked={showPerf} onClick={() => lab.set({ showPerf: !showPerf })}>
             <span style={{ width: 16, color: 'var(--accent)' }}>{showPerf ? '✓' : ''}</span> Performance monitor
           </button>
+          <div className="ml-menu__sep" />
+          <button type="button" className="ml-menu__item" data-testid="open-backend" onClick={() => { close(); setBackendOpen(true); }}>
+            <Database /> Scientific backend &amp; catalogs
+          </button>
           {device && (
             <p className="ml-mono" style={{ margin: '10px 2px 0', color: 'var(--text-3)', fontSize: 10.5, lineHeight: 1.5, overflowWrap: 'anywhere', userSelect: 'text' }}>
               {device.renderer}
@@ -135,6 +146,15 @@ function SettingsMenu() {
           )}
         </div>
       )}
+      <div className="ml-lab" style={{ display: 'contents' }}>
+        <LabDialog open={backendOpen} size="large" title="Scientific backend & catalogs" description="Connect to the existing science service. No credentials or chemical state are stored by this dialog." onClose={closeBackend}>
+          <LabModuleBoundary title="Backend tools" onBack={closeBackend} backLabel="Close backend tools">
+            <Suspense fallback={<LabStateNotice status="loading">Loading the backend connection tools.</LabStateNotice>}>
+              <BackendPanel />
+            </Suspense>
+          </LabModuleBoundary>
+        </LabDialog>
+      </div>
     </div>
   );
 }
@@ -337,7 +357,7 @@ function WorkspaceSwitch() {
   );
 }
 
-export function TopBar({ children }: { children?: ReactNode }) {
+export function TopBar({ children, onOpenLaboratory }: { children?: ReactNode; onOpenLaboratory?: () => void }) {
   const canUndo = useLab((s) => s.history.past.length > 0);
   const canRedo = useLab((s) => s.history.future.length > 0);
   const undoLabel = useLab((s) => s.history.past[s.history.past.length - 1]?.label);
@@ -357,6 +377,7 @@ export function TopBar({ children }: { children?: ReactNode }) {
         </div>
         <div className="ml-sep" />
         <WorkspaceSwitch />
+        {onOpenLaboratory && <Button className="ml-open-laboratory" variant="outline" tip="Open the meter-scale laboratory; your molecular document is preserved" tipPos="bottom" aria-label="Open instrument laboratory" data-testid="open-laboratory" onClick={onOpenLaboratory}><Beaker /><span className="ml-open-laboratory__label">Laboratory</span></Button>}
         {architect && (
           <>
             <div className="ml-sep" />

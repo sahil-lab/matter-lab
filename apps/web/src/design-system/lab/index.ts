@@ -15,3 +15,4 @@ export * from './TitrationHUD';
 export * from './ScientificExplanationPanel';
 export * from './ObservationTimeline';
 export * from './catalog';
+export * from './LabModuleBoundary';

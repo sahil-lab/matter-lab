@@ -323,6 +323,10 @@
 .mlab-ledger-table tr[data-selected='true'] { background: #132e35; }
 .mlab-ledger-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 7px; padding: 8px 0; }
 .mlab-ledger-pagination > span { margin-right: auto; font: 9px var(--mlab-mono); color: var(--mlab-quiet); }
+.mlab-module-page { position: fixed; inset: 0; padding: 24px; display: grid; place-content: center; background: var(--mlab-void); }
+.mlab-module-page > .mlab-state { width: min(520px, calc(100vw - 48px)); }
+.ml-open-laboratory { color: var(--energy); border-color: color-mix(in srgb, var(--energy) 35%, transparent) !important; }
+@media (max-width: 1450px) { .ml-open-laboratory__label { display: none; } }
 .mlab-spin { animation: mlab-spin 1.2s linear infinite; }
 @keyframes mlab-spin { to { transform: rotate(360deg); } }
 
