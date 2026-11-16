@@ -19,6 +19,8 @@ export interface DropletStreamProps {
   readonly quality: FluidQualitySettings;
   /** Bump this (e.g. an incrementing counter) to instantly clear every in-flight droplet on a RESET action. */
   readonly resetSignal?: number;
+  /** Optional observability hook (e.g. for the dev harness/tests): called with the current in-flight droplet count whenever it changes. Never required for normal use. */
+  readonly onActiveCountChange?: (count: number) => void;
 }
 
 interface ActiveDrop {
@@ -30,10 +32,11 @@ interface ActiveDrop {
 
 const DROP_RADIUS_M = 0.0013;
 
-export function DropletStream({ outflow, colorHex, quality, resetSignal }: DropletStreamProps) {
+export function DropletStream({ outflow, colorHex, quality, resetSignal, onActiveCountChange }: DropletStreamProps) {
   const meshRef = useRef<InstancedMesh>(null);
   const drops = useRef<ActiveDrop[]>([]);
   const spawnState = useRef<DropletSpawnState>(INITIAL_DROPLET_SPAWN_STATE);
+  const lastReportedCount = useRef(-1);
   const dummy = useMemo(() => new Object3D(), []);
 
   const geometry = useMemo(() => new SphereGeometry(DROP_RADIUS_M, 10, 8), []);
@@ -96,6 +99,10 @@ export function DropletStream({ outflow, colorHex, quality, resetSignal }: Dropl
     }
     mesh.count = count;
     mesh.instanceMatrix.needsUpdate = true;
+    if (onActiveCountChange && count !== lastReportedCount.current) {
+      lastReportedCount.current = count;
+      onActiveCountChange(count);
+    }
   });
 
   return <instancedMesh ref={meshRef} args={[geometry, material, quality.maxDroplets]} frustumCulled={false} />;

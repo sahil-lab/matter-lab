@@ -32,6 +32,8 @@ export interface FluidVesselProps {
   readonly probePositionM?: readonly [number, number, number];
   /** Optional body tint, e.g. the amber of a UV-protective reagent bottle. Omit for clear glass. */
   readonly glassTintHex?: string;
+  /** Observability hook (e.g. for tests): called with the graduation's rendered current-reading value, or `null` when there is none. */
+  readonly onCurrentReadingRendered?: (value: number | null) => void;
 }
 
 export function FluidVessel({
@@ -47,6 +49,7 @@ export function FluidVessel({
   probeObservation,
   probePositionM,
   glassTintHex,
+  onCurrentReadingRendered,
 }: FluidVesselProps) {
   const volumeL = contents?.volumeL ?? 0;
   const currentReadingML = profile.graduation ? readingML(profile, volumeL) : undefined;
@@ -55,7 +58,7 @@ export function FluidVessel({
     <group>
       <GlassVessel profile={profile} quality={quality} tintHex={glassTintHex} />
       <LiquidBody profile={profile} volumeL={volumeL} colorHex={colorHex} quality={quality} agitation={agitation} reducedMotion={reducedMotion} />
-      {showGraduations && <GraduationMarks profile={profile} currentReadingML={currentReadingML} />}
+      {showGraduations && <GraduationMarks profile={profile} currentReadingML={currentReadingML} onCurrentReadingRendered={onCurrentReadingRendered} />}
       {outflow !== undefined && <DropletStream outflow={outflow} colorHex={colorHex} quality={quality} resetSignal={outflowResetSignal} />}
       {probeObservation && probePositionM && <InstrumentReadout observation={probeObservation} position={probePositionM} />}
     </group>

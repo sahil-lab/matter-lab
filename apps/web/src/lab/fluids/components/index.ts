@@ -10,3 +10,5 @@ export { DropletStream } from './DropletStream';
 export type { DropletStreamProps } from './DropletStream';
 export { FluidVessel } from './FluidVessel';
 export type { FluidVesselProps } from './FluidVessel';
+export { TextSprite } from './TextSprite';
+export type { TextSpriteProps } from './TextSprite';

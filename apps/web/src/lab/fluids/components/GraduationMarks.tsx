@@ -1,21 +1,22 @@
 /**
  * Readable markings for a graduated vessel (primarily the burette): major/minor tick lines drawn
  * at the real height each reading sits at (`heightForReadingML`, the exact inverse of the function
- * the numeric reading itself uses — see `geometry/vesselProfile.ts`), plus an HTML label for every
- * major tick and a highlighted current-reading tag. `currentReadingML` must come from the same
- * authoritative volume the liquid body renders; this component only places a marker at it.
+ * the numeric reading itself uses — see `geometry/vesselProfile.ts`), plus a billboarded label for
+ * every major tick and a highlighted current-reading tag. `currentReadingML` must come from the
+ * same authoritative volume the liquid body renders; this component only places a marker at it.
  */
-import { Html } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
 import type { VesselProfile } from '../contracts';
 import { heightForReadingML, radiusAtHeight } from '../geometry/vesselProfile';
-import '../fluids.css';
+import { TextSprite } from './TextSprite';
 
 export interface GraduationMarksProps {
   readonly profile: VesselProfile;
   readonly currentReadingML?: number;
   readonly tickColor?: string;
+  /** Observability hook (e.g. for tests): called whenever the rendered current-reading tag's value changes, or with `null` when there is none. */
+  readonly onCurrentReadingRendered?: (value: number | null) => void;
 }
 
 interface Tick {
@@ -46,7 +47,7 @@ function buildTicks(profile: VesselProfile): Tick[] {
   return ticks;
 }
 
-export function GraduationMarks({ profile, currentReadingML, tickColor = '#12161d' }: GraduationMarksProps) {
+export function GraduationMarks({ profile, currentReadingML, tickColor = '#12161d', onCurrentReadingRendered }: GraduationMarksProps) {
   const ticks = useMemo(() => buildTicks(profile), [profile]);
 
   const geometry = useMemo(() => {
@@ -68,6 +69,10 @@ export function GraduationMarks({ profile, currentReadingML, tickColor = '#12161
     return { heightM, radiusM: radiusAtHeight(profile.points, heightM) };
   }, [profile, currentReadingML]);
 
+  useEffect(() => {
+    onCurrentReadingRendered?.(highlight && currentReadingML !== undefined ? currentReadingML : null);
+  }, [highlight, currentReadingML, onCurrentReadingRendered]);
+
   if (!profile.graduation || ticks.length === 0) return null;
 
   return (
@@ -78,16 +83,24 @@ export function GraduationMarks({ profile, currentReadingML, tickColor = '#12161
       {ticks
         .filter((t): t is Tick & { label: string } => t.label !== undefined)
         .map((t) => (
-          <Html key={t.heightM} position={[t.radiusM + MAJOR_TICK_LENGTH_M + LABEL_GAP_M, t.heightM, 0]} style={{ transform: 'translate(0, -50%)' }}>
-            <span className="fluids-tick-label__text">{t.label}</span>
-          </Html>
+          <TextSprite
+            key={t.heightM}
+            position={[t.radiusM + MAJOR_TICK_LENGTH_M + LABEL_GAP_M, t.heightM, 0]}
+            anchor={[0, 0.5]}
+            lines={[{ text: t.label }]}
+            fontSizePx={26}
+            backgroundColor="rgba(8, 13, 24, 0.55)"
+          />
         ))}
       {highlight && currentReadingML !== undefined && (
-        <Html position={[highlight.radiusM + MAJOR_TICK_LENGTH_M + LABEL_GAP_M, highlight.heightM, 0]} style={{ transform: 'translate(0, -50%)' }} zIndexRange={[100, 0]}>
-          <span className="fluids-tick-label__text fluids-tick-label__text--current" data-testid="fluids-current-reading">
-            {currentReadingML.toFixed(2)} mL
-          </span>
-        </Html>
+        <TextSprite
+          position={[highlight.radiusM + MAJOR_TICK_LENGTH_M + LABEL_GAP_M, highlight.heightM, 0]}
+          anchor={[0, 0.5]}
+          lines={[{ text: `${currentReadingML.toFixed(2)} mL`, color: '#0b0f17', fontWeight: 700 }]}
+          fontSizePx={26}
+          backgroundColor="#ffb66b"
+          pixelsPerMeter={6500}
+        />
       )}
     </group>
   );

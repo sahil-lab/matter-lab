@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -9,5 +10,19 @@ export default defineConfig({
   worker: { format: 'es' },
   // RDKit's loader is a CommonJS module used only inside a worker; naming it here has it prepared up front.
   optimizeDeps: { include: ['@rdkit/rdkit'] },
-  build: { target: 'es2022', sourcemap: true, chunkSizeWarningLimit: 1600 },
+  build: {
+    target: 'es2022',
+    sourcemap: true,
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        // Agent 05's standalone lab/fluids regression and screenshot harness (see
+        // src/lab/fluids/dev/). Kept as a second build entry, not a route inside the main app, so
+        // it stays reachable after a production build (`npm run test:e2e:build`) without any of
+        // the other lab/* surfaces (editor, experiments, ...) needing to exist yet.
+        fluidsLab: fileURLToPath(new URL('./fluids-lab.html', import.meta.url)),
+      },
+    },
+  },
 });
