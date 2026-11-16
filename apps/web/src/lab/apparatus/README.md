@@ -47,7 +47,28 @@ Five focused tests pass for physical interior volume, the 10 mL burette mark, in
 registration and the two-station connection/serialization fixture. Web typechecking passes.
 These checks do not certify GPU rendering or operation through the final editor.
 
-The registry is usable by the authoritative runtime and backend now. Procedural meshes and
-their measured geometry/resource metadata are the next part of this recovery; no unfinished
-mesh is claimed as a completed asset. Unsupported conductivity, heating or other instrument
-models must remain explicit rather than acquiring fabricated readouts.
+The procedural models are implemented for all 21 definitions. `ApparatusModel` applies the
+instance transform exactly once; supplied fluid children remain in vessel-local meters. BENCH
+delegates to the environment's Workbench. A stopcock or stirrer hit carries
+`userData.labControlId`; `onControlPointerDown(controlId, event)` delegates interaction to the editor.
+Accepted runtime state moves the real stopcock, never the inventory.
+
+Static parts and numeric glyphs are batched by material. All instruments share one 1024-by-64
+RGBA numeric atlas (262,144 uncompressed texel bytes, not additive per instance; driver/mipmap
+overhead is not included). Injected glass material is borrowed and not disposed by the model.
+`asset-metrics.generated.json` records actual CPU-measured bounds, triangle counts, mesh counts
+and line segments at all three quality levels. The definition exposes the Balanced triangle
+count. `NOASSERTION` does not invent a repository-wide license; these are original project assets.
+
+The model tests verify actual geometry at every quality, control movement and resource ownership.
+These are not GPU frame-time, transparency or visual-quality measurements; integrated browser
+verification remains required. To regenerate the counts after changing geometry:
+
+```powershell
+$env:MATTERLAB_WRITE_APPARATUS_METRICS='1'
+vitest run --project web apps/web/src/lab/apparatus/geometry.test.ts
+```
+
+Unsupported conductivity, heating or other instrument models must remain explicit rather than
+acquiring fabricated readouts. Additional renderers register with `registerApparatusGeometry`;
+unknown asset IDs are refused rather than silently replaced by a generic prop.

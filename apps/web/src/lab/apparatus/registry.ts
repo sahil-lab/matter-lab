@@ -11,6 +11,7 @@ import type {
   VesselCalibration,
 } from '@matterlab/contracts';
 import { createVesselCalibration } from './calibration.ts';
+import assetMetrics from './asset-metrics.generated.json' with { type: 'json' };
 
 export const APPARATUS_CATALOG_VERSION = '1.0.0';
 export const LINEAR_FLOW_METHOD_ID = 'flow:linear-valve-v1';
@@ -18,6 +19,7 @@ export const LINEAR_FLOW_METHOD_ID = 'flow:linear-valve-v1';
 const identity = [0, 0, 0, 1] as const;
 const transforms = { translation: ['X', 'Y', 'Z'], rotation: ['Y'] } as const;
 const emptyConfig = { type: 'object', properties: {}, required: [], additionalProperties: false } as const;
+const measuredAssets: Readonly<Record<string, { balanced: { triangles: number } }>> = assetMetrics;
 
 function socket(
   id: string,
@@ -70,6 +72,7 @@ function base(
   extra: Partial<Omit<ApparatusDefinition, 'id' | 'kind' | 'label' | 'category' | 'dimensionsM' | 'capabilities'>> = {},
 ): ApparatusDefinition {
   const [width, height, depth] = dimensionsM;
+  const asset = measuredAssets[id];
   return {
     id,
     version: APPARATUS_CATALOG_VERSION,
@@ -85,6 +88,18 @@ function base(
     controls: [],
     configSchema: emptyConfig,
     defaultConfig: {},
+    ...(asset ? {
+      visual: {
+        kind: 'PROCEDURAL' as const,
+        license: 'NOASSERTION',
+        attribution: 'Original MATTER LAB procedural geometry; no third-party mesh or texture downloads.',
+        triangleCount: asset.balanced.triangles,
+        textureBytes: kind === 'BENCH' ? 0 : 262144,
+        sourceIds: ['matterlab:procedural-apparatus-v1'],
+        status: 'COMPLETE' as const,
+        previewFocusM: [0, height / 2, 0] as const,
+      },
+    } : {}),
     ...extra,
   };
 }
@@ -104,7 +119,7 @@ function vessel(
     tags: ['upright-vessel', 'original-procedural-geometry'],
     sockets: [
       socket('inlet', 'FLUID', mouth, 'IN', 'liquid', ['liquid'], ['FLOW_SOURCE'], { maxConnections: 8, alignmentToleranceM: 0.06 }),
-      socket('outlet', 'FLUID', mouth, 'OUT', 'liquid', ['liquid'], ['FLOW_RECEIVER'], { alignmentToleranceM: 0.06 }),
+      socket('outlet', 'FLUID', kind === 'PIPETTE' ? [0, 0, 0] : mouth, 'OUT', 'liquid', ['liquid'], ['FLOW_RECEIVER'], { alignmentToleranceM: 0.06 }),
       socket('base', 'MECHANICAL', [0, 0, 0], 'IN', 'vessel-base', ['vessel-platform'], ['MOUNT']),
       socket('sensor', 'SENSOR', [0, dimensionsM[1] * 0.4, 0], 'IN', 'liquid-sensor', ['ph-sensor', 'temperature-sensor', 'conductivity-sensor'], ['MEASUREMENT'], { maxConnections: 4, alignmentToleranceM: 0.15 }),
       socket('stir-control', 'CONTROL', [0, 0, 0], 'IN', 'vessel-control', ['stirrer-control'], ['STIRRING'], { alignmentToleranceM: 0.05 }),
