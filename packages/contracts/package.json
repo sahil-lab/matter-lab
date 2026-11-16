@@ -1,0 +1,20 @@
+{
+  "name": "@matterlab/contracts",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Versioned laboratory DTOs, validation, serialization and runtime/science boundaries.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./lab": "./lab/index.ts",
+    "./schemas/lab-v1.schema.json": "./schemas/lab-v1.schema.json"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts --configLoader native",
+    "schema:export": "node --experimental-strip-types tools/export-schema.ts"
+  }
+}

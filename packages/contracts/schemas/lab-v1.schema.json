@@ -1,0 +1,5224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:matterlab:contracts:lab:1",
+  "$ref": "#/$defs/ExperimentScene",
+  "$defs": {
+    "UUID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "format": "uuid"
+    },
+    "UtcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,9})?Z$"
+    },
+    "InputHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Evidence": {
+      "type": "string",
+      "enum": [
+        "REFERENCE_MEASURED",
+        "MODEL_CALCULATED",
+        "ILLUSTRATIVE",
+        "UNVERIFIED",
+        "UNSUPPORTED"
+      ]
+    },
+    "RunStatus": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED",
+        "UNSUPPORTED"
+      ]
+    },
+    "LabErrorCode": {
+      "type": "string",
+      "enum": [
+        "INVALID_INPUT",
+        "INVALID_UUID",
+        "NON_FINITE_NUMBER",
+        "INVALID_UNIT",
+        "UNSUPPORTED_SCHEMA_VERSION",
+        "LIMIT_EXCEEDED",
+        "DUPLICATE_ID",
+        "MISSING_REFERENCE",
+        "CROSS_STATION_CONNECTION",
+        "INCOMPATIBLE_SOCKET",
+        "INVALID_CALIBRATION",
+        "INVALID_ACTION",
+        "REVISION_CONFLICT",
+        "ACTION_ID_CONFLICT",
+        "STALE_ACTION",
+        "INVALID_PHASE",
+        "INSUFFICIENT_VOLUME",
+        "CAPACITY_EXCEEDED",
+        "UNSUPPORTED_MODEL",
+        "UNSUPPORTED_SPECIES",
+        "UNSUPPORTED_CONDITIONS",
+        "SOLVER_FAILED",
+        "CANCELLED",
+        "RUNTIME_ERROR",
+        "SERIALIZATION_FAILED",
+        "METHOD_VERSION_MISMATCH",
+        "INPUT_HASH_MISMATCH"
+      ]
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number",
+          "minimum": -1.7976931348623157e+308,
+          "maximum": 1.7976931348623157e+308
+        },
+        {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        {
+          "$ref": "#/$defs/JsonObject"
+        }
+      ]
+    },
+    "JsonObject": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "maxProperties": 2048,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": "^(?!(?:__proto__|prototype|constructor)$)(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]+$"
+      }
+    },
+    "Vec3M": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": -10000,
+        "maximum": 10000
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "Quaternion": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": -1,
+        "maximum": 1
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "Transform": {
+      "type": "object",
+      "properties": {
+        "positionM": {
+          "$ref": "#/$defs/Vec3M"
+        },
+        "quaternion": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "positionM",
+        "quaternion"
+      ],
+      "additionalProperties": false
+    },
+    "BoundsM": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "$ref": "#/$defs/Vec3M"
+        },
+        "max": {
+          "$ref": "#/$defs/Vec3M"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "additionalProperties": false
+    },
+    "Quantity": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": -1000000000000,
+          "maximum": 1000000000000
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "uncertainty": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "ValidationIssue": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/LabErrorCode"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        }
+      },
+      "required": [
+        "code",
+        "path",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "ProblemDetails": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 400,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "code": {
+          "$ref": "#/$defs/LabErrorCode"
+        },
+        "instance": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "traceId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ValidationIssue"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "status",
+        "detail",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Station": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "ApparatusKind": {
+      "type": "string",
+      "enum": [
+        "BENCH",
+        "STAND",
+        "CLAMP",
+        "BURETTE",
+        "FLASK",
+        "BEAKER",
+        "PIPETTE",
+        "STIRRER",
+        "PH_PROBE",
+        "BALANCE",
+        "OTHER"
+      ]
+    },
+    "Capability": {
+      "type": "string",
+      "enum": [
+        "CONTAINER",
+        "FLOW_SOURCE",
+        "FLOW_RECEIVER",
+        "MOUNT",
+        "MOUNTABLE",
+        "HEATING",
+        "STIRRING",
+        "PH_SENSOR",
+        "MEASUREMENT"
+      ]
+    },
+    "ConnectionKind": {
+      "type": "string",
+      "enum": [
+        "MECHANICAL",
+        "FLUID",
+        "SENSOR",
+        "CONTROL"
+      ]
+    },
+    "ApparatusInstance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "kind": {
+          "$ref": "#/$defs/ApparatusKind"
+        },
+        "definitionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "transform": {
+          "$ref": "#/$defs/Transform"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "config": {
+          "$ref": "#/$defs/JsonObject"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "minItems": 0,
+          "maxItems": 9,
+          "uniqueItems": true
+        },
+        "stationId": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "definitionId",
+        "transform",
+        "revision",
+        "config",
+        "capabilities",
+        "stationId"
+      ],
+      "additionalProperties": false
+    },
+    "SocketEndpoint": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "socketId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        }
+      },
+      "required": [
+        "instanceId",
+        "socketId"
+      ],
+      "additionalProperties": false
+    },
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "from": {
+          "$ref": "#/$defs/SocketEndpoint"
+        },
+        "to": {
+          "$ref": "#/$defs/SocketEndpoint"
+        },
+        "kind": {
+          "$ref": "#/$defs/ConnectionKind"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "to",
+        "kind",
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "SpeciesAmount": {
+      "type": "object",
+      "properties": {
+        "speciesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "moles": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        }
+      },
+      "required": [
+        "speciesId",
+        "moles"
+      ],
+      "additionalProperties": false
+    },
+    "ContainerContents": {
+      "type": "object",
+      "properties": {
+        "volumeL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "species": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SpeciesAmount"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "temperatureK": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "mixing": {
+          "type": "string",
+          "enum": [
+            "WELL_MIXED",
+            "UNMIXED"
+          ]
+        },
+        "modelId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        }
+      },
+      "required": [
+        "volumeL",
+        "species",
+        "temperatureK",
+        "mixing",
+        "modelId"
+      ],
+      "additionalProperties": false
+    },
+    "SimulationConfig": {
+      "type": "object",
+      "properties": {
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "timeStepS": {
+          "type": "number",
+          "minimum": 0.000001,
+          "maximum": 60
+        }
+      },
+      "required": [
+        "methodId",
+        "timeStepS"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentScene": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "stations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Station"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "apparatus": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ApparatusInstance"
+          },
+          "minItems": 0,
+          "maxItems": 512
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Connection"
+          },
+          "minItems": 0,
+          "maxItems": 2048
+        },
+        "containerStates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ContainerContents"
+          },
+          "maxProperties": 512,
+          "propertyNames": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "simulationConfig": {
+          "$ref": "#/$defs/SimulationConfig"
+        },
+        "viewport": {
+          "$ref": "#/$defs/JsonObject"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "schemaVersion",
+        "stations",
+        "apparatus",
+        "connections",
+        "containerStates",
+        "simulationConfig"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentAssembly": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "scene": {
+          "$ref": "#/$defs/ExperimentScene"
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "schemaVersion",
+        "name",
+        "description",
+        "scene",
+        "sourceIds"
+      ],
+      "additionalProperties": false
+    },
+    "ConfigField": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "number"
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "minimum": {
+              "type": "number",
+              "minimum": -1000000000000,
+              "maximum": 1000000000000
+            },
+            "maximum": {
+              "type": "number",
+              "minimum": -1000000000000,
+              "maximum": 1000000000000
+            },
+            "default": {
+              "type": "number",
+              "minimum": -1000000000000,
+              "maximum": 1000000000000
+            }
+          },
+          "required": [
+            "type",
+            "unit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "boolean"
+            },
+            "default": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "string"
+            },
+            "enum": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 1,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "maxLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            },
+            "default": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 4096,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ConfigSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "object"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ConfigField"
+          },
+          "maxProperties": 128,
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]+$"
+          }
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 128,
+          "uniqueItems": true
+        },
+        "additionalProperties": {
+          "const": false
+        }
+      },
+      "required": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ],
+      "additionalProperties": false
+    },
+    "SocketCompatibility": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "accepts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "requiredCapabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "minItems": 0,
+          "maxItems": 9,
+          "uniqueItems": true
+        },
+        "allowedKinds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ApparatusKind"
+          },
+          "minItems": 0,
+          "maxItems": 11,
+          "uniqueItems": true
+        },
+        "requiredTags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "key",
+        "accepts"
+      ],
+      "additionalProperties": false
+    },
+    "SocketDefinition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "kind": {
+          "$ref": "#/$defs/ConnectionKind"
+        },
+        "localTransform": {
+          "$ref": "#/$defs/Transform"
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "IN",
+            "OUT",
+            "BIDIRECTIONAL"
+          ]
+        },
+        "gender": {
+          "type": "string",
+          "enum": [
+            "MALE",
+            "FEMALE",
+            "NEUTRAL"
+          ]
+        },
+        "compatibility": {
+          "$ref": "#/$defs/SocketCompatibility"
+        },
+        "maxConnections": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2048
+        },
+        "highlightAnchorM": {
+          "$ref": "#/$defs/Vec3M"
+        },
+        "alignmentToleranceM": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "localTransform",
+        "direction",
+        "gender",
+        "compatibility",
+        "maxConnections"
+      ],
+      "additionalProperties": false
+    },
+    "VesselCalibration": {
+      "type": "object",
+      "properties": {
+        "capacityL": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "maxFillHeightM": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "interiorProfile": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "yM": {
+                "type": "number",
+                "minimum": -10000,
+                "maximum": 10000
+              },
+              "radiusM": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            },
+            "required": [
+              "yM",
+              "radiusM"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 256
+        },
+        "volumeHeightCurve": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "volumeL": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "heightM": {
+                "type": "number",
+                "minimum": -10000,
+                "maximum": 10000
+              }
+            },
+            "required": [
+              "volumeL",
+              "heightM"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 256
+        },
+        "graduations": {
+          "type": "object",
+          "properties": {
+            "minorStepL": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 10000
+            },
+            "majorStepL": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 10000
+            },
+            "startHeightM": {
+              "type": "number",
+              "minimum": -10000,
+              "maximum": 10000
+            },
+            "endHeightM": {
+              "type": "number",
+              "minimum": -10000,
+              "maximum": 10000
+            },
+            "reading": {
+              "type": "string",
+              "enum": [
+                "CONTAINED",
+                "DELIVERED"
+              ]
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "UP",
+                "DOWN"
+              ]
+            }
+          },
+          "required": [
+            "minorStepL",
+            "majorStepL",
+            "startHeightM",
+            "endHeightM",
+            "reading",
+            "direction"
+          ],
+          "additionalProperties": false
+        },
+        "meniscus": {
+          "type": "object",
+          "properties": {
+            "reference": {
+              "type": "string",
+              "enum": [
+                "BOTTOM",
+                "TOP"
+              ]
+            },
+            "offsetM": {
+              "type": "number",
+              "minimum": -10,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "reference",
+            "offsetM"
+          ],
+          "additionalProperties": false
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "capacityL",
+        "maxFillHeightM",
+        "interiorProfile",
+        "volumeHeightCurve",
+        "meniscus",
+        "evidence",
+        "sourceIds",
+        "assumptions"
+      ],
+      "additionalProperties": false
+    },
+    "ApparatusControl": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "actionType": {
+          "type": "string",
+          "enum": [
+            "FILL",
+            "SET_VALVE",
+            "TRANSFER",
+            "START_STIRRER",
+            "SET_PROBE",
+            "CUSTOM"
+          ]
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ConfigField"
+          },
+          "maxProperties": 128,
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]+$"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "actionType",
+        "fields"
+      ],
+      "additionalProperties": false
+    },
+    "FlowModelDefinition": {
+      "type": "object",
+      "properties": {
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "maxFlowLPerS": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "methodId",
+        "maxFlowLPerS",
+        "assumptions"
+      ],
+      "additionalProperties": false
+    },
+    "ApparatusAsset": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "PROCEDURAL",
+            "GLTF"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "thumbnailUri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "previewFocusM": {
+          "$ref": "#/$defs/Vec3M"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "triangleCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "textureBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "DEVELOPMENT_PLACEHOLDER"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "license",
+        "attribution",
+        "triangleCount",
+        "textureBytes",
+        "sourceIds",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "ApparatusDefinition": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "kind": {
+          "$ref": "#/$defs/ApparatusKind"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "minItems": 0,
+          "maxItems": 9,
+          "uniqueItems": true
+        },
+        "dimensionsM": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 10000
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "boundsM": {
+          "$ref": "#/$defs/BoundsM"
+        },
+        "permittedTransforms": {
+          "type": "object",
+          "properties": {
+            "translation": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "rotation": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ]
+              },
+              "minItems": 0,
+              "maxItems": 3,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "translation",
+            "rotation"
+          ],
+          "additionalProperties": false
+        },
+        "sockets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SocketDefinition"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "controls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ApparatusControl"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "configSchema": {
+          "$ref": "#/$defs/ConfigSchema"
+        },
+        "defaultConfig": {
+          "$ref": "#/$defs/JsonObject"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "capacityL": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "vesselCalibration": {
+          "$ref": "#/$defs/VesselCalibration"
+        },
+        "flowModel": {
+          "$ref": "#/$defs/FlowModelDefinition"
+        },
+        "massKg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "maxSupportedMassKg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "visual": {
+          "$ref": "#/$defs/ApparatusAsset"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "schemaVersion",
+        "kind",
+        "label",
+        "category",
+        "capabilities",
+        "dimensionsM",
+        "boundsM",
+        "permittedTransforms",
+        "sockets",
+        "controls",
+        "configSchema",
+        "defaultConfig"
+      ],
+      "additionalProperties": false
+    },
+    "LabAction": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "PLACE"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "instance": {
+                  "$ref": "#/$defs/ApparatusInstance"
+                }
+              },
+              "required": [
+                "instance"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "MOVE"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "transform": {
+                  "$ref": "#/$defs/Transform"
+                }
+              },
+              "required": [
+                "transform"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "ATTACH"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "connection": {
+                  "$ref": "#/$defs/Connection"
+                }
+              },
+              "required": [
+                "connection"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "DETACH"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "connectionId": {
+                  "$ref": "#/$defs/UUID"
+                }
+              },
+              "required": [
+                "connectionId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "FILL"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "contents": {
+                  "$ref": "#/$defs/ContainerContents"
+                },
+                "preparation": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "INITIAL",
+                        "EXTERNAL"
+                      ]
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256,
+                      "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "sourceId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "contents",
+                "preparation"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "SET_VALVE"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "openingFraction": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "openingFraction"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "TRANSFER"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "sourceInstanceId": {
+                  "$ref": "#/$defs/UUID"
+                },
+                "targetInstanceId": {
+                  "$ref": "#/$defs/UUID"
+                },
+                "volumeL": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000
+                },
+                "connectionId": {
+                  "$ref": "#/$defs/UUID"
+                }
+              },
+              "required": [
+                "sourceInstanceId",
+                "targetInstanceId",
+                "volumeL",
+                "connectionId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "START_STIRRER"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "frequencyHz": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000
+                }
+              },
+              "required": [
+                "enabled",
+                "frequencyHz"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "SET_PROBE"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "containerInstanceId": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/UUID"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "containerInstanceId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "RESET"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "type": "string",
+                  "enum": [
+                    "STATION",
+                    "SCENE"
+                  ]
+                }
+              },
+              "required": [
+                "scope"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "targetInstanceId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "actorId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "CUSTOM"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "pluginId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+                },
+                "actionType": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+                },
+                "data": {
+                  "$ref": "#/$defs/JsonObject"
+                }
+              },
+              "required": [
+                "pluginId",
+                "actionType",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "actionId",
+            "atSimulationS",
+            "targetInstanceId",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RuntimeControl": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "controlId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "PAUSE"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "controlId",
+            "stationId",
+            "atSimulationS",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "controlId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "RESUME"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "controlId",
+            "stationId",
+            "atSimulationS",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "controlId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "atSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "expectedEpoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "SET_SPEED"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "speed": {
+                  "type": "number",
+                  "minimum": 0.05,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "speed"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "controlId",
+            "stationId",
+            "atSimulationS",
+            "type",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ReplayStep": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ACTION"
+            },
+            "action": {
+              "$ref": "#/$defs/LabAction"
+            }
+          },
+          "required": [
+            "kind",
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ADVANCE"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "kind",
+            "stationId",
+            "ticks"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CONTROL"
+            },
+            "control": {
+              "$ref": "#/$defs/RuntimeControl"
+            }
+          },
+          "required": [
+            "kind",
+            "control"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ScientificProvenance": {
+      "type": "object",
+      "properties": {
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "methodVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "diagnostics": {
+          "$ref": "#/$defs/JsonObject"
+        }
+      },
+      "required": [
+        "methodId",
+        "methodVersion",
+        "sourceIds",
+        "warnings",
+        "assumptions",
+        "limitations",
+        "diagnostics"
+      ],
+      "additionalProperties": false
+    },
+    "EquilibriumInput": {
+      "type": "object",
+      "properties": {
+        "contents": {
+          "$ref": "#/$defs/ContainerContents"
+        },
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "indicatorIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "contents",
+        "methodId",
+        "assumptions"
+      ],
+      "additionalProperties": false
+    },
+    "EquilibriumSpecies": {
+      "type": "object",
+      "properties": {
+        "speciesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "concentrationMolL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        }
+      },
+      "required": [
+        "speciesId",
+        "concentrationMolL"
+      ],
+      "additionalProperties": false
+    },
+    "IndicatorResult": {
+      "type": "object",
+      "properties": {
+        "indicatorId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "baseFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "colorSrgb": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "colorEvidence": {
+          "const": "ILLUSTRATIVE"
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "indicatorId",
+        "baseFraction",
+        "colorSrgb",
+        "colorEvidence",
+        "sourceIds"
+      ],
+      "additionalProperties": false
+    },
+    "EquilibriumResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "SUCCEEDED"
+            },
+            "evidence": {
+              "const": "MODEL_CALCULATED"
+            },
+            "pH": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": -1000000000000,
+                  "maximum": 1000000000000
+                },
+                "unit": {
+                  "const": "pH"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "equilibriumSpecies": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EquilibriumSpecies"
+              },
+              "minItems": 0,
+              "maxItems": 512
+            },
+            "indicators": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IndicatorResult"
+              },
+              "minItems": 0,
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "pH",
+            "equilibriumSpecies",
+            "indicators"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "UNSUPPORTED"
+            },
+            "evidence": {
+              "const": "UNSUPPORTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "FAILED"
+            },
+            "evidence": {
+              "const": "UNVERIFIED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PreparationInput": {
+      "type": "object",
+      "properties": {
+        "reagentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "volumeL": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "concentrationMolL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000000
+        },
+        "temperatureK": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000
+        },
+        "mixing": {
+          "type": "string",
+          "enum": [
+            "WELL_MIXED",
+            "UNMIXED"
+          ]
+        }
+      },
+      "required": [
+        "reagentId",
+        "volumeL",
+        "concentrationMolL"
+      ],
+      "additionalProperties": false
+    },
+    "PreparationResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "SUCCEEDED"
+            },
+            "evidence": {
+              "const": "MODEL_CALCULATED"
+            },
+            "contents": {
+              "$ref": "#/$defs/ContainerContents"
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "contents"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "UNSUPPORTED"
+            },
+            "evidence": {
+              "const": "UNSUPPORTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "diagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "FAILED"
+            },
+            "evidence": {
+              "const": "UNVERIFIED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "methodId",
+            "methodVersion",
+            "sourceIds",
+            "warnings",
+            "assumptions",
+            "limitations",
+            "diagnostics",
+            "status",
+            "evidence",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Observation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "PH"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": -1000000000000,
+                  "maximum": 1000000000000
+                },
+                "unit": {
+                  "const": "pH"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "TEMPERATURE"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000
+                },
+                "unit": {
+                  "const": "K"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "VOLUME"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "unit": {
+                  "const": "L"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "CONCENTRATION"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "unit": {
+                  "const": "mol/L"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "INDICATOR"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "unit": {
+                  "const": "1"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            },
+            "indicatorState": {
+              "$ref": "#/$defs/IndicatorResult"
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "apparatusId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "timeS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "evidence": {
+              "$ref": "#/$defs/Evidence"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "sourceIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "speciesId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "indicatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "titration": {
+              "$ref": "#/$defs/CumulativeTransfer"
+            },
+            "type": {
+              "const": "MASS"
+            },
+            "quantity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                },
+                "unit": {
+                  "const": "kg"
+                },
+                "uncertainty": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "value",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "timeS",
+            "evidence",
+            "methodId",
+            "sourceIds",
+            "type",
+            "quantity"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CumulativeTransfer": {
+      "type": "object",
+      "properties": {
+        "sourceInstanceId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "receiverInstanceId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "deliveredVolumeL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "sourceInstanceId",
+        "receiverInstanceId",
+        "deliveredVolumeL"
+      ],
+      "additionalProperties": false
+    },
+    "ObservationRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "runId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "stationId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        }
+      },
+      "required": [
+        "id",
+        "runId",
+        "stationId",
+        "epoch",
+        "sequence",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "RunResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "QUEUED"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "RUNNING"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "SUCCEEDED"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "FAILED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "CANCELLED"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "UNSUPPORTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TerminalRunResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "SUCCEEDED"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "FAILED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "CANCELLED"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "methodId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "methodVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+            },
+            "inputHash": {
+              "$ref": "#/$defs/InputHash"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Observation"
+              },
+              "minItems": 0,
+              "maxItems": 100000
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096,
+                "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "solverDiagnostics": {
+              "$ref": "#/$defs/JsonObject"
+            },
+            "status": {
+              "const": "UNSUPPORTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "runId",
+            "methodId",
+            "methodVersion",
+            "inputHash",
+            "observations",
+            "warnings",
+            "assumptions",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "StationRuntimeState": {
+      "type": "object",
+      "properties": {
+        "stationId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "PREPARING",
+            "RUNNING",
+            "PAUSED",
+            "COMPLETED",
+            "FAILED",
+            "UNSUPPORTED"
+          ]
+        },
+        "simulationTimeS": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.05,
+          "maximum": 100
+        },
+        "error": {
+          "$ref": "#/$defs/ProblemDetails"
+        }
+      },
+      "required": [
+        "stationId",
+        "epoch",
+        "status",
+        "simulationTimeS",
+        "tick",
+        "speed"
+      ],
+      "additionalProperties": false
+    },
+    "ApparatusRuntimeState": {
+      "type": "object",
+      "properties": {
+        "valveOpeningFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "deliveredVolumeL": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "stirring": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "frequencyHz": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          },
+          "required": [
+            "enabled",
+            "frequencyHz"
+          ],
+          "additionalProperties": false
+        },
+        "probe": {
+          "type": "object",
+          "properties": {
+            "containerInstanceId": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/UUID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "containerInstanceId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ActionReceipt": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "runtimeRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "status": {
+              "const": "APPLIED"
+            }
+          },
+          "required": [
+            "sequence",
+            "runtimeRevision",
+            "stationId",
+            "epoch",
+            "actionId",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "runtimeRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "actionId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "status": {
+              "const": "REJECTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "sequence",
+            "runtimeRevision",
+            "stationId",
+            "epoch",
+            "actionId",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ControlReceipt": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "runtimeRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "controlId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "status": {
+              "const": "APPLIED"
+            }
+          },
+          "required": [
+            "sequence",
+            "runtimeRevision",
+            "stationId",
+            "epoch",
+            "controlId",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "runtimeRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "controlId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "status": {
+              "const": "REJECTED"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "sequence",
+            "runtimeRevision",
+            "stationId",
+            "epoch",
+            "controlId",
+            "status",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RuntimeSnapshot": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "runId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "scene": {
+          "$ref": "#/$defs/ExperimentScene"
+        },
+        "stationStates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/StationRuntimeState"
+          },
+          "maxProperties": 32,
+          "propertyNames": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "apparatusStates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ApparatusRuntimeState"
+          },
+          "maxProperties": 512,
+          "propertyNames": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "transferTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CumulativeTransfer"
+          },
+          "minItems": 0,
+          "maxItems": 2048
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ObservationRecord"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "lastSequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "revision",
+        "scene",
+        "stationStates",
+        "apparatusStates",
+        "transferTotals",
+        "observations",
+        "lastSequence"
+      ],
+      "additionalProperties": false
+    },
+    "LabRuntimeEvent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "ACTION"
+            },
+            "action": {
+              "$ref": "#/$defs/LabAction"
+            },
+            "receipt": {
+              "$ref": "#/$defs/ActionReceipt"
+            }
+          },
+          "required": [
+            "runId",
+            "sequence",
+            "stationId",
+            "epoch",
+            "type",
+            "action",
+            "receipt"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "CONTROL"
+            },
+            "control": {
+              "$ref": "#/$defs/RuntimeControl"
+            },
+            "receipt": {
+              "$ref": "#/$defs/ControlReceipt"
+            }
+          },
+          "required": [
+            "runId",
+            "sequence",
+            "stationId",
+            "epoch",
+            "type",
+            "control",
+            "receipt"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "ADVANCE"
+            },
+            "fromSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "toSimulationS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "ticks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "runId",
+            "sequence",
+            "stationId",
+            "epoch",
+            "type",
+            "fromSimulationS",
+            "toSimulationS",
+            "ticks"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "OBSERVATIONS"
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ObservationRecord"
+              },
+              "minItems": 1,
+              "maxItems": 100000
+            }
+          },
+          "required": [
+            "runId",
+            "sequence",
+            "stationId",
+            "epoch",
+            "type",
+            "observations"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "runId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "stationId": {
+              "$ref": "#/$defs/UUID"
+            },
+            "epoch": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "type": {
+              "const": "STATUS"
+            },
+            "status": {
+              "$ref": "#/$defs/RunStatus"
+            },
+            "error": {
+              "$ref": "#/$defs/ProblemDetails"
+            }
+          },
+          "required": [
+            "runId",
+            "sequence",
+            "stationId",
+            "epoch",
+            "type",
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RuntimeCheckpoint": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "contractVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "runtimeVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "methodVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "inputHash": {
+          "$ref": "#/$defs/InputHash"
+        },
+        "initialScene": {
+          "$ref": "#/$defs/ExperimentScene"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/RuntimeSnapshot"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReplayStep"
+          },
+          "minItems": 0,
+          "maxItems": 50000
+        },
+        "completedStepCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50000
+        },
+        "limits": {
+          "$ref": "#/$defs/RunLimits"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LabRuntimeEvent"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "contractVersion",
+        "runtimeVersion",
+        "methodVersion",
+        "inputHash",
+        "initialScene",
+        "snapshot",
+        "steps",
+        "completedStepCount",
+        "events"
+      ],
+      "additionalProperties": false
+    },
+    "RunLimits": {
+      "type": "object",
+      "properties": {
+        "maxTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "maxActions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "maxObservations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "maxSimulationTimeS": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 86400
+        }
+      },
+      "required": [
+        "maxTicks",
+        "maxActions",
+        "maxObservations",
+        "maxSimulationTimeS"
+      ],
+      "additionalProperties": false
+    },
+    "NodeRunRequest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "runId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "contractVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "runtimeVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "methodVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(?![\\s\\S]*[\\uD800-\\uDFFF])[\\s\\S]*$"
+        },
+        "initialScene": {
+          "$ref": "#/$defs/ExperimentScene"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReplayStep"
+          },
+          "minItems": 0,
+          "maxItems": 50000
+        },
+        "limits": {
+          "$ref": "#/$defs/RunLimits"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "contractVersion",
+        "runtimeVersion",
+        "methodVersion",
+        "initialScene",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "RuntimeSolverRequest": {
+      "type": "object",
+      "properties": {
+        "apparatusId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "input": {
+          "$ref": "#/$defs/EquilibriumInput"
+        }
+      },
+      "required": [
+        "apparatusId",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "NodeRunResponse": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "result": {
+          "$ref": "#/$defs/TerminalRunResult"
+        },
+        "checkpoint": {
+          "$ref": "#/$defs/RuntimeCheckpoint"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "result"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
