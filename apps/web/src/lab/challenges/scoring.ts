@@ -6,6 +6,7 @@ import { endpointTarget } from './reference.ts';
 import type { ChallengeAttempt, ChallengeDefinition, ScoreCategory, TrialEvaluation, TrialEvidence, TrialStatistics } from './types.ts';
 
 export const REPEATABILITY_STATEMENT = 'Sample standard deviation describes the spread of these simulated trial endpoints. It is not experimental uncertainty, accuracy, or a confidence interval.';
+const CATEGORY_ORDER: readonly ScoreCategory[] = ['setup', 'operation', 'endpoint', 'repeatability', 'interpretation'];
 
 export function areTrialsComparable(left: TrialEvidence, right: TrialEvidence): boolean {
   return canonicalJson(left.reference) === canonicalJson(right.reference) &&
@@ -65,7 +66,7 @@ export function evaluateTrial(attempt: ChallengeAttempt, trialId = attempt.activ
     trial.frame.scene.simulationConfig.methodId === trial.reference.methodId && trial.support.methodId === trial.reference.methodId &&
     !['FAILED', 'UNSUPPORTED'].includes(trial.frame.stationStates[trial.scope.stationId]?.status ?? 'FAILED') &&
     trial.status !== 'interrupted' && trialGraphIssues(trial).length === 0;
-  const categories = (Object.keys(definition.rubric.weights) as ScoreCategory[]).flatMap((category) => {
+  const categories = CATEGORY_ORDER.flatMap((category) => {
     const relevant = goals.filter((goal) => goal.category === category);
     if (!relevant.length) return [];
     const maximum = definition.rubric.weights[category];

@@ -14,7 +14,11 @@ import type {
 
 export function evidenceFrame(snapshot: RuntimeSnapshot): RuntimeEvidenceFrame {
   const { observations: _observations, ...frame } = snapshot;
-  return frame;
+  const immutable = <T extends object>(value: T): T => Object.isFrozen(value) ? value : copyJson(value);
+  return Object.freeze({
+    ...frame, scene: immutable(frame.scene), stationStates: immutable(frame.stationStates),
+    apparatusStates: immutable(frame.apparatusStates), transferTotals: immutable(frame.transferTotals),
+  });
 }
 
 function snapshotScope(snapshot: RuntimeSnapshot, stationId: string): TrialScope {
@@ -34,7 +38,10 @@ export function createChallengeController(options: ChallengeControllerOptions): 
   const requestedBindings = restored?.requestedBindings ?? options.bindings ?? {};
   const definitionSnapshot = (snapshot: RuntimeSnapshot) => {
     const ids = new Set(snapshot.scene.apparatus.filter((instance) => instance.stationId === options.stationId).map((instance) => instance.definitionId));
-    return [...ids].flatMap((id) => { const entry = options.definitions.getDefinition(id); return entry ? [entry] : []; });
+    return [...ids].flatMap((id) => {
+      const entry = options.definitions.getDefinition(id);
+      return entry ? [Object.isFrozen(entry) ? entry : copyJson(entry)] : [];
+    });
   };
   function newTrial(snapshot: RuntimeSnapshot): TrialEvidence {
     const frame = evidenceFrame(snapshot);
@@ -60,6 +67,20 @@ export function createChallengeController(options: ChallengeControllerOptions): 
   const listeners = new Set<() => void>();
   let disposed = false;
   let view: ChallengeView;
+  let scheduled = false;
+  let pending: {
+    readonly snapshot: RuntimeSnapshot;
+    readonly base: TrialEvidence;
+    readonly frame: RuntimeEvidenceFrame;
+    readonly bindings: TrialEvidence['bindings'];
+    readonly definitions: TrialEvidence['definitions'];
+    readonly recordsById: ReadonlyMap<string, ObservationRecord>;
+    readonly actionIds: Set<string>;
+    readonly observationIds: Set<string>;
+    readonly actions: AppliedActionEvent[];
+    readonly observations: ObservationRecord[];
+    cursorSequence: number;
+  } | null = null;
   const active = () => attempt.trials.find((trial) => trial.id === attempt.activeTrialId)!;
   function publish(next: ChallengeAttempt, message: string | null = null, recompute = true): void {
     attempt = freezeJson(next);
@@ -68,7 +89,7 @@ export function createChallengeController(options: ChallengeControllerOptions): 
     listeners.forEach((listener) => listener());
   }
   function updateTrial(trial: TrialEvidence, message: string | null = null): void {
-    publish({ ...attempt, updatedAt: now(), trials: attempt.trials.map((entry) => entry.id === trial.id ? copyJson(trial) : entry) }, message);
+    publish({ ...attempt, updatedAt: now(), trials: attempt.trials.map((entry) => entry.id === trial.id ? freezeJson(trial) : entry) }, message);
   }
   const result = (ok: boolean, reason?: string): LearningCommandResult => {
     if (reason) publish(attempt, reason, false);
@@ -88,7 +109,7 @@ export function createChallengeController(options: ChallengeControllerOptions): 
     }
     const next = newTrial(snapshot);
     const previous = trial.status === 'active'
-      ? copyJson({ ...trial, status: 'interrupted' as const, interruptionReason: 'Runtime run or station epoch changed before endpoint capture.' })
+      ? freezeJson({ ...trial, status: 'interrupted' as const, interruptionReason: 'Runtime run or station epoch changed before endpoint capture.' })
       : trial;
     publish({
       ...attempt, updatedAt: now(), activeTrialId: next.id,
@@ -99,8 +120,34 @@ export function createChallengeController(options: ChallengeControllerOptions): 
   publish(attempt);
   switchScope(initialSnapshot);
 
+  function flushPending(): void {
+    const batch = pending;
+    pending = null;
+    if (!batch || disposed) return;
+    const trial = batch.base;
+    const appliedEvents = [...trial.appliedEvents, ...batch.actions];
+    const observations = [...trial.observations, ...batch.observations];
+    const totalEvents = attempt.trials.reduce((total, entry) => total + (entry.id === trial.id ? appliedEvents.length : entry.appliedEvents.length), 0);
+    const totalObservations = attempt.trials.reduce((total, entry) => total + (entry.id === trial.id ? observations.length : entry.observations.length), 0);
+    if (totalEvents > LEARNING_STATE_LIMITS.maxEvents || totalObservations > LEARNING_STATE_LIMITS.maxObservations) {
+      updateTrial({ ...trial, status: 'interrupted', interruptionReason: 'Notebook evidence limit reached. Export and start another attempt; evidence was not silently dropped.' });
+      return;
+    }
+    updateTrial({
+      ...trial, frame: batch.frame, bindings: batch.bindings, definitions: batch.definitions,
+      support: copyJson(options.getSupport(batch.snapshot, options.stationId)),
+      cursorSequence: batch.cursorSequence, appliedEvents, observations,
+    });
+  }
+  function scheduleFlush(): void {
+    if (scheduled) return;
+    scheduled = true;
+    queueMicrotask(() => { scheduled = false; flushPending(); });
+  }
+
   function consume(snapshot: RuntimeSnapshot, inputEvent: LabRuntimeEvent): void {
     if (disposed || !snapshot.stationStates[options.stationId]) return;
+    if (pending && pending.snapshot !== snapshot) flushPending();
     const parsed = validateLabContract('LabRuntimeEvent', inputEvent);
     if (!parsed.ok) return;
     const event = parsed.value;
@@ -115,41 +162,46 @@ export function createChallengeController(options: ChallengeControllerOptions): 
     }
     const trial = active();
     if (trial.status !== 'active' || !sameScope(event, trial.scope) || !sameScope(currentScope, trial.scope) ||
-      event.sequence <= trial.cursorSequence || event.sequence > snapshot.lastSequence) return;
-    const frame = evidenceFrame(snapshot);
-    const bindings = resolveRoleBindings(frame, options.stationId, definition, options.definitions, { ...requestedBindings, ...trial.bindings });
-    let next: TrialEvidence = {
-      ...trial, frame, bindings, cursorSequence: event.sequence,
-      definitions: definitionSnapshot(snapshot), support: options.getSupport(snapshot, options.stationId),
-    };
+      event.sequence <= (pending?.cursorSequence ?? trial.cursorSequence) || event.sequence > snapshot.lastSequence) {
+      if (event.sequence === snapshot.lastSequence) flushPending();
+      return;
+    }
+    if (!pending) {
+      const frame = evidenceFrame(snapshot);
+      pending = {
+        snapshot, frame, base: trial, cursorSequence: trial.cursorSequence,
+        bindings: resolveRoleBindings(frame, options.stationId, definition, options.definitions, { ...requestedBindings, ...trial.bindings }),
+        definitions: definitionSnapshot(snapshot), recordsById: new Map(snapshot.observations.map((record) => [record.id, record])),
+        actionIds: new Set(trial.appliedEvents.map((entry) => entry.action.actionId)),
+        observationIds: new Set(trial.observations.map((record) => record.id)),
+        actions: [], observations: [],
+      };
+    }
+    const batch = pending;
+    batch.cursorSequence = event.sequence;
     if (event.type === 'ACTION' && event.receipt.status === 'APPLIED' && event.action.type !== 'RESET') {
       const localTarget = snapshot.scene.apparatus.some((instance) => instance.id === event.action.targetInstanceId && instance.stationId === options.stationId);
-      const duplicate = trial.appliedEvents.some((entry) => entry.action.actionId === event.action.actionId);
+      const duplicate = batch.actionIds.has(event.action.actionId);
       if (localTarget && !duplicate && event.receipt.runtimeRevision <= snapshot.revision &&
         (event.action.expectedEpoch === undefined || event.action.expectedEpoch === trial.scope.epoch)) {
-        next = { ...next, appliedEvents: [...trial.appliedEvents, event as AppliedActionEvent] };
+        batch.actionIds.add(event.action.actionId);
+        batch.actions.push(event as AppliedActionEvent);
       }
     }
     if (event.type === 'OBSERVATIONS') {
-      const ids = new Set(trial.observations.map((record) => record.id));
-      const incoming: ObservationRecord[] = [];
       for (const record of event.observations) {
-        const inSnapshot = snapshot.observations.find((entry) => entry.id === record.id);
-        if (ids.has(record.id) || !inSnapshot || canonicalJson(inSnapshot) !== canonicalJson(record)) continue;
+        const inSnapshot = batch.recordsById.get(record.id);
+        if (batch.observationIds.has(record.id) || !inSnapshot || canonicalJson(inSnapshot) !== canonicalJson(record)) continue;
         if (record.observation.apparatusId && !snapshot.scene.apparatus.some((instance) =>
           instance.id === record.observation.apparatusId && instance.stationId === options.stationId)) continue;
-        ids.add(record.id);
-        incoming.push(record);
+        batch.observationIds.add(record.id);
+        batch.observations.push(record);
       }
-      next = { ...next, observations: [...trial.observations, ...incoming] };
     }
-    const totalEvents = attempt.trials.reduce((total, entry) => total + (entry.id === trial.id ? next.appliedEvents.length : entry.appliedEvents.length), 0);
-    const totalObservations = attempt.trials.reduce((total, entry) => total + (entry.id === trial.id ? next.observations.length : entry.observations.length), 0);
-    if (totalEvents > LEARNING_STATE_LIMITS.maxEvents || totalObservations > LEARNING_STATE_LIMITS.maxObservations) {
-      updateTrial({ ...trial, status: 'interrupted', interruptionReason: 'Notebook evidence limit reached. Export and start another attempt; evidence was not silently dropped.' });
-      return;
-    }
-    updateTrial(next);
+    // Agent07 publishes all events of an operation with one final snapshot. Retain every event,
+    // but clone/evaluate/notify once, not once per transfer and scientific quantity.
+    if (event.sequence === snapshot.lastSequence) flushPending();
+    else scheduleFlush();
   }
 
   const unsubscribe = options.reader.subscribe(consume);
@@ -160,25 +212,30 @@ export function createChallengeController(options: ChallengeControllerOptions): 
     getSnapshot: () => view,
     subscribe: (listener) => { if (disposed) return () => undefined; listeners.add(listener); return () => listeners.delete(listener); },
     setMode: (mode) => {
+      flushPending();
       if (disposed || !['guided', 'challenge', 'free', 'precision'].includes(mode)) return;
       publish({ ...attempt, mode, updatedAt: now() });
     },
     setInstructionIndex: (index) => {
+      flushPending();
       if (disposed || !Number.isFinite(index)) return;
       const instructionIndex = Math.max(0, Math.min(definition.instructions.length - 1, Math.trunc(index)));
       publish({ ...attempt, updatedAt: now(), progression: { ...attempt.progression, instructionIndex } }, null, false);
     },
     dismissGuide: (dismissed) => {
+      flushPending();
       if (disposed) return;
       publish({ ...attempt, updatedAt: now(), progression: { ...attempt.progression, dismissed } }, null, false);
     },
     requestHint: (goalId) => {
+      flushPending();
       if (disposed || !definition.goals.some((goal) => goal.id === goalId) || attempt.progression.hintsRequested.includes(goalId)) return;
       publish({ ...attempt, updatedAt: now(), progression: {
         ...attempt.progression, hintsRequested: [...attempt.progression.hintsRequested, goalId],
       } }, null, false);
     },
     recordReading: (observationId, enteredDeliveredVolumeL) => {
+      flushPending();
       const trial = active();
       if (disposed || trial.status !== 'active') return result(false, 'Readings belong to an active trial; captured evidence cannot be rewritten.');
       const record = trial.observations.find((entry) => entry.id === observationId);
@@ -195,12 +252,13 @@ export function createChallengeController(options: ChallengeControllerOptions): 
         : 'Reading saved as a learner transcription, not a new scientific observation.');
     },
     captureEndpoint: ({ observationId, basis, note = '' }) => {
+      flushPending();
       const trial = active();
       if (disposed || trial.status !== 'active') return result(false, 'This trial is already captured or interrupted. Reset the runtime station for another trial.');
       const current = options.reader.getSnapshot();
       if (!sameScope(snapshotScope(current, options.stationId), trial.scope)) return result(false, 'The runtime scope changed; do not capture a stale reading.');
       const currentTrial: TrialEvidence = {
-        ...trial, frame: evidenceFrame(current), support: options.getSupport(current, options.stationId),
+        ...trial, frame: evidenceFrame(current), support: copyJson(options.getSupport(current, options.stationId)),
         cursorSequence: current.lastSequence, definitions: definitionSnapshot(current),
       };
       const problems = [...captureProblems(currentTrial, definition, observationId)];
@@ -224,6 +282,7 @@ export function createChallengeController(options: ChallengeControllerOptions): 
       return { ok: true };
     },
     recordConclusion: (conclusion, trialId) => {
+      flushPending();
       const trial = annotationTrial(trialId);
       if (disposed || !trial?.endpoint) return result(false, 'A conclusion must cite a captured trial.');
       if (conclusion.text.length > 2000 || conclusion.citedObservationIds.length > 256 ||
@@ -233,18 +292,20 @@ export function createChallengeController(options: ChallengeControllerOptions): 
       return { ok: true };
     },
     setNotes: (notes, trialId) => {
+      flushPending();
       const trial = annotationTrial(trialId);
       if (disposed || !trial || notes.length > 4000) return result(false, 'Notes must belong to a known trial and fit 4,000 characters.');
       updateTrial({ ...trial, notes });
       return { ok: true };
     },
     beginTrial: () => {
+      flushPending();
       if (disposed) return { ok: false, reason: 'Controller is disposed.' };
       return switchScope(options.reader.getSnapshot()) ? { ok: true }
         : result(false, 'Reset the station through the runtime to obtain a fresh epoch. A button press alone cannot manufacture an independent trial.');
     },
-    exportAttempt: () => parseChallengeAttempt(attempt),
-    dispose: () => { if (!disposed) { disposed = true; unsubscribe(); listeners.clear(); } },
+    exportAttempt: () => { flushPending(); return parseChallengeAttempt(attempt); },
+    dispose: () => { if (!disposed) { flushPending(); disposed = true; unsubscribe(); listeners.clear(); pending = null; } },
   };
 }
 

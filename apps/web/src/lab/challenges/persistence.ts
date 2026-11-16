@@ -16,6 +16,33 @@ export class LearningStateError extends Error {
 }
 const fail = (path: string, message: string): never => { throw new LearningStateError(path, message); };
 const at = (path: string, key: string | number) => `${path}/${String(key).replace(/~/g, '~0').replace(/\//g, '~1')}`;
+const schemaDefinitions = learningStateJsonSchema.$defs as Readonly<Record<string, JsonSchema>>;
+
+function resolveSchema(schema: JsonSchema): JsonSchema {
+  let current = schema;
+  const visited = new Set<string>();
+  while (current.$ref && !visited.has(current.$ref)) {
+    visited.add(current.$ref);
+    const next = schemaDefinitions[current.$ref.slice('#/$defs/'.length)];
+    if (!next) break;
+    current = next;
+  }
+  return current;
+}
+
+function plausibleVariant(schema: JsonSchema, value: unknown): boolean {
+  const shape = resolveSchema(schema);
+  if ('const' in shape && value !== shape.const) return false;
+  if (shape.type === 'null') return value === null;
+  if (shape.type === 'array') return Array.isArray(value);
+  if (shape.type === 'object') {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    return Object.entries(shape.properties ?? {}).every(([key, property]) =>
+      !Object.hasOwn(value, key) || !('const' in property) || (value as Record<string, unknown>)[key] === property.const);
+  }
+  if (shape.type === 'integer') return typeof value === 'number' && Number.isInteger(value);
+  return shape.type === undefined || typeof value === shape.type;
+}
 
 function inspect(input: unknown): void {
   const ancestors = new WeakSet<object>();
@@ -58,15 +85,20 @@ function inspect(input: unknown): void {
 function check(schema: JsonSchema, value: unknown, path: string): void {
   if (schema.$ref) {
     const name = schema.$ref.slice('#/$defs/'.length);
-    const target = (learningStateJsonSchema.$defs as Readonly<Record<string, JsonSchema>>)[name];
+    const target = schemaDefinitions[name];
     if (!target) fail(path, `Unknown schema ${name}.`);
     return check(target, value, path);
   }
   const variants = schema.oneOf ?? schema.anyOf;
   if (variants) {
     let matching = 0;
-    for (const variant of variants) {
-      try { check(variant, value, path); matching++; } catch (error) { if (!(error instanceof LearningStateError)) throw error; }
+    const candidates = variants.filter((variant) => plausibleVariant(variant, value));
+    for (const variant of candidates) {
+      try {
+        check(variant, value, path);
+        matching++;
+        if (schema.anyOf) return;
+      } catch (error) { if (!(error instanceof LearningStateError)) throw error; }
     }
     if (schema.oneOf ? matching !== 1 : matching === 0) fail(path, 'Data does not match one supported variant.');
     return;

@@ -1,4 +1,4 @@
-import type { LabAction, LabRuntimeEvent, RuntimeSnapshot } from '@matterlab/contracts';
+import type { LabAction, LabRuntimeEvent, ObservationRecord, RuntimeSnapshot } from '@matterlab/contracts';
 import { describe, expect, it } from 'vitest';
 import { createChallengeController } from './controller.ts';
 import { assessConnection, definitionReader, trialGraphIssues } from './graph.ts';
@@ -7,6 +7,29 @@ import { evaluatePredicate } from './predicates.ts';
 import { createEmptyHarness } from './test-fixtures.ts';
 
 describe('receipt and graph false-positive guards', () => {
+  it('never treats a plausible reference pH or claimed tally as an endpoint without applied delivery evidence', () => {
+    const { controller, reader, ids, makeId, truth } = createEmptyHarness();
+    // Deliberately forged input: a reference target is not an actual runtime observation.
+    const claimedRecord: ObservationRecord = {
+      id: makeId(), runId: reader.snapshot.runId, stationId: ids.stationId, epoch: 0, sequence: 1,
+      observation: {
+        type: 'PH', apparatusId: ids.flaskId, stationId: ids.stationId, timeS: 0,
+        quantity: truth.equivalencePH, evidence: 'MODEL_CALCULATED',
+        methodId: truth.methodId, methodVersion: truth.methodVersion, sourceIds: truth.sourceIds,
+        titration: { sourceInstanceId: ids.buretteId, receiverInstanceId: ids.flaskId, deliveredVolumeL: truth.equivalenceVolume.value },
+      },
+    };
+    const snapshot = { ...reader.snapshot, lastSequence: 1, observations: [claimedRecord], transferTotals: [claimedRecord.observation.titration!] };
+    reader.emit(snapshot, {
+      type: 'OBSERVATIONS', runId: snapshot.runId, stationId: ids.stationId, epoch: 0, sequence: 1, observations: [claimedRecord],
+    });
+    expect(controller.getSnapshot().evaluation.eligibleObservationIds).toEqual([]);
+    expect(controller.getSnapshot().evaluation.score.total).toBe(0);
+    expect(controller.captureEndpoint({ observationId: claimedRecord.id, basis: 'instrument-reading' }).ok).toBe(false);
+    expect(controller.getSnapshot().trial.endpoint).toBeNull();
+    controller.dispose();
+  });
+
   it('does not credit prefilled display state when the corresponding action was rejected', () => {
     const harness = createEmptyHarness();
     const { controller, reader, ids, makeId, aliquot } = harness;
