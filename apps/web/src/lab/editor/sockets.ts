@@ -4,7 +4,7 @@ import type {
   SocketDefinition, SocketEndpoint, Transform,
 } from '@matterlab/contracts/lab';
 import { matrixOf, transformOf } from './geometry';
-import type { SocketCandidate } from './types';
+import type { ConnectionValidator, SocketCandidate } from './types';
 
 export interface ResolvedSocket {
   readonly instance: ApparatusInstance;
@@ -23,9 +23,9 @@ export function resolveSocket(
     worldTransform: transformOf(matrixOf(instance.transform).multiply(matrixOf(socket.localTransform))),
   } : null;
 }
-export function mechanicalDescendants(scene: ExperimentScene, ids: readonly string[]): string[] {
+export function mechanicalDescendants(scene: ExperimentScene, ids: readonly string[], includeDisabled = false): string[] {
   const children = new Map<string, string[]>();
-  for (const edge of scene.connections) if (edge.enabled && edge.kind === 'MECHANICAL') {
+  for (const edge of scene.connections) if ((edge.enabled || includeDisabled) && edge.kind === 'MECHANICAL') {
     const list = children.get(edge.from.instanceId) ?? [];
     list.push(edge.to.instanceId);
     children.set(edge.from.instanceId, list);
@@ -60,7 +60,7 @@ function requirements(own: ResolvedSocket, other: ResolvedSocket): string[] {
 }
 export function validateSocketConnection(
   scene: ExperimentScene, definitions: ApparatusDefinitionReader, connection: Connection,
-  options: { readonly ignoreConnectionId?: string; readonly checkAlignment?: boolean } = {},
+  options: { readonly ignoreConnectionId?: string; readonly checkAlignment?: boolean; readonly validator?: ConnectionValidator } = {},
 ): readonly string[] {
   const from = resolveSocket(scene, definitions, connection.from);
   const to = resolveSocket(scene, definitions, connection.to);
@@ -74,7 +74,7 @@ export function validateSocketConnection(
   reasons.push(...requirements(from, to), ...requirements(to, from));
   const existing = scene.connections.filter((edge) => edge.id !== options.ignoreConnectionId);
   for (const endpoint of [from, to]) {
-    const occupied = existing.filter((edge) => edge.enabled &&
+    const occupied = existing.filter((edge) =>
       [edge.from, edge.to].some((item) => item.instanceId === endpoint.instance.id && item.socketId === endpoint.socket.id)).length;
     if (occupied >= endpoint.socket.maxConnections) reasons.push(`${endpoint.definition.label} / ${endpoint.socket.id} is at connection capacity.`);
   }
@@ -85,23 +85,25 @@ export function validateSocketConnection(
      edge.to.instanceId === connection.from.instanceId && edge.to.socketId === connection.from.socketId)
   ))) reasons.push('These sockets are already connected.');
   if (connection.kind === 'MECHANICAL') {
-    if (existing.some((edge) => edge.enabled && edge.kind === 'MECHANICAL' && edge.to.instanceId === to.instance.id)) {
+    if (existing.some((edge) => edge.kind === 'MECHANICAL' && edge.to.instanceId === to.instance.id)) {
       reasons.push('Detach the existing mechanical parent before reparenting.');
     }
-    if (mechanicalDescendants({ ...scene, connections: existing }, [to.instance.id]).includes(from.instance.id)) {
+    if (mechanicalDescendants({ ...scene, connections: existing }, [to.instance.id], true).includes(from.instance.id)) {
       reasons.push('Mechanical attachment would create a cycle.');
     }
   }
   if (options.checkAlignment !== false) {
     const tolerance = Math.min(from.socket.alignmentToleranceM ?? Infinity, to.socket.alignmentToleranceM ?? Infinity);
     const separation = new Vector3(...from.worldTransform.positionM).distanceTo(new Vector3(...to.worldTransform.positionM));
-    if (separation > tolerance + 1e-7) reasons.push(`Sockets are ${separation.toFixed(3)} m apart; align them within ${tolerance.toFixed(3)} m.`);
+    if (separation > tolerance + 1e-12) reasons.push(`Sockets are ${separation.toFixed(3)} m apart; align them within ${tolerance.toFixed(3)} m.`);
   }
+  const runtimeProblem = options.validator?.(scene, connection, definitions, options.checkAlignment !== false);
+  if (runtimeProblem) reasons.push(runtimeProblem.detail);
   return [...new Set(reasons)];
 }
 export function socketCandidate(
   scene: ExperimentScene, definitions: ApparatusDefinitionReader,
-  source: SocketEndpoint, target: SocketEndpoint, id: string,
+  source: SocketEndpoint, target: SocketEndpoint, id: string, validator?: ConnectionValidator,
 ): SocketCandidate {
   const a = resolveSocket(scene, definitions, source);
   const b = resolveSocket(scene, definitions, target);
@@ -113,7 +115,7 @@ export function socketCandidate(
   const parent = reverse ? b : a;
   const child = reverse ? a : b;
   const distanceM = a && b ? new Vector3(...a.worldTransform.positionM).distanceTo(new Vector3(...b.worldTransform.positionM)) : Infinity;
-  const reasons = validateSocketConnection(scene, definitions, connection, { checkAlignment: false });
+  const reasons = validateSocketConnection(scene, definitions, connection, { checkAlignment: connection.kind !== 'MECHANICAL', validator });
   const snappedTransform = parent && child && connection.kind === 'MECHANICAL'
     ? transformOf(matrixOf(parent.worldTransform).multiply(matrixOf(child.socket.localTransform).invert())) : undefined;
   return { source, target, connection, valid: reasons.length === 0, reasons, distanceM, snappedTransform };

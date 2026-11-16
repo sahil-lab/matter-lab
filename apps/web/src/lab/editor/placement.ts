@@ -7,13 +7,23 @@ import { intersectPlacementSurface, surfaceWorldToLocal } from '../environment/c
 import { boundsCorners, matrixOf, orientedBounds, transformOf, worldBounds } from './geometry';
 import type { ApparatusSpatialIndex } from './geometry';
 import { mechanicallyRelated, validateSocketConnection } from './sockets';
-import type { PlacementCheck } from './types';
+import type { ConnectionValidator, PlacementCheck } from './types';
 
 function eligibleSurface(definition: ApparatusDefinition, instance: ApparatusInstance, surface: PlacementSurface): boolean {
   const floorStanding = definition.kind === 'BENCH' || definition.tags?.includes('floor-standing');
   return surface.instanceId !== instance.id &&
     (surface.stationId === undefined || surface.stationId === instance.stationId) &&
     (floorStanding ? surface.kind === 'floor' : surface.kind === 'tabletop');
+}
+export function isSupportedBySurface(
+  definition: ApparatusDefinition, instance: ApparatusInstance, surface: PlacementSurface,
+): boolean {
+  if (!eligibleSurface(definition, instance, surface)) return false;
+  const local = boundsCorners(definition.boundsM, instance.transform).map((point) => surfaceWorldToLocal(surface, point));
+  const inset = surface.edgeInsetM ?? 0;
+  return Math.abs(Math.min(...local.map((point) => point[1]))) <= 0.002 &&
+    local.every((point) => Math.abs(point[0]) <= surface.sizeM[0] / 2 - inset + 1e-7 &&
+      Math.abs(point[2]) <= surface.sizeM[1] / 2 - inset + 1e-7);
 }
 export function transformOnSurface(
   definition: ApparatusDefinition, surface: PlacementSurface, pointM: Vec3M,
@@ -42,6 +52,7 @@ export function checkPlacement(options: {
   readonly surfaces: readonly PlacementSurface[];
   readonly index?: ApparatusSpatialIndex;
   readonly ignoreIds?: readonly string[];
+  readonly connectionValidator?: ConnectionValidator;
 }): PlacementCheck {
   const { scene, definitions, instance, surfaces, index, ignoreIds = [] } = options;
   const definition = definitions.getDefinition(instance.definitionId);
@@ -51,17 +62,12 @@ export function checkPlacement(options: {
   let surfaceId: string | undefined;
   const parent = scene.connections.find((edge) => edge.enabled && edge.kind === 'MECHANICAL' && edge.to.instanceId === instance.id);
   if (parent) {
-    reasons.push(...validateSocketConnection(scene, definitions, parent, { ignoreConnectionId: parent.id }));
+    reasons.push(...validateSocketConnection(scene, definitions, parent, { ignoreConnectionId: parent.id, validator: options.connectionValidator }));
   } else if (definition.tags?.includes('requires-mount')) {
     reasons.push(`${definition.label} requires a compatible mechanical mount; choose a highlighted socket.`);
   } else {
-    const corners = boundsCorners(definition.boundsM, instance.transform);
     for (const surface of surfaces.filter((item) => eligibleSurface(definition, instance, item))) {
-      const local = corners.map((point) => surfaceWorldToLocal(surface, point));
-      if (Math.abs(Math.min(...local.map((point) => point[1]))) > 0.002) continue;
-      const inset = surface.edgeInsetM ?? 0;
-      if (!local.every((point) => Math.abs(point[0]) <= surface.sizeM[0] / 2 - inset + 1e-7 &&
-          Math.abs(point[2]) <= surface.sizeM[1] / 2 - inset + 1e-7)) continue;
+      if (!isSupportedBySurface(definition, instance, surface)) continue;
       surfaceId = surface.id;
       if (surface.instanceId) {
         const support = scene.apparatus.find((item) => item.id === surface.instanceId);

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { useFrame, useThree } from '@react-three/fiber';
 import {
   BufferGeometry, Float32BufferAttribute, Group, Line, LineBasicMaterial, Matrix4, Mesh,
@@ -12,9 +11,8 @@ import { matrixOf, sameTransform } from './geometry';
 import { useLabEditorState, useLabRuntimeSelector } from './hooks';
 import type { LabEditorController } from './LabEditorController';
 import { installEditorPointerControls } from './pointerControls';
-import type { ApparatusPick } from './pointerControls';
+import { createApparatusPicker } from './picking';
 import { resolveSocket, socketCandidate } from './sockets';
-import { LabEditorContextMenu } from './LabEditorControls';
 import type { EditorAxis, EditorPreview } from './types';
 
 export interface LabEditorSceneProps {
@@ -99,34 +97,16 @@ export function LabEditorScene({ editor, renderApparatus, stationId }: LabEditor
   useEffect(() => editor.subscribePreview(invalidate), [editor, invalidate]);
   useEffect(() => {
     const raycaster = new Raycaster();
-    const pick = (ray: Parameters<typeof editor.spatialIndex.raycast>[0], excludedId?: string): ApparatusPick | null => {
-      raycaster.ray.set(new Vector3(...ray.originM), new Vector3(...ray.direction).normalize());
-      const candidates = editor.spatialIndex.raycast(ray).flatMap(({ id }) => {
-        const object = objects.current.get(id);
-        if (!object || id === excludedId) return [];
-        object.updateWorldMatrix(true, true);
-        return [object];
-      });
-      const hits = raycaster.intersectObjects(candidates, true);
-      for (const hit of hits) {
-        let object: Object3D | null = hit.object;
-        let controlId: string | undefined;
-        while (object) {
-          if (typeof object.userData.labControlId === 'string') controlId = object.userData.labControlId;
-          if (typeof object.userData.labEditorInstanceId === 'string') {
-            return { instanceId: object.userData.labEditorInstanceId, ...(controlId ? { controlId } : {}) };
-          }
-          object = object.parent;
-        }
-      }
-      return null;
-    };
+    const pick = createApparatusPicker(editor.spatialIndex, () => objects.current);
     const pickSocket = (clientX: number, clientY: number): SocketEndpoint | null => {
       const scene = editor.getRuntimeSnapshot().scene;
+      const source = editor.getSnapshot().connectionSource;
+      const sourceKind = source ? resolveSocket(scene, editor.definitions, source)?.socket.kind : undefined;
       let nearest: { endpoint: SocketEndpoint; distance: number } | null = null;
       for (const instance of scene.apparatus) {
         if (instance.stationId !== editor.getSnapshot().activeStationId || !objects.current.has(instance.id)) continue;
         for (const socket of editor.definitions.getDefinition(instance.definitionId)?.sockets ?? []) {
+          if (sourceKind && socket.kind !== sourceKind) continue;
           const endpoint = { instanceId: instance.id, socketId: socket.id };
           const resolved = resolveSocket(scene, editor.definitions, endpoint)!;
           const point = editor.camera.projectPoint(resolved.worldTransform.positionM);
@@ -228,7 +208,7 @@ export function LabEditorScene({ editor, renderApparatus, stationId }: LabEditor
           const endpoint = { instanceId: instance.id, socketId: socket.id };
           const resolved = resolveSocket(scene, editor.definitions, endpoint)!;
           const candidate = state.connectionSource ? socketCandidate(scene, editor.definitions, state.connectionSource, endpoint,
-            '00000000-0000-4000-8000-000000000000') : null;
+            '00000000-0000-4000-8000-000000000000', editor.connectionValidator) : null;
           return (
             <mesh key={`${instance.id}:${socket.id}`} position={[...resolved.worldTransform.positionM]}
               raycast={noRaycast} renderOrder={95}>
@@ -243,7 +223,6 @@ export function LabEditorScene({ editor, renderApparatus, stationId }: LabEditor
         <meshBasicMaterial color="#8ee6bd" wireframe transparent opacity={0.75} depthWrite={false} depthTest={false} />
       </mesh>
       <primitive object={line} />
-      {canvas.parentElement && createPortal(<LabEditorContextMenu editor={editor} />, canvas.parentElement)}
     </>
   );
 }

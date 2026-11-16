@@ -1,6 +1,6 @@
 import type {
   ActionReceipt, ApparatusDefinitionReader, ApparatusInstance, Connection, ExperimentScene,
-  LabAction, LabActionOf, LabActionType, LabRuntimeAdapter, SocketEndpoint, Transform, UUID, Vec3M,
+  LabAction, LabActionOf, LabActionType, LabRuntimeAdapter, ProblemDetails, SocketEndpoint, Transform, UUID, Vec3M,
 } from '@matterlab/contracts/lab';
 import type { LabCameraController } from '../environment/CameraController';
 import type { PlacementSurface } from '../environment/types';
@@ -66,12 +66,21 @@ export interface EditorPreview {
   readonly valveOpeningFraction?: number;
   readonly transfer?: LabActionOf<'TRANSFER'>['payload'];
 }
+export type ConnectionValidator = (
+  scene: ExperimentScene, connection: Connection, definitions: ApparatusDefinitionReader, checkAlignment?: boolean,
+) => ProblemDetails | null;
+export type EditorCommandRelease = () => void | Promise<void>;
+export type BeforeEditorCommand = () => void | EditorCommandRelease | Promise<void | EditorCommandRelease>;
 export interface EditorOptions {
   readonly runtime: LabRuntimeAdapter;
   readonly definitions: ApparatusDefinitionReader;
   readonly camera: LabCameraController;
   readonly surfaces: readonly PlacementSurface[];
   readonly dispatchBatch?: (actions: readonly LabAction[]) => Promise<readonly ActionReceipt[]>;
+  /** Agent07's pure validator makes previews match its functional capability/model rules. */
+  readonly validateConnection?: ConnectionValidator;
+  /** Drain/hold the simulation clock before action IDs/timestamps/revisions are created. */
+  readonly beforeCommand?: BeforeEditorCommand;
   /** A new-run proposal, never a mutation of the active run or its inventory. */
   readonly onDuplicateStation?: (scene: ExperimentScene) => Promise<void> | void;
   /** The runtime owner restores/replays its ledger; the editor never rewinds inventory. */

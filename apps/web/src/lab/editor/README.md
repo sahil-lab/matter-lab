@@ -17,6 +17,7 @@ const editor = useLabEditor({
   camera,
   surfaces: [floorSurface, ...benchSurfaces],
   dispatchBatch: actions => runtime.dispatchBatch(actions),
+  validateConnection,            // Agent07's pure graph validator
   onDuplicateStation: proposedScene => openNewRuntime(proposedScene),
   onReplay: stationId => replayRecordedStation(stationId),
 });

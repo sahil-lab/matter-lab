@@ -10,7 +10,7 @@ import { EditorPointerCapture } from './capture';
 import { ApparatusSpatialIndex, IDENTITY_TRANSFORM, matrixOf, sameTransform, transformOf, worldBounds } from './geometry';
 import { PreparationHistory } from './history';
 import type { EditorMetadata, PreparationCommand } from './history';
-import { checkPlacement, placementFromRay, transformOnSurface, transformSubtree } from './placement';
+import { checkPlacement, isSupportedBySurface, placementFromRay, transformOnSurface, transformSubtree } from './placement';
 import { deserializeEditorState, parseEditorState } from './serialization';
 import { mechanicalDescendants, resolveSocket, socketCandidate, validateSocketConnection } from './sockets';
 import type {
@@ -52,8 +52,10 @@ export class LabEditorController {
   private readonly pendingActions = new Set<string>();
   private unsubscribe: (() => void) | null = null;
   private gesture: TransformGesture | null = null;
-  private clipboard: { instances: readonly ApparatusInstance[]; connections: readonly Connection[] } | null = null;
+  private clipboard: { instances: readonly ApparatusInstance[]; connections: readonly Connection[]; anchorM?: Vec3M } | null = null;
   private disposed = false;
+  private lifecycleRevision = 0;
+  private boundaryWarning: string | null = null;
   private editorRevision = 0;
   private savedEditorRevision = 0;
   private savedRuntimeRevision: number;
@@ -80,6 +82,7 @@ export class LabEditorController {
   get definitions() { return this.options.definitions; }
   get runtime() { return this.options.runtime; }
   get camera() { return this.options.camera; }
+  get connectionValidator() { return this.options.validateConnection; }
   get supportsAtomicEdits(): boolean { return !!this.options.dispatchBatch; }
   get supportsStationDuplication(): boolean { return !!this.options.onDuplicateStation; }
   get supportsReplay(): boolean { return !!this.options.onReplay; }
@@ -113,6 +116,7 @@ export class LabEditorController {
     this.unsubscribe = this.runtime.reader.subscribe((next, event) => this.onRuntime(next, event));
   }
   disconnectRuntime(): void {
+    this.lifecycleRevision++;
     this.cancel();
     this.unsubscribe?.();
     this.unsubscribe = null;
@@ -139,6 +143,10 @@ export class LabEditorController {
   }
   announce(message: string): void { this.feedback('info', message); }
   private fail(message: string, code?: string): false { this.feedback('invalid', message, code); return false; }
+  private completed(message: string): void {
+    if (this.boundaryWarning) this.feedback('warning', this.boundaryWarning);
+    else this.feedback('info', message);
+  }
   invalidatePreview(message: string): false {
     if (this.preview) this.showPreview({ ...this.preview, valid: false, reasons: [message] });
     return this.fail(message);
@@ -276,7 +284,11 @@ export class LabEditorController {
     let ids = [...this.state.selectedIds];
     if (includeDependents) {
       for (const instance of scene.apparatus) if (ids.includes(instance.id) && instance.kind === 'BENCH') {
-        ids.push(...scene.apparatus.filter((item) => item.stationId === instance.stationId).map((item) => item.id));
+        const surface = createWorkbenchSurface({ id: instance.id, stationId: instance.stationId, transform: instance.transform });
+        ids.push(...scene.apparatus.filter((item) => {
+          const definition = this.definitions.getDefinition(item.definitionId);
+          return definition && isSupportedBySurface(definition, item, surface);
+        }).map((item) => item.id));
       }
       ids = mechanicalDescendants(scene, ids);
     }
@@ -329,7 +341,8 @@ export class LabEditorController {
         ...originalScene, apparatus: [...originalScene.apparatus, instance],
         connections: candidate ? [...originalScene.connections, candidate.connection] : originalScene.connections,
       };
-      const check = checkPlacement({ scene, definitions: this.definitions, instance, surfaces: this.getSurfaces(scene), index: this.spatialIndex });
+      const check = checkPlacement({ scene, definitions: this.definitions, instance, surfaces: this.getSurfaces(scene),
+        index: this.spatialIndex, connectionValidator: this.connectionValidator });
       const reasons = [...(candidate?.reasons ?? []), ...check.reasons];
       this.showPreview({ kind: 'placement', instances: [instance], valid: reasons.length === 0,
         reasons, warnings: check.warnings, ...(candidate ? { socketCandidate: candidate } : {}) });
@@ -352,7 +365,7 @@ export class LabEditorController {
     const scene = { ...this.getRuntimeSnapshot().scene, apparatus: [...this.getRuntimeSnapshot().scene.apparatus, draft] };
     const candidates = definition.sockets.filter((socket) => socket.kind === 'MECHANICAL' && socket.direction !== 'OUT' &&
       (!sourceSocketId || sourceSocketId === socket.id)).map((socket) => socketCandidate(
-        scene, this.definitions, { instanceId: draft.id, socketId: socket.id }, target, this.id(),
+        scene, this.definitions, { instanceId: draft.id, socketId: socket.id }, target, this.id(), this.connectionValidator,
       ));
     const candidate = candidates.find((item) => item.valid) ?? candidates[0];
     if (!candidate?.snappedTransform) return this.invalidatePreview('This apparatus has no matching mechanical mounting socket.');
@@ -374,9 +387,16 @@ export class LabEditorController {
           return { endpoint, distance: worldRay.distanceSqToPoint(point) };
         }) ?? [])
       .filter((item) => item.distance < 0.07 ** 2).sort((a, b) => a.distance - b.distance);
-    if (possible[0] && definition.sockets.some((socket) => socket.kind === 'MECHANICAL' && socket.direction === 'IN')) {
-      this.previewPlacementOnSocket(possible[0].endpoint);
-      return;
+    if (definition.sockets.some((socket) => socket.kind === 'MECHANICAL' && socket.direction === 'IN')) {
+      const scene = { ...this.getRuntimeSnapshot().scene, apparatus: [...this.getRuntimeSnapshot().scene.apparatus, instance] };
+      const compatible = possible.find((target) => definition.sockets.some((socket) =>
+        socket.kind === 'MECHANICAL' && socket.direction === 'IN' && socketCandidate(
+          scene, this.definitions, { instanceId: instance.id, socketId: socket.id }, target.endpoint, this.id(), this.connectionValidator,
+        ).valid));
+      if (compatible || definition.tags?.includes('requires-mount') && possible[0]) {
+        this.previewPlacementOnSocket((compatible ?? possible[0]).endpoint);
+        return;
+      }
     }
     const placement = placementFromRay(definition, instance, ray, this.getSurfaces(), precision ? 0.001 : this.state.snapM);
     if (placement) this.previewPlacement(placement.transform);
@@ -412,6 +432,24 @@ export class LabEditorController {
       });
     });
   }
+  private async atCommandBoundary<T>(operation: () => Promise<T>): Promise<T> {
+    const lifecycleRevision = this.lifecycleRevision;
+    this.boundaryWarning = null;
+    const release = await this.options.beforeCommand?.();
+    try {
+      if (this.disposed || lifecycleRevision !== this.lifecycleRevision) {
+        throw new Error('The editor was closed before the command could be dispatched.');
+      }
+      return await operation();
+    } finally {
+      if (release) {
+        try { await release(); }
+        catch (error) {
+          this.boundaryWarning = `The command result was retained, but resuming scheduling failed: ${messageOf(error)} No action was retried.`;
+        }
+      }
+    }
+  }
   private async dispatchIntents(intents: readonly EditIntent[], optimistic = true): Promise<boolean> {
     if (this.disposed || this.state.busy) return false;
     if (!intents.length) return true;
@@ -420,17 +458,19 @@ export class LabEditorController {
     this.publish({ busy: true, canUndo: false, canRedo: false });
     let actions: readonly LabAction[] = [];
     try {
-      actions = this.freshActions(intents, optimistic);
-      actions.forEach((action) => this.pendingActions.add(action.actionId));
-      const receipts = actions.length === 1
-        ? [await this.runtime.actions.dispatch(actions[0])]
-        : await this.options.dispatchBatch!(actions);
-      if (receipts.length !== actions.length || receipts.some((receipt, index) => receipt.actionId !== actions[index].actionId)) {
-        return this.fail('The runtime returned an invalid atomic action receipt.');
-      }
-      const rejection = receipts.find((receipt) => receipt.status === 'REJECTED');
-      if (rejection?.status === 'REJECTED') return this.fail(rejection.error.detail, rejection.error.code);
-      return true;
+      return await this.atCommandBoundary(async () => {
+        actions = this.freshActions(intents, optimistic);
+        actions.forEach((action) => this.pendingActions.add(action.actionId));
+        const receipts = actions.length === 1
+          ? [await this.runtime.actions.dispatch(actions[0])]
+          : await this.options.dispatchBatch!(actions);
+        if (receipts.length !== actions.length || receipts.some((receipt, index) => receipt.actionId !== actions[index].actionId)) {
+          return this.fail('The runtime returned an invalid atomic action receipt.');
+        }
+        const rejection = receipts.find((receipt) => receipt.status === 'REJECTED');
+        if (rejection?.status === 'REJECTED') return this.fail(rejection.error.detail, rejection.error.code);
+        return true;
+      });
     } catch (error) { return this.fail(messageOf(error)); }
     finally {
       actions.forEach((action) => this.pendingActions.delete(action.actionId));
@@ -451,15 +491,17 @@ export class LabEditorController {
     }
     if (!Object.keys(epochs).length) epochs[this.state.activeStationId] = snapshot.stationStates[this.state.activeStationId]?.epoch ?? 0;
     if (!await this.dispatchIntents(forward)) return false;
+    for (const id of Object.keys(epochs)) epochs[id] = this.getRuntimeSnapshot().stationStates[id]?.epoch ?? epochs[id];
     this.publish(after, true);
     const command: PreparationCommand = { label, forward, inverse, before, after, epochs };
     if (this.commandUsable(command)) this.history.record(command);
     this.refreshHistory();
-    this.feedback('info', `${label}. ${!forward.length ? 'Editor-only metadata updated.'
+    this.completed(`${label}. ${!forward.length ? 'Editor-only metadata updated.'
       : this.commandUsable(command) ? 'Preparation edit recorded.' : 'Recorded in the experiment ledger; use reset/replay instead of undo.'}`);
     return true;
   }
   async commitPreview(): Promise<boolean> {
+    this.finishCapture();
     const preview = this.preview;
     if (!preview) return false;
     if (!preview.valid) return this.fail(preview.reasons[0] ?? 'Invalid placement.');
@@ -485,11 +527,15 @@ export class LabEditorController {
     if (preview.kind === 'placement') {
       const instance = preview.instances[0];
       const edge = preview.socketCandidate?.connection;
+      if (edge && [edge.from.instanceId, edge.to.instanceId].some((id) => this.state.lockedIds.includes(id))) {
+        return this.invalidatePreview('Unlock the apparatus mount before attaching to it.');
+      }
       accepted = await this.edit('Placed apparatus',
         [placeIntent(instance), ...(edge ? [attachIntent(edge)] : [])],
         [...(edge ? [detachIntent(edge)] : []), removeIntent(instance.id)],
         { ...this.metadata(), selectedIds: [instance.id] });
     } else {
+      if (!this.editable(preview.instances)) { this.showPreview(null); return false; }
       const original = preview.instances.map((instance) => this.getRuntimeSnapshot().scene.apparatus.find((item) => item.id === instance.id)!);
       if (original.some((instance) => !instance)) return this.fail('Apparatus changed during the gesture. Try again.');
       const changed = preview.instances.filter((instance, index) => !sameTransform(instance.transform, original[index].transform));
@@ -533,12 +579,12 @@ export class LabEditorController {
       if (components.some((value, axis) => Math.abs(value) > 1e-8 && !definition.permittedTransforms.rotation.includes(AXES[axis]))) {
         reasons.push(`${definition.label} does not permit rotation on that axis.`);
       }
-      const check = checkPlacement({ scene, definitions: this.definitions, instance, surfaces: this.getSurfaces(scene) });
+      const check = checkPlacement({ scene, definitions: this.definitions, instance, surfaces: this.getSurfaces(scene), connectionValidator: this.connectionValidator });
       reasons.push(...check.reasons);
       warnings.push(...check.warnings);
     }
     for (const edge of scene.connections) if (edge.enabled && (replacements.has(edge.from.instanceId) || replacements.has(edge.to.instanceId))) {
-      reasons.push(...validateSocketConnection(scene, this.definitions, edge, { ignoreConnectionId: edge.id }));
+      reasons.push(...validateSocketConnection(scene, this.definitions, edge, { ignoreConnectionId: edge.id, validator: this.connectionValidator }));
     }
     this.showPreview({ kind: 'transform', instances, valid: reasons.length === 0, reasons: [...new Set(reasons)], warnings: [...new Set(warnings)] });
     return reasons.length === 0;
@@ -621,7 +667,7 @@ export class LabEditorController {
     if (!source) return [];
     const scene = this.getRuntimeSnapshot().scene;
     return scene.apparatus.flatMap((instance) => this.definitions.getDefinition(instance.definitionId)?.sockets.map((socket) =>
-      socketCandidate(scene, this.definitions, source, { instanceId: instance.id, socketId: socket.id }, this.id())) ?? []);
+      socketCandidate(scene, this.definitions, source, { instanceId: instance.id, socketId: socket.id }, this.id(), this.connectionValidator)) ?? []);
   }
   previewConnection(target: SocketEndpoint | null): void {
     if (!this.state.connectionSource) return;
@@ -630,15 +676,15 @@ export class LabEditorController {
       this.announce('Choose a compatible target socket.');
       return;
     }
-    const candidate = socketCandidate(this.getRuntimeSnapshot().scene, this.definitions, this.state.connectionSource, target, this.id());
+    const candidate = socketCandidate(this.getRuntimeSnapshot().scene, this.definitions, this.state.connectionSource, target, this.id(), this.connectionValidator);
     const reasons = candidate.connection.kind === 'MECHANICAL' ? candidate.reasons
-      : validateSocketConnection(this.getRuntimeSnapshot().scene, this.definitions, candidate.connection);
+      : validateSocketConnection(this.getRuntimeSnapshot().scene, this.definitions, candidate.connection, { validator: this.connectionValidator });
     this.showPreview({ kind: 'connection', instances: [], socketCandidate: candidate,
       valid: reasons.length === 0, reasons, warnings: [] });
   }
   async connect(source: SocketEndpoint, target: SocketEndpoint): Promise<boolean> {
     const scene = this.getRuntimeSnapshot().scene;
-    const candidate = socketCandidate(scene, this.definitions, source, target, this.id());
+    const candidate = socketCandidate(scene, this.definitions, source, target, this.id(), this.connectionValidator);
     if (!candidate.valid) return this.fail(candidate.reasons[0]);
     const involved = scene.apparatus.filter((instance) => [candidate.connection.from.instanceId, candidate.connection.to.instanceId].includes(instance.id));
     if (!this.editable(involved)) return false;
@@ -655,13 +701,13 @@ export class LabEditorController {
         connections: [...scene.connections, candidate.connection],
       };
       for (const instance of transformed) {
-        const check = checkPlacement({ scene: next, definitions: this.definitions, instance, surfaces: this.getSurfaces(next) });
+        const check = checkPlacement({ scene: next, definitions: this.definitions, instance, surfaces: this.getSurfaces(next), connectionValidator: this.connectionValidator });
         if (!check.valid) return this.fail(check.reasons[0]);
       }
       forward.push(...transformed.filter((item, index) => !sameTransform(item.transform, originals[index].transform)).map(moveIntent));
       inverse.push(...originals.map(moveIntent));
     } else {
-      const reasons = validateSocketConnection(scene, this.definitions, candidate.connection);
+      const reasons = validateSocketConnection(scene, this.definitions, candidate.connection, { validator: this.connectionValidator });
       if (reasons.length) return this.fail(reasons[0]);
     }
     forward.push(attachIntent(candidate.connection));
@@ -690,7 +736,7 @@ export class LabEditorController {
       const proposed = { ...scene, connections: scene.connections.filter((item) => item.id !== edge.id),
         apparatus: scene.apparatus.map((instance) => transformed.find((item) => item.id === instance.id) ?? instance) };
       for (const instance of transformed) {
-        const check = checkPlacement({ scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed) });
+        const check = checkPlacement({ scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed), connectionValidator: this.connectionValidator });
         if (!check.valid) return this.fail(check.reasons[0]);
       }
       forward.push(...transformed.map(moveIntent));
@@ -706,7 +752,7 @@ export class LabEditorController {
     const old = scene.connections.find((edge) => edge.id === connectionId && edge.kind === 'MECHANICAL');
     if (!old) return this.fail('Select an existing mechanical attachment to reparent.');
     const without = { ...scene, connections: scene.connections.filter((edge) => edge.id !== connectionId) };
-    const candidate = socketCandidate(without, this.definitions, old.to, target, this.id());
+    const candidate = socketCandidate(without, this.definitions, old.to, target, this.id(), this.connectionValidator);
     if (!candidate.valid || !candidate.snappedTransform) return this.fail(candidate.reasons[0] ?? 'Choose a compatible mechanical parent.');
     const child = scene.apparatus.find((instance) => instance.id === old.to.instanceId)!;
     const ids = mechanicalDescendants(scene, [child.id]);
@@ -716,7 +762,7 @@ export class LabEditorController {
     const proposed = { ...without, connections: [...without.connections, candidate.connection],
       apparatus: scene.apparatus.map((instance) => transformed.find((item) => item.id === instance.id) ?? instance) };
     for (const instance of transformed) {
-      const check = checkPlacement({ scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed) });
+      const check = checkPlacement({ scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed), connectionValidator: this.connectionValidator });
       if (!check.valid) return this.fail(check.reasons[0]);
     }
     return this.edit('Reparented apparatus',
@@ -753,7 +799,7 @@ export class LabEditorController {
     const definition = this.definitions.getDefinition(instance.definitionId);
     if (!definition?.controls.some((control) => control.actionType === intent.type)) return this.fail('This operation is not declared by the apparatus definition.');
     const accepted = await this.dispatchIntents([intent], false);
-    if (accepted) this.feedback('info', `${intent.type} accepted by the authoritative runtime.`);
+    if (accepted) this.completed(`${intent.type} accepted by the authoritative runtime.`);
     return accepted;
   }
   setValve(instanceId: string, openingFraction: number): Promise<boolean> {
@@ -774,15 +820,23 @@ export class LabEditorController {
       payload: { sourceInstanceId, targetInstanceId, volumeL, connectionId } });
   }
   async controlStation(type: 'PAUSE' | 'RESUME' | 'SET_SPEED', speed = 1): Promise<boolean> {
-    const state = this.getRuntimeSnapshot().stationStates[this.state.activeStationId];
-    if (!state || this.state.busy) return false;
+    const stationId = this.state.activeStationId;
+    if (!this.getRuntimeSnapshot().stationStates[stationId] || this.state.busy || this.disposed) return false;
     this.cancel();
+    this.publish({ busy: true, canUndo: false, canRedo: false });
     try {
-      const base = { controlId: this.id(), stationId: state.stationId, atSimulationS: state.simulationTimeS, expectedEpoch: state.epoch };
-      const receipt = await this.runtime.actions.control(type === 'SET_SPEED'
-        ? { ...base, type, payload: { speed } } : { ...base, type, payload: {} });
-      return receipt.status === 'APPLIED' || this.fail(receipt.error.detail, receipt.error.code);
+      const accepted = await this.atCommandBoundary(async () => {
+        const state = this.getRuntimeSnapshot().stationStates[stationId];
+        if (!state) throw new Error('The target station no longer exists.');
+        const base = { controlId: this.id(), stationId, atSimulationS: state.simulationTimeS, expectedEpoch: state.epoch };
+        const receipt = await this.runtime.actions.control(type === 'SET_SPEED'
+          ? { ...base, type, payload: { speed } } : { ...base, type, payload: {} });
+        return receipt.status === 'APPLIED' || this.fail(receipt.error.detail, receipt.error.code);
+      });
+      if (accepted) this.completed(`${type} accepted by the authoritative runtime.`);
+      return accepted;
     } catch (error) { return this.fail(messageOf(error)); }
+    finally { this.publish({ busy: false }); this.refreshHistory(); }
   }
   async resetStation(): Promise<boolean> {
     const instance = this.getRuntimeSnapshot().scene.apparatus.find((item) => item.stationId === this.state.activeStationId);
@@ -792,15 +846,24 @@ export class LabEditorController {
     if (accepted) {
       this.history.clear();
       this.refreshHistory();
-      this.feedback('info', 'Runtime reset requested a new station epoch. Preparation undo never reverses conserved inventories.');
+      this.completed('Runtime reset requested a new station epoch. Preparation undo never reverses conserved inventories.');
     }
     return accepted;
   }
   async replayStation(): Promise<boolean> {
     if (!this.options.onReplay) return this.fail('Replay requires the runtime owner’s checkpoint/ledger adapter.');
+    if (this.state.busy || this.disposed) return false;
+    const stationId = this.state.activeStationId;
+    const replay = this.options.onReplay;
     this.cancel();
-    try { await this.options.onReplay(this.state.activeStationId); return true; }
+    this.publish({ busy: true, canUndo: false, canRedo: false });
+    try {
+      await this.atCommandBoundary(async () => { await replay(stationId); });
+      this.completed('The runtime owner replayed the recorded experiment.');
+      return true;
+    }
     catch (error) { return this.fail(messageOf(error)); }
+    finally { this.publish({ busy: false }); this.refreshHistory(); }
   }
   async undo(): Promise<boolean> {
     const command = this.history.undoCommand;
@@ -810,7 +873,7 @@ export class LabEditorController {
     this.publish(command.before, true);
     this.history.didUndo();
     this.refreshHistory();
-    this.feedback('info', `Undid ${command.label.toLowerCase()} with new inverse actions.`);
+    this.completed(`Undid ${command.label.toLowerCase()} with new inverse actions.`);
     return true;
   }
   async redo(): Promise<boolean> {
@@ -821,7 +884,7 @@ export class LabEditorController {
     this.publish(command.after, true);
     this.history.didRedo();
     this.refreshHistory();
-    this.feedback('info', `Redid ${command.label.toLowerCase()} with new action IDs.`);
+    this.completed(`Redid ${command.label.toLowerCase()} with new action IDs.`);
     return true;
   }
   async deleteSelection(): Promise<boolean> {
@@ -875,9 +938,17 @@ export class LabEditorController {
     const instances = this.selectedInstances(true);
     if (!instances.length) return this.fail('Select apparatus to copy.');
     const ids = new Set(instances.map((instance) => instance.id));
+    const scene = this.getRuntimeSnapshot().scene;
+    const bench = instances.find((instance) => instance.kind === 'BENCH') ??
+      scene.apparatus.find((instance) => instance.kind === 'BENCH' && instances.some((item) => {
+        const definition = this.definitions.getDefinition(item.definitionId);
+        return definition && isSupportedBySurface(definition, item,
+          createWorkbenchSurface({ id: instance.id, stationId: instance.stationId, transform: instance.transform }));
+      }));
     this.clipboard = {
       instances: instances.map((instance) => parseLabContract('ApparatusInstance', instance)),
-      connections: this.getRuntimeSnapshot().scene.connections.filter((edge) => ids.has(edge.from.instanceId) && ids.has(edge.to.instanceId)),
+      connections: scene.connections.filter((edge) => ids.has(edge.from.instanceId) && ids.has(edge.to.instanceId)),
+      ...(bench ? { anchorM: bench.transform.positionM } : {}),
     };
     this.feedback('info', 'Copied apparatus geometry and internal connections only. Inventories and observations are never copied.');
     return true;
@@ -900,15 +971,17 @@ export class LabEditorController {
     if (this.state.busy) return false;
     const scene = this.getRuntimeSnapshot().scene;
     if (scene.apparatus.length + this.clipboard.instances.length > LAB_LIMITS.maxApparatus) return this.fail('The scene apparatus limit would be exceeded.');
-    const sourceStation = this.clipboard.instances[0].stationId;
-    const sourceBench = scene.apparatus.find((instance) => instance.stationId === sourceStation && instance.kind === 'BENCH');
-    const targetBench = scene.apparatus.find((instance) => instance.stationId === this.state.activeStationId && instance.kind === 'BENCH');
-    const stationOffset = sourceBench && targetBench
-      ? new Vector3(...targetBench.transform.positionM).sub(new Vector3(...sourceBench.transform.positionM)) : new Vector3();
+    const benches = scene.apparatus.filter((instance) => instance.stationId === this.state.activeStationId && instance.kind === 'BENCH');
+    const targetBench = benches.find((instance) => this.state.selectedIds.includes(instance.id)) ?? benches[0];
+    const stationOffset = this.clipboard.anchorM && targetBench
+      ? new Vector3(...targetBench.transform.positionM).sub(new Vector3(...this.clipboard.anchorM)) : new Vector3();
+    const boxes = this.clipboard.instances.map((instance) => worldBounds(this.definitions.getDefinition(instance.definitionId)!, instance.transform));
+    const width = Math.max(0.15, Math.max(...boxes.map((box) => box.maxM[0])) - Math.min(...boxes.map((box) => box.minM[0])) + 0.05);
+    const depth = Math.max(0.15, Math.max(...boxes.map((box) => box.maxM[2])) - Math.min(...boxes.map((box) => box.minM[2])) + 0.05);
     const offsets: Vec3M[] = offsetM ? [offsetM] : [];
     if (!offsetM) for (let ring = 1; ring <= 5; ring++) {
       for (const [x, z] of [[ring, 0], [-ring, 0], [0, ring], [0, -ring], [ring, ring], [-ring, -ring], [-ring, ring], [ring, -ring]]) {
-        offsets.push(stationOffset.clone().add(new Vector3(x * 0.15, 0, z * 0.15)).toArray());
+        offsets.push(stationOffset.clone().add(new Vector3(x * width, 0, z * depth)).toArray());
       }
     }
     let lastReason = 'There is no supported free space for this copied assembly.';
@@ -918,7 +991,7 @@ export class LabEditorController {
         ...scene, apparatus: [...scene.apparatus, ...cloned.instances], connections: [...scene.connections, ...cloned.connections],
       };
       const checks = cloned.instances.map((instance) => checkPlacement({
-        scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed),
+        scene: proposed, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposed), connectionValidator: this.connectionValidator,
       }));
       const invalid = checks.find((check) => !check.valid);
       if (invalid) { lastReason = invalid.reasons[0]; continue; }
@@ -934,27 +1007,55 @@ export class LabEditorController {
   }
   async duplicateStation(): Promise<boolean> {
     if (!this.options.onDuplicateStation) return this.fail('Station duplication requires the runtime owner’s new-run adapter.');
+    if (this.state.busy || this.disposed) return false;
+    const sourceStationId = this.state.activeStationId;
+    const receive = this.options.onDuplicateStation;
+    this.cancel();
+    this.publish({ busy: true, canUndo: false, canRedo: false });
+    try {
+      const accepted = await this.atCommandBoundary(() => this.proposeStationDuplicate(sourceStationId, receive));
+      if (accepted) this.completed('Proposed an independent, empty station in a new scene/run. The current run was not mutated.');
+      return accepted;
+    } catch (error) { return this.fail(messageOf(error)); }
+    finally { this.publish({ busy: false }); this.refreshHistory(); }
+  }
+  private async proposeStationDuplicate(
+    sourceStationId: string, receive: NonNullable<EditorOptions['onDuplicateStation']>,
+  ): Promise<boolean> {
     const scene = this.getRuntimeSnapshot().scene;
     if (scene.stations.length >= LAB_LIMITS.maxStations) return this.fail('The workstation limit has been reached.');
-    const originals = scene.apparatus.filter((instance) => instance.stationId === this.state.activeStationId);
+    const originals = scene.apparatus.filter((instance) => instance.stationId === sourceStationId);
     if (!originals.length) return this.fail('The workstation has no apparatus to duplicate.');
     const bounds = scene.apparatus.flatMap((instance) => {
       const definition = this.definitions.getDefinition(instance.definitionId);
       return definition ? [worldBounds(definition, instance.transform)] : [];
     });
-    const left = Math.min(...originals.map((instance) => worldBounds(this.definitions.getDefinition(instance.definitionId)!, instance.transform).minM[0]));
-    const offset: Vec3M = [Math.max(...bounds.map((box) => box.maxM[0])) - left + 0.5, 0, 0];
+    const originalBounds = originals.map((instance) => worldBounds(this.definitions.getDefinition(instance.definitionId)!, instance.transform));
+    const left = Math.min(...originalBounds.map((box) => box.minM[0]));
+    const width = Math.max(...originalBounds.map((box) => box.maxM[0])) - left + 0.4;
+    const depth = Math.max(...originalBounds.map((box) => box.maxM[2])) - Math.min(...originalBounds.map((box) => box.minM[2])) + 0.4;
+    const offsets: Vec3M[] = [[Math.max(...bounds.map((box) => box.maxM[0])) - left + 0.5, 0, 0]];
+    for (let ring = 1; ring <= 4; ring++) {
+      for (const [x, z] of [[-ring, 0], [ring, 0], [0, ring], [0, -ring], [ring, ring], [-ring, -ring]]) {
+        offsets.push([x * width, 0, z * depth]);
+      }
+    }
     const stationId = this.id();
-    const cloned = this.clonedAssembly(originals, scene.connections, stationId, offset);
     try {
-      const proposal = parseExperimentScene({
-        ...scene, id: this.id(), revision: 0,
-        stations: [...scene.stations, { id: stationId, name: `${scene.stations.find((station) => station.id === this.state.activeStationId)!.name} copy` }],
-        apparatus: [...scene.apparatus, ...cloned.instances], connections: [...scene.connections, ...cloned.connections],
-      });
-      await this.options.onDuplicateStation(proposal);
-      this.feedback('info', 'Proposed an independent, empty station in a new scene/run. The current run was not mutated.');
-      return true;
+      for (const offset of offsets) {
+        const cloned = this.clonedAssembly(originals, scene.connections, stationId, offset);
+        const proposal = parseExperimentScene({
+          ...scene, id: this.id(), revision: 0,
+          stations: [...scene.stations, { id: stationId, name: `${scene.stations.find((station) => station.id === sourceStationId)!.name} copy` }],
+          apparatus: [...scene.apparatus, ...cloned.instances], connections: [...scene.connections, ...cloned.connections],
+        });
+        if (cloned.instances.some((instance) => !checkPlacement({
+          scene: proposal, definitions: this.definitions, instance, surfaces: this.getSurfaces(proposal), connectionValidator: this.connectionValidator,
+        }).valid)) continue;
+        await receive(proposal);
+        return true;
+      }
+      return this.fail('There is no supported, non-overlapping floor space for another complete station. Choose a larger room or move existing benches.');
     } catch (error) { return this.fail(messageOf(error)); }
   }
   serialize(): EditorSerializedState {

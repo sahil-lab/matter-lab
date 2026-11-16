@@ -95,8 +95,13 @@ export function installEditorPointerControls(
           return;
         } else if (definition?.controls.some((control) => control.actionType === 'TRANSFER')) {
           const field = definition.controls.find((control) => control.actionType === 'TRANSFER')?.fields.volumeL;
+          if (field?.type !== 'number' || field.default === undefined) {
+            editor.announce('Choose an exact metered volume in the inspector; this apparatus has no declared drag-transfer preset.');
+            stop(event);
+            return;
+          }
           next = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, kind: 'transfer', instanceId: id,
-            transferVolumeL: field?.type === 'number' ? field.default ?? 0.00005 : 0.00005, moved: false };
+            transferVolumeL: field.default, moved: false };
         } else {
           editor.announce('Use the selected apparatus’s accessible operation controls. Only declared runtime actions are supported.');
           stop(event);

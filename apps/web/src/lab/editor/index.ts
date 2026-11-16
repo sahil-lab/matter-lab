@@ -10,6 +10,7 @@ export type { EditorPointerOptions, ApparatusPick } from './pointerControls';
 export { handleEditorShortcut, isEditingText, EDITOR_SHORTCUTS } from './shortcuts';
 export { serializeEditorState, deserializeEditorState, parseEditorState, validateEditorState, EDITOR_STATE_JSON_SCHEMA } from './serialization';
 export { ApparatusSpatialIndex, worldBounds } from './geometry';
+export { createApparatusPicker } from './picking';
 export { checkPlacement, placementFromRay, transformOnSurface } from './placement';
 export { resolveSocket, validateSocketConnection, socketCandidate, mechanicalDescendants } from './sockets';
 export type * from './types';

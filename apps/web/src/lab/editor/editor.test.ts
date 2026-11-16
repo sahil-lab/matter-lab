@@ -1,20 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Quaternion, Vector3 } from 'three';
+import { Group, Quaternion, Vector3 } from 'three';
+import type { Object3D } from 'three';
 import {
   parseApparatusDefinition, parseExperimentScene, parseLabAction, parseLabContract,
 } from '@matterlab/contracts/lab';
 import type {
   ActionReceipt, ApparatusInstance, ExperimentScene, LabAction, LabRuntimeAdapter,
-  LabRuntimeEvent, ProblemDetails, RuntimeSnapshot,
+  LabRuntimeEvent, ProblemDetails, RuntimeControl, RuntimeSnapshot,
 } from '@matterlab/contracts/lab';
 import { apparatusRegistry, ApparatusRegistry, APPARATUS_DEFINITIONS } from '../apparatus/registry';
 import { createTitrationSetup } from '../apparatus/seeds';
+import { buildApparatusGeometry } from '../apparatus/geometry';
 import { createLabCameraController } from '../environment/CameraController';
 import { createFloorSurface, createWorkbenchSurface } from '../environment/coordinates';
 import { createLabEditorController } from './LabEditorController';
-import { ApparatusSpatialIndex, matrixOf } from './geometry';
+import { ApparatusSpatialIndex, matrixOf, worldBounds } from './geometry';
+import { createApparatusPicker } from './picking';
 import { checkPlacement } from './placement';
 import { resolveSocket, socketCandidate, validateSocketConnection } from './sockets';
 import { deserializeEditorState, serializeEditorState, parseEditorState, validateEditorState, EDITOR_STATE_JSON_SCHEMA } from './serialization';
@@ -45,6 +48,7 @@ export function recordingRuntime(scene: ExperimentScene) {
   });
   const listeners = new Set<(snapshot: RuntimeSnapshot, event: LabRuntimeEvent) => void>();
   const actions: LabAction[] = [];
+  const controls: RuntimeControl[] = [];
   const batches: (readonly LabAction[])[] = [];
   let nextRejection: ProblemDetails | null = null;
   const emit = (event: LabRuntimeEvent) => listeners.forEach((listener) => listener(snapshot, parseLabContract('LabRuntimeEvent', event)));
@@ -59,7 +63,9 @@ export function recordingRuntime(scene: ExperimentScene) {
     const station = current.stationStates[stationId];
     const sequence = current.lastSequence + 1;
     const rejection = nextRejection ?? (action.expectedRevision !== undefined && action.expectedRevision !== current.revision
-      ? problem('The runtime changed before this edit.') : null);
+      ? problem('The runtime changed before this edit.')
+      : action.atSimulationS !== station.simulationTimeS || action.expectedEpoch !== undefined && action.expectedEpoch !== station.epoch
+        ? problem('The command was stamped before the queued tick drained.') : null);
     nextRejection = null;
     let next = current;
     if (!rejection) {
@@ -105,6 +111,7 @@ export function recordingRuntime(scene: ExperimentScene) {
         return next.receipt;
       },
       control: async (control) => {
+        controls.push(parseLabContract('RuntimeControl', control));
         const state = snapshot.stationStates[control.stationId];
         const sequence = snapshot.lastSequence + 1;
         const receipt = { controlId: control.controlId, sequence, runtimeRevision: snapshot.revision + 1,
@@ -147,9 +154,22 @@ export function recordingRuntime(scene: ExperimentScene) {
         status: 'APPLIED', runtimeRevision: snapshot.revision } });
     return applied.map((item) => item.receipt);
   };
-  return { adapter, dispatchBatch, actions, batches, rejectNext: (detail: string) => { nextRejection = problem(detail); } };
+  const advanceQueuedTick = (stationId: string) => {
+    const station = snapshot.stationStates[stationId];
+    const timeS = (station.tick + 1) * snapshot.scene.simulationConfig.timeStepS;
+    const sequence = snapshot.lastSequence + 1;
+    snapshot = parseLabContract('RuntimeSnapshot', { ...snapshot, revision: snapshot.revision + 1, lastSequence: sequence,
+      stationStates: { ...snapshot.stationStates, [stationId]: {
+        ...station, status: 'RUNNING', tick: station.tick + 1, simulationTimeS: timeS,
+      } } });
+    emit({ type: 'ADVANCE', runId: snapshot.runId, stationId, epoch: station.epoch, sequence,
+      fromSimulationS: station.simulationTimeS, toSimulationS: timeS, ticks: 1 });
+  };
+  return { adapter, dispatchBatch, actions, controls, batches, advanceQueuedTick, rejectNext: (detail: string) => { nextRejection = problem(detail); } };
 }
-export function editorFixture(assembled = false, options: { batch?: boolean; onDuplicateStation?: EditorOptions['onDuplicateStation'] } = {}) {
+export function editorFixture(assembled = false, options: {
+  batch?: boolean; onDuplicateStation?: EditorOptions['onDuplicateStation']; beforeCommand?: EditorOptions['beforeCommand'];
+} = {}) {
   const createId = idFactory();
   const setup = createTitrationSetup('fixture:method', createId);
   const scene = assembled ? setup.scene : parseExperimentScene({
@@ -160,12 +180,14 @@ export function editorFixture(assembled = false, options: { batch?: boolean; onD
       ? parseApparatusDefinition({ ...definition, tags: [...new Set([...(definition.tags ?? []), 'requires-mount'])] }) : definition));
   const runtime = recordingRuntime(scene);
   const camera = createLabCameraController({ reducedMotion: true });
+  const editorIds = vi.fn(createId);
   const editor = createLabEditorController({
-    runtime: runtime.adapter, definitions, camera, surfaces: [createFloorSurface(20, 12)], idFactory: createId,
+    runtime: runtime.adapter, definitions, camera, surfaces: [createFloorSurface(20, 12)], idFactory: editorIds,
     ...(options.batch === false ? {} : { dispatchBatch: runtime.dispatchBatch }),
     ...(options.onDuplicateStation ? { onDuplicateStation: options.onDuplicateStation } : {}),
+    ...(options.beforeCommand ? { beforeCommand: options.beforeCommand } : {}),
   });
-  return { editor, runtime, camera, ids: setup.ids, definitions, scene };
+  return { editor, runtime, camera, ids: setup.ids, definitions, scene, editorIds };
 }
 async function place(editor: ReturnType<typeof editorFixture>['editor'], definitionId: string, x: number, z: number) {
   expect(editor.beginPlacement(definitionId)).toBe(true);
@@ -301,6 +323,16 @@ describe('canonical titration editor action flow (recording adapter, not science
     editor.dispose();
   });
 
+  it('allows free tabletop placement when a nearby surface socket is incompatible with an otherwise stable vessel', () => {
+    const { editor } = editorFixture();
+    editor.beginPlacement('conical-flask-250ml');
+    editor.hoverPlacement({ originM: [0, 3, 0], direction: [0, -1, 0] });
+    expect(editor.getPreview()?.valid).toBe(true);
+    expect(editor.getPreview()?.socketCandidate).toBeUndefined();
+    expect(editor.getPreview()?.instances[0].transform.positionM[1]).toBeCloseTo(0.9);
+    editor.dispose();
+  });
+
   it('never makes inventory-changing fills undoable or deletes a nonempty vessel, and blocks run undo', async () => {
     const { editor, runtime } = editorFixture();
     const flask = await place(editor, 'conical-flask-250ml', 0.4, 0);
@@ -336,6 +368,20 @@ describe('canonical titration editor action flow (recording adapter, not science
     expect(editor.getRuntimeSnapshot().scene.containerStates[duplicate.id]).toBeUndefined();
     expect(await editor.translateSelection([0.1, 0, 0])).toBe(true);
     expect(editor.getRuntimeSnapshot().scene.apparatus.find((instance) => instance.id === ids.bottleId)).toEqual(original);
+    editor.dispose();
+  });
+
+  it('copies a full supported bench assembly and moves the duplicate without moving the source bench in the same station', async () => {
+    const { editor, ids } = editorFixture(true);
+    editor.select([ids.benchId]);
+    expect(await editor.duplicateSelection()).toBe(true);
+    const duplicate = editor.selectedInstances().find((instance) => instance.kind === 'BENCH')!;
+    expect(duplicate.id).not.toBe(ids.benchId);
+    editor.select([duplicate.id]);
+    expect(editor.selectedInstances(true).some((instance) => instance.id === ids.standId)).toBe(false);
+    const original = editor.getRuntimeSnapshot().scene.apparatus.find((instance) => instance.id === ids.benchId)!;
+    expect(await editor.translateSelection([-0.1, 0, 0])).toBe(true);
+    expect(editor.getRuntimeSnapshot().scene.apparatus.find((instance) => instance.id === ids.benchId)).toEqual(original);
     editor.dispose();
   });
 
@@ -399,6 +445,67 @@ describe('canonical titration editor action flow (recording adapter, not science
   });
 
   describe('camera ownership and accessible interaction', () => {
+    it('drains queued ticks before creating action/control IDs and stamps fresh time/epoch without retries', async () => {
+      let finishDrain!: () => void;
+      let advance = () => {};
+      const drain = new Promise<void>((resolve) => { finishDrain = resolve; });
+      const release = vi.fn();
+      const beforeCommand = vi.fn(async () => { await drain; advance(); return release; });
+      const { editor, runtime, ids, editorIds } = editorFixture(true, { beforeCommand });
+      advance = () => runtime.advanceQueuedTick(ids.stationId);
+      const closing = editor.setValve(ids.buretteId, 0);
+      expect(editor.getSnapshot().busy).toBe(true);
+      expect(editorIds).not.toHaveBeenCalled();
+      expect(runtime.actions).toHaveLength(0);
+      finishDrain();
+      expect(await closing, editor.getSnapshot().feedback.message).toBe(true);
+      expect(runtime.actions).toHaveLength(1);
+      expect(runtime.actions[0].atSimulationS).toBeCloseTo(0.1);
+      expect(runtime.actions[0].expectedEpoch).toBe(0);
+      expect(editorIds).toHaveBeenCalledOnce();
+      expect(release).toHaveBeenCalledOnce();
+      expect(await editor.controlStation('PAUSE')).toBe(true);
+      expect(runtime.controls[0].atSimulationS).toBeCloseTo(0.2);
+      expect(runtime.controls[0].expectedEpoch).toBe(0);
+      expect(beforeCommand).toHaveBeenCalledTimes(2);
+      expect(release).toHaveBeenCalledTimes(2);
+      editor.dispose();
+    });
+
+    it('releases the command lease on rejected/malformed commands and preserves an accepted result if restart fails', async () => {
+      const release = vi.fn();
+      const first = editorFixture(true, { beforeCommand: async () => release });
+      first.runtime.rejectNext('Deliberate runtime rejection.');
+      expect(await first.editor.setValve(first.ids.buretteId, 0)).toBe(false);
+      expect(release).toHaveBeenCalledOnce();
+      expect(await first.editor.setValve(first.ids.buretteId, Number.NaN)).toBe(false);
+      expect(release).toHaveBeenCalledTimes(2);
+      expect(first.runtime.actions).toHaveLength(1);
+      first.editor.dispose();
+      const second = editorFixture(true, { beforeCommand: async () => () => { throw new Error('scheduler unavailable'); } });
+      expect(await second.editor.setValve(second.ids.buretteId, 0.4)).toBe(true);
+      expect(second.runtime.actions).toHaveLength(1);
+      expect(second.editor.getRuntimeSnapshot().apparatusStates[second.ids.buretteId].valveOpeningFraction).toBe(0.4);
+      expect(second.editor.getSnapshot().feedback.kind).toBe('warning');
+      expect(second.editor.getSnapshot().feedback.message).toContain('No action was retried');
+      second.editor.dispose();
+    });
+
+    it('does not mint or dispatch a pending command after unmount, but still releases its clock lease', async () => {
+      let finishDrain!: () => void;
+      const drain = new Promise<void>((resolve) => { finishDrain = resolve; });
+      const release = vi.fn();
+      const { editor, runtime, ids, editorIds } = editorFixture(true, { beforeCommand: async () => { await drain; return release; } });
+      const pending = editor.setValve(ids.buretteId, 0);
+      editor.disconnectRuntime();
+      finishDrain();
+      expect(await pending).toBe(false);
+      expect(runtime.actions).toHaveLength(0);
+      expect(editorIds).not.toHaveBeenCalled();
+      expect(release).toHaveBeenCalledOnce();
+      editor.dispose();
+    });
+
     it('acquires the real camera lock before capture and releases on cancel, errors and unmount with overlapping locks intact', () => {
       const { editor, camera } = editorFixture();
       const trace: string[] = [];
@@ -586,6 +693,73 @@ describe('meter-space geometry and canonical sockets', () => {
     const physical = new Vector3(0.32, 0, 0).applyMatrix4(matrixOf(scene.apparatus.find((item) => item.id === ids.clampId)!.transform));
     expect(resolved.worldTransform.positionM).toEqual(physical.toArray());
     editor.dispose();
+  });
+
+  it('marks an out-of-reach fluid socket invalid without snapping or moving either vessel', async () => {
+    const { editor, runtime, ids, scene } = editorFixture(true);
+    const target = { instanceId: ids.bottleId, socketId: 'inlet' };
+    const source = { instanceId: ids.buretteId, socketId: 'outlet' };
+    const candidate = socketCandidate(scene, apparatusRegistry, source, target, idFactory(5030)());
+    expect(candidate.valid).toBe(false);
+    expect(candidate.reasons.join(' ')).toContain('apart');
+    expect(candidate.snappedTransform).toBeUndefined();
+    expect(await editor.connect(source, target)).toBe(false);
+    expect(runtime.actions).toHaveLength(0);
+    expect(editor.getRuntimeSnapshot().scene.apparatus).toEqual(scene.apparatus);
+    editor.dispose();
+  });
+
+  it('picks actual procedural stopcock meshes and keeps graduation-line hit tolerance in millimeters, not meters', () => {
+    const definition = apparatusRegistry.getDefinition('burette-50ml')!;
+    const built = buildApparatusGeometry(definition, 'low');
+    const wrapper = new Group();
+    const id = idFactory(60_000)();
+    wrapper.userData.labEditorInstanceId = id;
+    wrapper.position.set(0, 0.9, 0);
+    wrapper.add(built.object);
+    const index = new ApparatusSpatialIndex();
+    index.upsert(id, worldBounds(definition, { positionM: [0, 0.9, 0], quaternion: [0, 0, 0, 1] }));
+    const pick = createApparatusPicker(index, () => new Map([[id, wrapper]]));
+    try {
+      expect(pick({ originM: [0.02, 0.965, 1], direction: [0, 0, -1] })).toEqual({ instanceId: id, controlId: 'stopcock' });
+      expect(index.raycast({ originM: [0.025, 1.3, 1], direction: [0, 0, -1] })).toHaveLength(1);
+      expect(pick({ originM: [0.025, 1.3, 1], direction: [0, 0, -1] })).toBeNull();
+      expect(pick({ originM: [0.02, 0.965, 1], direction: [0, 0, -1] }, id)).toBeNull();
+    } finally { built.dispose(); }
+  });
+
+  it('measures indexed triangle/control picking across 128 shared-geometry apparatus without creating a renderer', () => {
+    const definition = apparatusRegistry.getDefinition('burette-50ml')!;
+    const built = buildApparatusGeometry(definition, 'low');
+    const index = new ApparatusSpatialIndex();
+    const objects = new Map<string, Object3D>();
+    const ids: string[] = [];
+    const createId = idFactory(70_000);
+    for (let i = 0; i < 128; i++) {
+      const id = createId();
+      ids.push(id);
+      const wrapper = new Group();
+      wrapper.userData.labEditorInstanceId = id;
+      wrapper.position.set(i * 0.1, 0.9, 0);
+      wrapper.add(built.object.clone(true));
+      objects.set(id, wrapper);
+      index.upsert(id, worldBounds(definition, { positionM: [i * 0.1, 0.9, 0], quaternion: [0, 0, 0, 1] }));
+    }
+    const pick = createApparatusPicker(index, () => objects);
+    const samples: number[] = [];
+    try {
+      for (let i = 0; i < 256; i++) {
+        const objectIndex = i % 128;
+        const start = performance.now();
+        const picked = pick({ originM: [objectIndex * 0.1 + 0.02, 0.965, 1], direction: [0, 0, -1] });
+        samples.push(performance.now() - start);
+        expect(picked).toEqual({ instanceId: ids[objectIndex], controlId: 'stopcock' });
+      }
+      samples.sort((a, b) => a - b);
+      process.stdout.write(`${JSON.stringify({ measurement: 'CPU editor broad phase + real model triangle/control raycast; no renderer',
+        objects: 128, queries: 256, geometry: 'parent procedural low quality, shared clones', node: process.version,
+        meanMs: samples.reduce((sum, sample) => sum + sample, 0) / samples.length, p95Ms: samples[Math.floor(samples.length * 0.95)] })}\n`);
+    } finally { objects.clear(); built.dispose(); }
   });
 
   it('keeps 512 indexed objects queryable, updates moved bounds, and bounds oversized-object indexing', () => {

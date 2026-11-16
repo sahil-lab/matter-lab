@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent, PointerEvent, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Euler, Quaternion } from 'three';
 import type { ApparatusDefinition, ApparatusInstance, Connection, SocketEndpoint } from '@matterlab/contracts/lab';
 import type { LabEditorController } from './LabEditorController';
@@ -79,6 +80,7 @@ export function LabEditorToolbar({ editor }: LabEditorControlsProps) {
       <p role="status" aria-live="polite" aria-atomic="true" className={`lab-editor-feedback lab-editor-feedback-${state.feedback.kind}`}>
         {state.feedback.message}
       </p>
+      <LabEditorContextMenu editor={editor} />
     </div>
   );
 }
@@ -165,7 +167,7 @@ function PlacementControls({ editor }: LabEditorControlsProps) {
         const target = { instanceId: instance.id, socketId: socket.id };
         const compatible = draft && definition.sockets.some((source) => source.kind === 'MECHANICAL' && source.direction === 'IN' &&
           socketCandidate(mountedScene, editor.definitions, { instanceId: draft.id, socketId: source.id }, target,
-            '00000000-0000-4000-8000-000000000000').valid);
+            '00000000-0000-4000-8000-000000000000', editor.connectionValidator).valid);
         return compatible ? [{ endpoint: target, label: `${editor.definitions.getDefinition(instance.definitionId)!.label} / ${socket.id}` }] : [];
       }) ?? []);
   function surfaceSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -259,7 +261,8 @@ function ConnectionRow({ editor, connection }: LabEditorControlsProps & { readon
     editor.definitions.getDefinition(instance.definitionId)?.sockets.filter((socket) => socket.kind === 'MECHANICAL' && socket.direction !== 'IN')
       .flatMap((socket) => {
         const endpoint = { instanceId: instance.id, socketId: socket.id };
-        const candidate = socketCandidate(without, editor.definitions, connection.to, endpoint, '00000000-0000-4000-8000-000000000000');
+        const candidate = socketCandidate(without, editor.definitions, connection.to, endpoint,
+          '00000000-0000-4000-8000-000000000000', editor.connectionValidator);
         return candidate.valid ? [{ endpoint, label: `${editor.definitions.getDefinition(instance.definitionId)!.label} / ${socket.id}` }] : [];
       }) ?? []) : [];
   return (
@@ -476,9 +479,9 @@ export function LabEditorContextMenu({ editor }: LabEditorControlsProps) {
     element?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
     return () => { if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, [state.contextMenu]);
-  if (!state.contextMenu) return null;
+  if (!state.contextMenu || typeof document === 'undefined') return null;
   const run = (action: () => unknown) => () => { editor.closeContextMenu(); void action(); };
-  return (
+  return createPortal(
     <div ref={menu} className="lab-editor lab-editor-context" role="menu" aria-label="Apparatus context actions"
       style={{ left: Math.max(8, Math.min(state.contextMenu.clientX, (globalThis.innerWidth || 1024) - 230)),
         top: Math.max(8, Math.min(state.contextMenu.clientY, (globalThis.innerHeight || 768) - 310)) }}
@@ -503,6 +506,7 @@ export function LabEditorContextMenu({ editor }: LabEditorControlsProps) {
       <button role="menuitem" type="button" onClick={run(() => editor.resetTransforms())}>Reset transforms</button>
       <button role="menuitem" type="button" onClick={run(() => editor.deleteSelection())}>Delete empty apparatus</button>
       <button role="menuitem" type="button" onClick={() => editor.closeContextMenu()}>Close menu</button>
-    </div>
+    </div>,
+    document.body,
   );
 }
