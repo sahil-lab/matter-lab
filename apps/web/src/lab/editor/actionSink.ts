@@ -9,7 +9,7 @@
  * a stable, always-defined reference (`actionSink`) that forwards to whatever implementation is
  * currently installed, so editor code never has to null-check or wait for wiring order.
  */
-import type { ContainerContents, LabAction, Observation, UUID } from './contracts';
+import type { ApparatusInstance, ContainerContents, LabAction, Observation, UUID } from './contracts';
 
 export interface ActionRejection {
   readonly code: string;
@@ -28,6 +28,14 @@ export interface LabActionSink {
   /** Read-only snapshot of authoritative container inventory, keyed by apparatus instance id. */
   getContainerStates(): Readonly<Record<UUID, ContainerContents>>;
   getObservations(apparatusId?: UUID): readonly Observation[];
+  /**
+   * Read-only snapshot of every placed apparatus's authoritative state, including live operational
+   * config (valve opening, stirrer speed, probe depth) that only the reducer may change. The
+   * editor's own `EditorSceneState` is for undo-tracked placement/transform/connection editing
+   * only; this is what rendering reads for anything operational, so a stopcock or stirrer drawn on
+   * screen always reflects what was actually accepted, never an editor-side guess.
+   */
+  getApparatus(): readonly ApparatusInstance[];
   /** Replays from the start (or a saved snapshot). Used by the editor's "reset experiment" command — never by scene undo/redo. */
   reset(): void;
 }
@@ -39,6 +47,7 @@ const idleSink: LabActionSink = {
   }),
   getContainerStates: () => ({}),
   getObservations: () => [],
+  getApparatus: () => [],
   reset: () => {},
 };
 
@@ -48,6 +57,7 @@ export const actionSink: LabActionSink = {
   dispatch: (action) => current.dispatch(action),
   getContainerStates: () => current.getContainerStates(),
   getObservations: (apparatusId) => current.getObservations(apparatusId),
+  getApparatus: () => current.getApparatus(),
   reset: () => current.reset(),
 };
 
