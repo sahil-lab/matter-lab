@@ -11,6 +11,7 @@ import {
 import type { FileFormatId, ImportResult, Scene } from '@matterlab/core';
 import { optimizeGeometry } from '../compute/store';
 import { viewApi } from '../render/viewApi';
+import { analyseScene, chemistryOf, useChem } from '../science/chem';
 import { enterWorkspace, insertScene, notify, replaceDocument, selectOnly } from './actions';
 import { PROJECT_FORMAT, buildProjectFile, openProjectFile, saveCurrentProject } from './persistence';
 import { lab } from './store';
@@ -76,6 +77,30 @@ export function exportStructure(formatId: FileFormatId): void {
     notify('success', `Exported as ${format.label}`, format.loses === 'Nothing.' ? undefined : `Not preserved: ${format.loses}`);
   } catch (error) {
     notify('error', 'Export failed', error instanceof Error ? error.message : undefined);
+  }
+}
+
+export type IdentifierFormat = 'smiles' | 'inchi';
+
+export async function exportIdentifier(format: IdentifierFormat): Promise<boolean> {
+  const { scene, projectName } = lab.get();
+  if (scene.atoms.size === 0) {
+    notify('info', 'There is nothing to export yet');
+    return false;
+  }
+  try {
+    const analysis = chemistryOf(useChem.getState(), scene) ?? await analyseScene(scene);
+    if (!analysis.ok) throw new Error(analysis.errors.join(' ') || 'RDKit does not accept this structure.');
+    const identifier = analysis[format];
+    if (!identifier) throw new Error(`RDKit could not derive ${format === 'smiles' ? 'SMILES' : 'InChI'} for this structure.`);
+    const name = safeFileName(projectName);
+    const text = format === 'smiles' ? `${identifier}\t${projectName.replace(/[\r\n\t]+/g, ' ')}\n` : `${identifier}\n`;
+    downloadText(`${name}.${format === 'smiles' ? 'smi' : 'inchi'}`, text, format === 'smiles' ? 'chemical/x-daylight-smiles' : 'chemical/x-inchi');
+    notify('success', `Exported ${format === 'smiles' ? 'SMILES' : 'InChI'}`, 'Chemical identity is preserved; coordinates, atom IDs, measurements and the view are not.');
+    return true;
+  } catch (error) {
+    notify('error', 'Identifier export failed', error instanceof Error ? error.message : String(error));
+    return false;
   }
 }
 

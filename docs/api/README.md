@@ -89,6 +89,10 @@ does not validate.
 Structures are also exchanged as XYZ, MDL molfile, SD file and PDB; the core README states what
 each keeps and loses.
 
+The Export dialog also downloads RDKit-derived SMILES (`.smi`, one structure and title per line)
+and InChI (`.inchi`, one identifier per line). These preserve chemical identity, not coordinates
+or application state. Invalid structures produce an explicit error rather than an identifier file.
+
 ## The test hook
 
 Development builds, and the build made by `npm run test:e2e:build`, expose `window.__MATTERLAB__`

@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { CATEGORY_COLORS } from '../render/style';
 import { addExample, changeElement, openExample } from '../state/actions';
-import { exportImage, exportProject, exportStructure, pickFile } from '../state/commands';
+import { exportIdentifier, exportImage, exportProject, exportStructure, pickFile } from '../state/commands';
+import type { IdentifierFormat } from '../state/commands';
 import { deleteProject, listProjects, openProject } from '../state/persistence';
 import type { ProjectSummary } from '../state/persistence';
 import { lab, useLab } from '../state/store';
@@ -363,6 +364,13 @@ export function LibraryDialog() {
 }
 
 export function ExportDialog() {
+  const [exporting, setExporting] = useState<IdentifierFormat | null>(null);
+  const saveIdentifier = async (format: IdentifierFormat) => {
+    setExporting(format);
+    const saved = await exportIdentifier(format);
+    setExporting(null);
+    if (saved) close();
+  };
   return (
     <Dialog title="Export" subtitle="Each format keeps different information. Choose knowingly." width={640}>
       <div className="ml-actions" style={{ marginBottom: 14 }}>
@@ -394,6 +402,18 @@ export function ExportDialog() {
           close();
         }}
       />
+      <div className="ml-actions" style={{ marginTop: 14 }} aria-busy={exporting !== null}>
+        <Button variant="outline" disabled={exporting !== null} onClick={() => void saveIdentifier('smiles')} data-testid="export-smiles">
+          <Download /> {exporting === 'smiles' ? 'Preparing SMILES...' : 'SMILES file (.smi)'}
+        </Button>
+        <Button variant="outline" disabled={exporting !== null} onClick={() => void saveIdentifier('inchi')} data-testid="export-inchi">
+          <Download /> {exporting === 'inchi' ? 'Preparing InChI...' : 'InChI file (.inchi)'}
+        </Button>
+      </div>
+      <p className="ml-empty">
+        Identifiers require a structure RDKit accepts. They keep chemical identity, including specified isotopes, charge and stereochemistry, but not coordinates,
+        atom IDs, measurements or the view.
+      </p>
     </Dialog>
   );
 }

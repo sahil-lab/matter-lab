@@ -48,7 +48,7 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Undo and redo of every edit | Implemented | Exact, from reversible patches |
 | Import and export: native JSON, XYZ, MDL molfile, SD file, PDB | Implemented | Each format states what it keeps and loses |
 | Import from SMILES | Implemented | A 3D model is built and its stereochemistry checked against the string; a model that cannot be given the stated configuration is withheld (`find.spec.ts`) |
-| Export of SMILES and InChI | Partial | Shown and copied from the inspector; not written as files |
+| Export of SMILES and InChI | Implemented | Copy from the inspector or download validated `.smi` / `.inchi` files from Export. Invalid structures are refused; coordinates are not included (`chemistry.spec.ts`) |
 | Look up a compound by name | Implemented | PubChem, on request |
 | Substructure and similarity search | Partial | Over the 63 structures built into the application. The catalogue of the science service is not reachable from the interface |
 | Geometry optimisation, comparison with the starting geometry, replay of the optimiser's path | Implemented | Universal Force Field, in a background thread, cancellable (`optimize.spec.ts`) |

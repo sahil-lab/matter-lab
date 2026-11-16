@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import { Lab } from './lab';
 
@@ -144,6 +145,63 @@ test.describe('structure search', () => {
     expect(result.skipped).toEqual([]);
     expect(result.hits.map((h) => h.id).sort()).toEqual(['acetic-acid', 'aspirin', 'glycine']);
     for (const hit of result.hits) expect(hit.matchedAtoms).toHaveLength(3);
+  });
+
+  test.describe('identifier files', () => {
+    test('downloads single-record SMILES and InChI with the structure identity intact', async ({ page }) => {
+      await lab.openExample('glucose');
+      const reference = await chemistry();
+      expect(reference.inchiKey).toBe(PUBCHEM_INCHIKEYS.glucose);
+      await lab.eval("lab.lab.set({ projectName: 'Glucose\\nnot another record' });");
+      for (const format of ['smiles', 'inchi'] as const) {
+        await lab.eval("lab.lab.set({ dialog: 'export' });");
+        const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId(`export-${format}`).click()]);
+        expect(download.suggestedFilename()).toBe(`Glucose_not another record.${format === 'smiles' ? 'smi' : 'inchi'}`);
+        const path = await download.path();
+        if (!path) throw new Error('The identifier download has no local file.');
+        const text = await readFile(path, 'utf8');
+        expect(text.endsWith('\n')).toBe(true);
+        expect(text.trim().split(/\r?\n/)).toHaveLength(1);
+        if (format === 'smiles') {
+          const [smiles, name] = text.trim().split('\t');
+          expect(name).toBe('Glucose not another record');
+          const parsed = await lab.eval<{ ok: boolean; inchiKey: string }>(`return lab.chem.smilesToMolblock(${JSON.stringify(smiles)});`);
+          expect(parsed).toMatchObject({ ok: true, inchiKey: PUBCHEM_INCHIKEYS.glucose });
+        } else {
+          expect(text.trim()).toBe(await page.getByTestId('inchi').innerText());
+          expect(text).toMatch(/^InChI=1S\/C6H12O6\//);
+        }
+      }
+      await lab.openExample('water');
+      for (const hydrogen of (await lab.atoms()).filter((atom) => atom.z === 1)) {
+        await lab.eval(`lab.actions.setParticles(${hydrogen.id}, { neutrons: 1 }, 'Set isotope');`);
+      }
+      await chemistry();
+      await lab.eval("lab.lab.set({ dialog: 'export' });");
+      const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('export-smiles').click()]);
+      const path = await download.path();
+      if (!path) throw new Error('The isotope download has no local file.');
+      expect((await readFile(path, 'utf8')).split('\t')[0]).toBe('[2H]O[2H]');
+    });
+
+    test('refuses invalid structures without downloading an identifier', async ({ page }) => {
+      await lab.openExample('methane');
+      await lab.eval(`
+        lab.actions.runEdit('Invalid carbon', (editor) => {
+          editor.addBond(1, editor.addAtom({ protons: 1, position: [3, 3, 0] }));
+        });
+        lab.lab.set({ dialog: 'export' });
+      `);
+      const downloads: string[] = [];
+      page.on('download', (download) => downloads.push(download.suggestedFilename()));
+      for (const format of ['smiles', 'inchi']) {
+        await page.getByTestId(`export-${format}`).click();
+        await expect(page.getByTestId('toast').filter({ hasText: 'Identifier export failed' }).first()).toContainText(/valence/i);
+        await expect(page.getByTestId(`export-${format}`)).toBeEnabled();
+      }
+      expect(downloads).toEqual([]);
+      await expect(page.getByRole('dialog', { name: 'Export', exact: true })).toBeVisible();
+    });
   });
 
   test('ranks by fingerprint similarity, with identical structures at 1', async () => {
