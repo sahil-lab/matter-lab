@@ -1,0 +1,18 @@
+{
+  "name": "@matterlab/quantum",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Ab initio electronic-structure engine (restricted Hartree-Fock, minimal basis) plus volumetric field evaluation and isosurface extraction.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@matterlab/core": "*"
+  }
+}

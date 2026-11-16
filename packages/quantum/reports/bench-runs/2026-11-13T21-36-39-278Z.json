@@ -1,0 +1,204 @@
+{
+  "generated": "2026-11-13T21:36:39.278Z",
+  "quick": false,
+  "node": "v24.14.1",
+  "cpu": "Intel(R) Core(TM) Ultra 7 165H",
+  "logicalProcessors": 22,
+  "threads": "single (main thread)",
+  "costModel": {
+    "primitiveQuartetNs": [
+      20,
+      80,
+      180,
+      135,
+      300,
+      1200
+    ],
+    "fockNsPerIntegral": 8,
+    "fockBuilds": 28,
+    "iterations": 12,
+    "linearAlgebraNsPerCube": 60,
+    "overheadSeconds": 0.001
+  },
+  "calculations": [
+    {
+      "system": "H2O",
+      "nBasis": 7,
+      "runs": 50,
+      "firstMs": 50.825800000000015,
+      "bestMs": 2.0271000000000186,
+      "integralsMs": 1.2264999999999873,
+      "scfMs": 0.7278999999999769,
+      "iterations": 8,
+      "energy": -74.96292827082624,
+      "estimatedMs": 1.811754,
+      "ratio": 1.11886050755236
+    },
+    {
+      "system": "CH4",
+      "nBasis": 9,
+      "runs": 50,
+      "firstMs": 18.723499999999945,
+      "bestMs": 4.5715999999999894,
+      "integralsMs": 1.9123999999999342,
+      "scfMs": 2.5732000000000426,
+      "iterations": 7,
+      "energy": -39.726810112298494,
+      "estimatedMs": 3.038545,
+      "ratio": 1.5045358880648434
+    },
+    {
+      "system": "C2H4",
+      "nBasis": 14,
+      "runs": 20,
+      "firstMs": 14.507499999999936,
+      "bestMs": 14.507499999999936,
+      "integralsMs": 7.0692000000000235,
+      "scfMs": 7.336100000000101,
+      "iterations": 9,
+      "energy": -77.07209020662194,
+      "estimatedMs": 9.513565000000002,
+      "ratio": 1.5249278267400217
+    },
+    {
+      "system": "SO2",
+      "nBasis": 19,
+      "runs": 20,
+      "firstMs": 69.8424,
+      "bestMs": 22.037000000000035,
+      "integralsMs": 12.57120000000009,
+      "scfMs": 9.309199999999919,
+      "iterations": 11,
+      "energy": -540.6020525639323,
+      "estimatedMs": 20.558880000000002,
+      "ratio": 1.0718969126722873
+    },
+    {
+      "system": "C6H6",
+      "nBasis": 36,
+      "runs": 8,
+      "firstMs": 371.2198000000003,
+      "bestMs": 243.35680000000048,
+      "integralsMs": 180.73069999999962,
+      "scfMs": 62.41080000000056,
+      "iterations": 9,
+      "energy": -227.89060054898226,
+      "estimatedMs": 241.15065400000003,
+      "ratio": 1.009148413920538
+    },
+    {
+      "system": "C4H10",
+      "nBasis": 30,
+      "runs": 6,
+      "firstMs": 164.94830000000002,
+      "bestMs": 164.94830000000002,
+      "integralsMs": 104.95640000000003,
+      "scfMs": 59.87800000000061,
+      "iterations": 11,
+      "energy": -155.4639902391542,
+      "estimatedMs": 145.53241,
+      "ratio": 1.1334128253630928
+    },
+    {
+      "system": "C6H14",
+      "nBasis": 44,
+      "runs": 6,
+      "firstMs": 651.3046999999997,
+      "bestMs": 473.09970000000067,
+      "integralsMs": 307.84059999999954,
+      "scfMs": 165.10159999999996,
+      "iterations": 12,
+      "energy": -232.62235669141964,
+      "estimatedMs": 609.16501,
+      "ratio": 0.7766363665569049
+    },
+    {
+      "system": "C8H18",
+      "nBasis": 58,
+      "runs": 4,
+      "firstMs": 1381.3834000000006,
+      "bestMs": 1381.3834000000006,
+      "integralsMs": 841.5619000000006,
+      "scfMs": 539.6363000000001,
+      "iterations": 14,
+      "energy": -309.78071234876603,
+      "estimatedMs": 1744.502724,
+      "ratio": 0.7918493797662884
+    },
+    {
+      "system": "C10H22",
+      "nBasis": 72,
+      "runs": 4,
+      "firstMs": 4231.2768,
+      "bestMs": 3324.9382000000005,
+      "integralsMs": 1927.6906000000017,
+      "scfMs": 1396.697400000001,
+      "iterations": 16,
+      "energy": -386.9390647822156,
+      "estimatedMs": 4008.400624000001,
+      "ratio": 0.8294924863777787
+    },
+    {
+      "system": "C13H28",
+      "nBasis": 93,
+      "runs": 3,
+      "firstMs": 6787.485799999999,
+      "bestMs": 6623.971299999997,
+      "integralsMs": 3124.951699999998,
+      "scfMs": 3497.634100000003,
+      "iterations": 15,
+      "energy": -502.6765917288435,
+      "estimatedMs": 10812.546709,
+      "ratio": 0.6126189766640663
+    }
+  ],
+  "primitiveQuartetNs": {
+    "(ss|ss)": 25.01234567907774,
+    "(s-sp|ss)": 120.58641975306307,
+    "(s-sp|s-sp)": 300.7962962962025,
+    "(sp-sp|ss)": 216.97839506183905,
+    "(sp-sp|s-sp)": 366.4228395061883,
+    "(sp-sp|sp-sp)": 1376.4074074074247
+  },
+  "fockNsPerIntegral": {
+    "36": 8.53357105231729,
+    "72": 9.304890482171775,
+    "96": 7.846933670408774
+  },
+  "jacobiNsPerCube": {
+    "36": 34.92155349795337,
+    "72": 29.573098851179953,
+    "96": 28.952478479453376
+  },
+  "benzeneFields": {
+    "grid64": {
+      "spacingAngstrom": 0.17142857142857143,
+      "densityFirstMs": 244.2109999999957,
+      "densityBestMs": 193.64540000000125,
+      "orbitalBestMs": 40.860899999999674,
+      "marchingCubesBestMs": 7.565300000002026
+    },
+    "isosurface": {
+      "isoValue": 0.02,
+      "vertices": 3728,
+      "triangles": 7452
+    },
+    "esp": {
+      "points": 3728,
+      "ms": 269.56469999999536,
+      "microsecondsPerPoint": 72.30812768240219
+    },
+    "defaultGrid": {
+      "dims": [
+        45,
+        50,
+        55
+      ],
+      "points": 123750,
+      "spacingAngstrom": 0.2,
+      "densityMs": 128.18159999999625
+    }
+  },
+  "machineCpuUtilisation": 0.7158049516489937,
+  "durationSeconds": 60.387
+}

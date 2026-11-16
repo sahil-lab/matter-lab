@@ -1,0 +1,57 @@
+{
+  "report": "marching-cubes",
+  "generated": "2026-11-14T10:15:20.642Z",
+  "node": "v24.14.1",
+  "records": {
+    "case-table": {
+      "cases": 656,
+      "casesWithCentreVertex": 116,
+      "maxTrianglesPerCube": 12
+    },
+    "sphere/spacing R/10": {
+      "vertices": 1830,
+      "triangles": 3656,
+      "areaError": -0.00316443052495774,
+      "volumeError": -0.006068819134182668,
+      "minVertexDot": 0.9999977884265905,
+      "minFaceDot": 0.998519457989046,
+      "maxNormalLengthError": 3.216339561351589e-8
+    },
+    "sphere/spacing R/20": {
+      "vertices": 7470,
+      "triangles": 14936,
+      "areaError": -0.0007835954964864333,
+      "volumeError": -0.001506314860603597,
+      "minVertexDot": 0.9999998390115241,
+      "minFaceDot": 0.9996024376295897,
+      "maxNormalLengthError": 3.481940913374615e-8
+    },
+    "sphere/anisotropic": {
+      "areaError": -0.0034937690802994137,
+      "volumeError": -0.006666496021762169,
+      "minVertexDot": 0.9999910203007383,
+      "minFaceDot": 0.9975153912358178,
+      "maxNormalLengthError": 4.1264101913185414e-8
+    },
+    "noise": {
+      "iso 0": {
+        "triangles": 190694,
+        "boundaryEdges": 0,
+        "nonManifoldEdges": 0,
+        "inconsistentEdges": 0
+      },
+      "iso 0.3": {
+        "triangles": 155018,
+        "boundaryEdges": 0,
+        "nonManifoldEdges": 0,
+        "inconsistentEdges": 0
+      },
+      "iso -0.3": {
+        "triangles": 163270,
+        "boundaryEdges": 0,
+        "nonManifoldEdges": 0,
+        "inconsistentEdges": 0
+      }
+    }
+  }
+}

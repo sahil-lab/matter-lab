@@ -1,0 +1,259 @@
+{
+  "report": "fields",
+  "generated": "2026-11-14T10:15:22.349Z",
+  "node": "v24.14.1",
+  "records": {
+    "pyscf/LiH": {
+      "points": 30,
+      "densityDeviation": 3.958231745843088e-12,
+      "largestDensity": 0.016277426951743144,
+      "potentialDeviation": 5.148237391949806e-11,
+      "largestPotential": 0.4746647694994164,
+      "orbitalDeviation": 4.64836086289111e-11,
+      "orbitalsCompared": 4
+    },
+    "pyscf/H2O": {
+      "points": 30,
+      "densityDeviation": 2.1858626020332395e-12,
+      "largestDensity": 0.09898744271551697,
+      "potentialDeviation": 1.4494183631086344e-11,
+      "largestPotential": 0.6400918980044485,
+      "orbitalDeviation": 1.29536797954799e-11,
+      "orbitalsCompared": 7
+    },
+    "pyscf/C2H4": {
+      "points": 30,
+      "densityDeviation": 3.952393967665557e-14,
+      "largestDensity": 0.010520586293793472,
+      "potentialDeviation": 5.613287612504791e-13,
+      "largestPotential": 0.013846142753872304,
+      "orbitalDeviation": 1.48185196752193e-12,
+      "orbitalsCompared": 12
+    },
+    "pyscf/HCl": {
+      "points": 30,
+      "densityDeviation": 1.4921605617779221e-12,
+      "largestDensity": 0.027841894833851296,
+      "potentialDeviation": 2.1150192708319082e-11,
+      "largestPotential": 0.16957489094913214,
+      "orbitalDeviation": 1.624157058843778e-11,
+      "orbitalsCompared": 6
+    },
+    "pyscf/NH4+": {
+      "points": 30,
+      "densityDeviation": 4.7271214720367993e-14,
+      "largestDensity": 0.017444381347485025,
+      "potentialDeviation": 1.886490963443066e-12,
+      "largestPotential": 0.37200067034271544,
+      "orbitalDeviation": 3.984659824318726e-14,
+      "orbitalsCompared": 3
+    },
+    "pyscf/OH-": {
+      "points": 30,
+      "densityDeviation": 4.32391969451551e-13,
+      "largestDensity": 0.009606353734485224,
+      "potentialDeviation": 1.4798828829043487e-11,
+      "largestPotential": 0.37782644859439074,
+      "orbitalDeviation": 9.598735001281611e-12,
+      "orbitalsCompared": 4
+    },
+    "screening": {
+      "gridDeviation": 1.1641532182693481e-10,
+      "pointDeviation": 6.424860643505781e-11,
+      "largestDensity": 9.276165008544922,
+      "cutoff": 1e-10
+    },
+    "orbital-integrals": {
+      "coarse": {
+        "spacing": 0.25,
+        "norms": {
+          "homo": 1.0050061689297034,
+          "lumo": 1.009089991039154,
+          "below": 0.9872676631512607
+        },
+        "overlaps": {
+          "homoLumo": 0.0046661859264904414,
+          "homoBelow": -0.0012896989758195353
+        }
+      },
+      "fine": {
+        "spacing": 0.1,
+        "norms": {
+          "homo": 0.9999999979222924,
+          "lumo": 0.9986103656061238,
+          "below": 0.9990454454440454
+        },
+        "overlaps": {
+          "homoLumo": -0.0000057224779484229006,
+          "homoBelow": 0.000004461047514305107
+        }
+      }
+    },
+    "electron-count/H2@0.2": {
+      "points": 83248,
+      "electrons": 1.9999981277534526,
+      "expected": 2,
+      "error": -0.0000018722465473519634
+    },
+    "electron-count/H2@0.1": {
+      "points": 628488,
+      "electrons": 1.999999998644564,
+      "expected": 2,
+      "error": -1.3554359856726705e-9
+    },
+    "electron-count/CH4@0.1": {
+      "points": 941094,
+      "electrons": 10.041679323657958,
+      "expected": 10,
+      "error": 0.04167932365795757
+    },
+    "electron-count/H2O@0.2": {
+      "points": 94815,
+      "electrons": 9.494158437098154,
+      "expected": 10,
+      "error": -0.5058415629018462
+    },
+    "electron-count/H2O@0.1": {
+      "points": 718080,
+      "electrons": 9.792076639640223,
+      "expected": 10,
+      "error": -0.20792336035977677
+    },
+    "electron-count/H2O@0.05": {
+      "points": 5583312,
+      "electrons": 9.995275114228408,
+      "expected": 10,
+      "error": -0.004724885771592469
+    },
+    "far-field/H2O": [
+      {
+        "distance": 5,
+        "potential": 0.0014890585187141703,
+        "dipoleTerm": 0.0019002841805560243,
+        "ratio": 0.783597808133345
+      },
+      {
+        "distance": 10,
+        "potential": 0.00042474393572777824,
+        "dipoleTerm": 0.00047507104513900606,
+        "ratio": 0.8940640354191612
+      },
+      {
+        "distance": 20,
+        "potential": 0.00011250553641245498,
+        "dipoleTerm": 0.00011876776128475152,
+        "ratio": 0.9472733610151786
+      },
+      {
+        "distance": 50,
+        "potential": 0.000018602456477917473,
+        "dipoleTerm": 0.000019002841805560245,
+        "ratio": 0.9789302393957929
+      },
+      {
+        "distance": 100,
+        "potential": 0.000004700665421374095,
+        "dipoleTerm": 0.000004750710451390061,
+        "ratio": 0.9894657797969306
+      },
+      {
+        "distance": 200,
+        "potential": 0.0000011814218821987188,
+        "dipoleTerm": 0.0000011876776128475153,
+        "ratio": 0.9947328041034653
+      }
+    ],
+    "far-field/NH4+": [
+      {
+        "distance": 10,
+        "potential": 0.05290382043122033,
+        "timesR": 0.9997373156138764
+      },
+      {
+        "distance": 30,
+        "potential": 0.017639066700938233,
+        "timesR": 0.9999901547633843
+      },
+      {
+        "distance": 100,
+        "potential": 0.005291770695765037,
+        "timesR": 0.9999997329316278
+      },
+      {
+        "distance": 300,
+        "potential": 0.0017639240188719804,
+        "timesR": 0.9999999900951784
+      }
+    ],
+    "far-field/OH-": [
+      {
+        "distance": 10,
+        "potential": -0.053033951066859486,
+        "timesR": -1.002196428231691
+      },
+      {
+        "distance": 30,
+        "potential": -0.017652137813399082,
+        "timesR": -1.00073117944424
+      },
+      {
+        "distance": 100,
+        "potential": -0.005292939705233965,
+        "timesR": -1.0002206437049648
+      },
+      {
+        "distance": 300,
+        "potential": -0.0017640540642166677,
+        "timesR": -1.0000737151207508
+      }
+    ],
+    "far-field/HeH+": [
+      {
+        "distance": 10,
+        "potential": 0.05187994566690746,
+        "timesR": 0.9803888867092054
+      },
+      {
+        "distance": 30,
+        "potential": 0.017523440664365418,
+        "timesR": 0.9934351085034269
+      },
+      {
+        "distance": 100,
+        "potential": 0.005281338975584013,
+        "timesR": 0.9980284235165413
+      },
+      {
+        "distance": 300,
+        "potential": 0.0017627644936095408,
+        "timesR": 0.9993426345409996
+      }
+    ],
+    "water-esp": {
+      "nearNucleus": 401.4280167946077,
+      "lonePair": -0.10021194864834282,
+      "hydrogenSide": 0.07759845567727641
+    },
+    "benzene-surface": {
+      "isoValue": 0.002,
+      "coarse": {
+        "spacing": 0.25,
+        "vertices": 2586,
+        "triangles": 5168,
+        "volumeA3": 87.3843487846407,
+        "areaA2": 108.14412463832187,
+        "contourError": 0.0003144936850294471
+      },
+      "fine": {
+        "spacing": 0.125,
+        "vertices": 10296,
+        "triangles": 20588,
+        "volumeA3": 86.68653899834544,
+        "areaA2": 107.35084592313126,
+        "contourError": 0.00008991805184632544
+      },
+      "espMin": -0.01664082705974579,
+      "espMax": 0.02162320166826248
+    }
+  }
+}

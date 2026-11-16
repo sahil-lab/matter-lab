@@ -1,0 +1,23 @@
+{
+  "pubchem": {
+    "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/periodictable/JSON",
+    "retrieved": "2026-11-13"
+  },
+  "rdkit": {
+    "version": "2026.09.2",
+    "generated": "2026-11-13"
+  },
+  "iaea": {
+    "url": "https://nds.iaea.org/relnsd/v1/data?fields=ground_states&nuclides=all",
+    "retrieved": "2026-11-13",
+    "datasetExtractionDate": "2023-10-18"
+  },
+  "pubchem3d": {
+    "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/<cid>/SDF?record_type=3d|2d",
+    "retrieved": "2026-11-13",
+    "sha256": "107c868aefde7c626406197425865cb07a268f0259bc15dcd18ac21e6809966b",
+    "species": 62,
+    "withConformer": 44,
+    "withBondingOnly": 13
+  }
+}

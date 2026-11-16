@@ -1,0 +1,85 @@
+{
+  "report": "crawford",
+  "generated": "2026-11-14T10:15:18.910Z",
+  "node": "v24.14.1",
+  "records": {
+    "crawford/h2o/reference-basis/integrals": {
+      "basis": "PSI3 library STO-3G (psi3-sto-3g.json)",
+      "overlap": 9.18709552877317e-14,
+      "kinetic": 4.3007264416417e-14,
+      "nuclearAttraction": 5.193623309196482e-13,
+      "dipole": 3.1374902675906924e-13,
+      "eriListed": 1.0097478408965799e-13,
+      "eriUnlisted": 4.336808689942018e-19,
+      "nuclearRepulsion": 3.197442310920451e-13,
+      "eriListedCount": 228,
+      "eriUniqueCount": 406
+    },
+    "crawford/h2o/reference-basis/scf": {
+      "basis": "PSI3 library STO-3G (psi3-sto-3g.json)",
+      "iterations": 10,
+      "totalEnergy": -74.94207992819223,
+      "referenceTotalEnergy": -74.942079928192,
+      "totalEnergyDeviation": 2.2737367544323206e-13,
+      "electronicEnergyDeviation": 0,
+      "dipoleDeviation": 1.6607826225367717e-12,
+      "chargeDeviation": 6.745715097622451e-13
+    },
+    "crawford/ch4/reference-basis/integrals": {
+      "basis": "STO-3G as written in ch4/input.dat",
+      "overlap": 1.4299672557172016e-13,
+      "kinetic": 8.870681966755001e-14,
+      "nuclearAttraction": 1.2114753644709708e-12,
+      "dipole": 2.7067237340361316e-13,
+      "eriListed": 2.032263246576349e-13,
+      "eriUnlisted": 0,
+      "nuclearRepulsion": 3.0819791163594346e-12,
+      "eriListedCount": 912,
+      "eriUniqueCount": 1035
+    },
+    "crawford/ch4/reference-basis/scf": {
+      "basis": "STO-3G as written in ch4/input.dat",
+      "iterations": 8,
+      "totalEnergy": -39.726850324348256,
+      "referenceTotalEnergy": -39.726850324347,
+      "totalEnergyDeviation": 1.2576606422953773e-12,
+      "electronicEnergyDeviation": 1.3429257705865894e-12,
+      "dipoleDeviation": 9.769962616701378e-15,
+      "chargeDeviation": 4.64406291200703e-13
+    },
+    "crawford/h2o/bse-basis/integrals": {
+      "overlap": 1.6891524401430047e-8,
+      "kinetic": 0.000004119138495184416,
+      "nuclearAttraction": 0.000004279873017765112,
+      "dipole": 2.583980207582215e-8,
+      "eriListed": 3.4711021168476464e-7,
+      "eriUnlisted": 4.336808689942018e-19,
+      "nuclearRepulsion": 3.197442310920451e-13
+    },
+    "crawford/h2o/bse-basis/scf": {
+      "totalEnergy": -74.94207995404274,
+      "referenceTotalEnergy": -74.942079928192,
+      "totalEnergyDeviation": 2.5850738438748522e-8,
+      "nuclearRepulsionDeviation": 3.197442310920451e-13,
+      "dipoleDeviation": 4.788469409877649e-8,
+      "chargeDeviation": 6.558835119463424e-8
+    },
+    "crawford/ch4/bse-basis/integrals": {
+      "overlap": 2.430031337263827e-8,
+      "kinetic": 0.0000018335929485857605,
+      "nuclearAttraction": 0.0000019034429001862918,
+      "dipole": 2.317532121764998e-8,
+      "eriListed": 1.4999860020736833e-7,
+      "eriUnlisted": 4.336808689942018e-19,
+      "nuclearRepulsion": 3.0819791163594346e-12
+    },
+    "crawford/ch4/bse-basis/scf": {
+      "totalEnergy": -39.726850313890516,
+      "referenceTotalEnergy": -39.726850324347,
+      "totalEnergyDeviation": 1.0456481902565429e-8,
+      "nuclearRepulsionDeviation": 3.0819791163594346e-12,
+      "dipoleDeviation": 1.3322676295501878e-15,
+      "chargeDeviation": 1.219315636236118e-7
+    }
+  }
+}

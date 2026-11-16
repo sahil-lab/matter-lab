@@ -1,0 +1,11 @@
+# Core runtime dependencies of the MATTER LAB science service.
+# Exact versions were resolved together on 2026-11-13 (see constraints.txt for the full pin set).
+fastapi==0.162.6
+uvicorn==0.54.0
+pydantic==2.14.3
+psycopg[binary,pool]==3.3.9
+openpyxl==3.1.5
+python-multipart==0.0.33
+numpy==2.5.4
+scipy==1.18.1
+rdkit==2026.9.2

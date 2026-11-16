@@ -1,0 +1,9 @@
+# Optional quantum-chemistry engines. The service detects them at runtime (GET /v1/engines);
+# without them the corresponding job kinds answer with status "unsupported".
+#
+#   tblite  GFN1-xTB / GFN2-xTB tight binding (needs the system library libgomp1)
+#   ase     optimiser used for xTB geometry optimisation (tblite.ase calculator)
+#   pyscf   Hartree-Fock and Kohn-Sham DFT single points
+tblite==0.8.0
+ase==3.29.0
+pyscf==2.15.0

@@ -1,0 +1,137 @@
+{
+  "crawford": {
+    "title": "Programming Projects, Project #3: The Hartree-Fock Self-Consistent Field Method (reference inputs and outputs)",
+    "authors": "T. D. Crawford and co-workers (Crawford group, Virginia Tech)",
+    "repository": "https://github.com/CrawfordGroup/ProgrammingProjects",
+    "commit": "297fda143186f08a3a9481b0fb762f87bbbba524",
+    "retrieved": "2026-11-13",
+    "license": "No licence file is published in the upstream repository; the files are unmodified copies kept only as validation references.",
+    "files": {
+      "h2o/geom.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/geom.dat",
+        "bytes": 200,
+        "sha256": "26331c67446460b782e541990e8dd8c85c51949c7fb4340c93aa14d527ace007"
+      },
+      "h2o/enuc.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/enuc.dat",
+        "bytes": 21,
+        "sha256": "891870563c5c8f82dcf8a282ed057a8cd35f215079c207c10c8faf340ca5fec5"
+      },
+      "h2o/input.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/input.dat",
+        "bytes": 229,
+        "sha256": "844f2ea4050f3330be03c860e6024ae9bc9826833b7175bbaa936b5428a86bc9"
+      },
+      "h2o/s.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/s.dat",
+        "bytes": 924,
+        "sha256": "d43a8c3deefe7ae4e047b8242d4758f351485e6aeb476d8c90425a3a933fd228"
+      },
+      "h2o/t.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/t.dat",
+        "bytes": 924,
+        "sha256": "f5936376f55cf977f7947d607e622362e57c9be5553f3482d75d938aaefedd99"
+      },
+      "h2o/v.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/v.dat",
+        "bytes": 924,
+        "sha256": "9afd2d728f48664351bca6902315c29132631dba513304f0760a48204bdbb6a9"
+      },
+      "h2o/mux.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/mux.dat",
+        "bytes": 924,
+        "sha256": "7221ab6815a7300b00441b7ed7cd4824b08ef217fb656daaa3f0eeffa2cfc4d4"
+      },
+      "h2o/muy.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/muy.dat",
+        "bytes": 924,
+        "sha256": "c4919b2be23a3e7af60181c2a34b932832da81ec60b57f30d1661c3a2c5139ca"
+      },
+      "h2o/muz.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/muz.dat",
+        "bytes": 924,
+        "sha256": "5c1b8336be2bef7e6651c602ceb9cf2feab5d47e0b59d619b225f5dfa12acb14"
+      },
+      "h2o/eri.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/h2o/STO-3G/eri.dat",
+        "bytes": 10260,
+        "sha256": "19ff2b755f79cc231cbd0190b10f424b8e38f1611aa0b6d10cec28e8cec27bf1"
+      },
+      "h2o/output.txt": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/output/h2o/STO-3G/output.txt",
+        "bytes": 11510,
+        "sha256": "917865d871338795ea15c9be0373d86f38af59da0984253917c538ea16a06e89"
+      },
+      "ch4/geom.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/geom.dat",
+        "bytes": 332,
+        "sha256": "2c5b94de0ddc6a47c1e7f1927309c520dcafcbc965d1780a51cbaacd737bf2ef"
+      },
+      "ch4/enuc.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/enuc.dat",
+        "bytes": 21,
+        "sha256": "9a45dd4ed83998015eb55f8bcd319b8e872252a87042991fbbc2f676e5325551"
+      },
+      "ch4/input.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/input.dat",
+        "bytes": 952,
+        "sha256": "14e71f5bac1527937c16d269fdb986e86f819a6c5d8034506aceb88974e5f20d"
+      },
+      "ch4/s.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/s.dat",
+        "bytes": 1485,
+        "sha256": "c1c6c314ea7557feda44b990605a0d5b44fbdd4b0d5c4c2b5c836fb54548cc51"
+      },
+      "ch4/t.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/t.dat",
+        "bytes": 1485,
+        "sha256": "8e006f40a61bc9bdac9ac8e3763d4d8b9b8a9c7083f37693d2d6e4e47ddc8175"
+      },
+      "ch4/v.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/v.dat",
+        "bytes": 1485,
+        "sha256": "9c8eb4e7024448dc76bfcde37224fdda03503b6b4bad4d59e5fb8b17952925fb"
+      },
+      "ch4/mux.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/mux.dat",
+        "bytes": 1485,
+        "sha256": "cb82c5b3c183995d84cc5ec131a9b6161251d3d9b7b3b4177d8789e54c1872ed"
+      },
+      "ch4/muy.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/muy.dat",
+        "bytes": 1485,
+        "sha256": "dfc35dd6f8b0e886658759eb10463a0e4b23c3ab80294c75cc85965b7c70fa7f"
+      },
+      "ch4/muz.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/muz.dat",
+        "bytes": 1485,
+        "sha256": "1e6074558f01fb0c2d6c64870cd6e05df92adbb7f9d87a6f22b189b1c7d75839"
+      },
+      "ch4/eri.dat": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/input/ch4/STO-3G/eri.dat",
+        "bytes": 41040,
+        "sha256": "40151100ceae85284536ff34c623da9c7a85959225c481c6969fe224c2d9e35a"
+      },
+      "ch4/output.txt": {
+        "url": "https://raw.githubusercontent.com/CrawfordGroup/ProgrammingProjects/297fda143186f08a3a9481b0fb762f87bbbba524/Project%2303/output/ch4/STO-3G/output.txt",
+        "bytes": 14976,
+        "sha256": "9803c79bd50a12280e4a886b7d799404cd5b8319250a202c8ccddcee854e495f"
+      }
+    }
+  },
+  "psi3": {
+    "title": "PSI3 basis-set library (lib/pbasis.dat), STO-3G entries for H, C, O",
+    "repository": "https://github.com/psi4/psi3",
+    "commit": "d6289507905a293b61fcc6257f73812abc5ad0c5",
+    "url": "https://raw.githubusercontent.com/psi4/psi3/d6289507905a293b61fcc6257f73812abc5ad0c5/lib/pbasis.dat",
+    "retrieved": "2026-11-13",
+    "upstreamLicense": "GPL-2.0 (the file); only the published basis-set parameters are reproduced, as data",
+    "upstreamSha256": "1c9061699a9e6d6e821dc56e096e47d2a677492703d67fa6ffee7afd5d47a364",
+    "extracted": {
+      "psi3-sto-3g.json": {
+        "bytes": 3455,
+        "sha256": "0e8b62cea712bb639e6b6222d8425ed0fd859ed4739772e12246e77ca6cd893f"
+      }
+    }
+  }
+}

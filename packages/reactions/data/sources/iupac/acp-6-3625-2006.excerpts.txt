@@ -1,0 +1,94 @@
+EXCERPTS kept as the provenance record for the kinetic models of @matterlab/reactions, taken from:
+
+  Atkinson, R., Baulch, D. L., Cox, R. A., Crowley, J. N., Hampson, R. F., Hynes, R. G., Jenkin, M. E., Rossi, M. J., Troe, J.:
+  Evaluated kinetic and photochemical data for atmospheric chemistry: Volume II – gas phase reactions of organic species,
+  Atmospheric Chemistry and Physics, 6, 3625-4055, 2006. https://doi.org/10.5194/acp-6-3625-2006
+
+  Article page: https://acp.copernicus.org/articles/6/3625/2006/ (retrieved 2026-11-13T16:27:39.713Z, SHA-256 00139bde906b7494c28939e0d57129e6b5e769ef9086c27ca9f8d49e46ad6de3).
+  The article page states: "© Author(s) 2006. This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License."
+  PDF: https://acp.copernicus.org/articles/6/3625/2006/acp-6-3625-2006.pdf (retrieved 2026-11-13T16:09:24.301Z, 1911055 bytes, SHA-256 8674af274cbfd173173d38fb640bd3597535e62c11011ccc4c859c486872b034).
+  The PDF itself is not stored in this repository; these excerpts are distributed under the same licence as the article.
+
+Text extracted with pdftotext 4.00: "-layout" for the data sheets, default reading order for the quoted passages.
+Everything between === markers is extractor output and is otherwise unchanged; the quoted passages have their line
+breaks (and end-of-line hyphenation) removed. This header and the notes in [square brackets] are ours.
+Extraction artefacts to keep in mind when reading:
+  - superscripts and subscripts are flattened, so "1.4×10−12" is 1.4 x 10^-12, "1016" after a multiplication sign is 10^16,
+    "cm3 molecule−1 s−1" is cm^3 molecule^-1 s^-1 and "O3" is O with subscript 3;
+  - the extractor emits no upper-case Greek letter anywhere in this article. The capital delta of the PDF is therefore missing:
+    "H ◦ = ..." under a reaction is its standard enthalpy change, and "log k = ± ..." and "(E/R) = ± ..." under "Reliability"
+    are the uncertainties of log k and of E/R that the quoted "Assignment of uncertainties" passage defines.
+
+--- Passages that define the conventions ---
+
+=== QUOTE === Summary table, footnote a (PDF page 7, journal page 3631)
+a The cited uncertainty is an expanded uncertainty corresponding approximately to a 95% conﬁdence limit.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Conventions concerning rate coefficients" (first sentence) (PDF page 8, journal page 3632)
+All of the reactions in the table are elementary processes.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Conventions concerning rate coefficients" (sentence after the rate expression for A + A -> B + C) (PDF page 9, journal page 3633)
+Note that the stoichiometric coefﬁcient for A, i.e. 2, appears in the denominator before the rate of change of [A] (which is equal to 2k[A]2) and as a power on the right-hand side.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (first paragraph) (PDF pages 11-12, journal pages 3635-3636)
+Under the heading “reliability,” estimates have been made of the absolute accuracies of the preferred values of k at 298 K and of the preferred values of E/R over the quoted temperature range. The accuracy of the preferred rate coefﬁcient at 298 K is quoted as the term log k, where log k=D and D is deﬁned by the equation, log10k=C±D. This is equivalent to the statement that k is uncertain to a factor of F , where D=log10F . The accuracy of the preferred value of E/R is quoted as the term (E/R), where (E/R)=G and G is deﬁned by the equation E/R=H ±G. D and G are expanded uncertainties corresponding approximately to a 95% conﬁdence limit.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (sentence introducing the temperature dependence of the uncertainty) (PDF page 12, journal page 3636)
+For second-order rate coefﬁcients listed in this evaluation, an estimate of the uncertainty at any given temperature within the recommended temperature range may be obtained from the equation:
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (the equation that sentence introduces) (PDF page 12, journal page 3636)
+log k(T ) = log k(298 K) + 0.4343{ E/R(1/T − 1/298)}
+=== END QUOTE ===
+
+--- Data sheets used ---
+
+=== DATA SHEET II.A6.146 === (PDF page 303, journal page 3927)
+II.A6.146             CH3C(O)O2 + CH3C(O)O2 → 2CH3C(O)O + O2
+  H ◦ = −71 kJ·mol−1
+
+[... table of rate coefficient data omitted; of the comments on it only the following is kept ...]
+
+ (a) k is deﬁned by -d[CH3C(O)O2]/dt=2k [CH3C(O)O2]2.
+
+[... remaining comments omitted ...]
+
+Preferred Values
+
+k = 1.6 × 10−11 cm3 molecule−1 s−1 at 298 K.
+k = 2.9 × 10−12 exp(500/T ) cm3 molecule−1 s−1 over the temperature range 200–370 K.
+
+Reliability
+
+   log k = ± 0.1 at 298 K.
+   (E/R) = ± 200 K.
+
+[... comments on preferred values and references omitted ...]
+=== END II.A6.146 ===
+
+=== DATA SHEET II.A6.136 === (PDF page 286, journal page 3910)
+II.A6.136             CH2=C(CH3)C(O)OONO2 + M → CH2=C(CH3)CO3 + NO2 + M
+
+[... table of rate coefficient data omitted; of the comments on it only the following is kept ...]
+
+ (a) The thermal decomposition of CH2=C(CH3)C(O)OONO2 (MPAN) was studied in one atmosphere of air, with added NO
+      to ensure that CH2=C(CH3)C(O)OO radicals reacted with NO (to form NO2+CO2+CH2=CCH3) rather than reacting with
+      NO2 to reform MPAN. MPAN concentrations were measured by GC with electron capture detection.
+
+[... remaining comments omitted ...]
+
+Preferred Values
+k = 3.5 × 10−4 s−1 at 298 K and 1 bar.
+k = 1.6 × 1016 exp(-13500/T ) s−1 over the temperature range 290–330 K at 1 bar.
+
+Reliability
+
+   log k = ± 0.3 at 298 K.
+   (E/R) = ± 1000 K.
+
+[... comments on preferred values and references omitted ...]
+=== END II.A6.136 ===

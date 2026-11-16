@@ -1,0 +1,488 @@
+{
+ "schema": "matterlab.experiment-result",
+ "schemaVersion": 1,
+ "input": {
+  "title": "Oxidation of iron",
+  "species": [
+   {
+    "formula": "Fe",
+    "phase": "s",
+    "role": "reactant",
+    "name": "iron"
+   },
+   {
+    "formula": "O2",
+    "phase": "g",
+    "role": "reactant",
+    "name": "oxygen"
+   },
+   {
+    "formula": "Fe2O3",
+    "phase": "s",
+    "role": "product",
+    "name": "iron(III) oxide"
+   }
+  ],
+  "conditions": {
+   "temperatureK": 298.15,
+   "pressureBar": 1,
+   "durationSeconds": 60,
+   "environment": "unspecified",
+   "concentrationUnit": "mol/L"
+  },
+  "method": "auto"
+ },
+ "inputHash": "6f9a3a1986698fb888f8fb085c3cd990b143d9ac4d1940eb453aa5541dc971c0",
+ "status": "partial",
+ "evidence": "computed",
+ "steps": [
+  {
+   "id": "validate-species",
+   "title": "Validate the species and conditions",
+   "status": "passed",
+   "summary": "All 3 species can be read, the roles make an experiment and the conditions are physical.",
+   "details": [
+    "Species: Fe(s): reactant, iron; O2(g): reactant, oxygen; Fe2O3(s): product, iron(III) oxide.",
+    "Conditions: 298.15 K, 1 bar, 60 s, environment unspecified."
+   ]
+  },
+  {
+   "id": "conservation",
+   "title": "Check conservation of atoms and charge",
+   "status": "passed",
+   "summary": "Balanced with the smallest whole-number coefficients: 4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s).",
+   "details": [
+    "Atoms on the reactant side and on the product side: Fe 4 = 4, O 6 = 6.",
+    "Charge on the reactant side and on the product side: 0 = 0.",
+    "Balancing is bookkeeping: it shows that the equation is possible, not that the reaction takes place."
+   ]
+  },
+  {
+   "id": "model-selection",
+   "title": "Select the models that apply",
+   "status": "passed",
+   "summary": "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated.",
+   "details": [
+    "Stoichiometry: applies. The equation is balanced.",
+    "Thermodynamics: selected. Standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from the reference table, as far as the table covers the species.",
+    "Kinetics: not available. No sourced rate law exists for this reaction, and the rate law of a similar reaction is never substituted."
+   ]
+  },
+  {
+   "id": "reference-data",
+   "title": "Look up the reference data",
+   "status": "failed",
+   "summary": "Fe(s) and Fe2O3(s) are missing from the reference table, so no thermodynamic values can be computed.",
+   "details": [
+    "Fe(s): not in the reference table.",
+    "O2(g): oxygen (CODATA Key Values for Thermodynamics); ΔfH° = 0 kJ/mol (zero by definition); S° = 205.152 ± 0.005 J/(mol K), as printed by the source.",
+    "Fe2O3(s): not in the reference table."
+   ]
+  },
+  {
+   "id": "engine",
+   "title": "Name the calculation engine",
+   "status": "passed",
+   "summary": "Engines used: exact rational balancing.",
+   "details": [
+    "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+    "Thermodynamics: no engine is run, because the reference table does not cover every species of the equation.",
+    "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used."
+   ]
+  },
+  {
+   "id": "calculation",
+   "title": "Run the calculation",
+   "status": "failed",
+   "summary": "Nothing could be calculated beyond the balanced equation.",
+   "details": [
+    "No thermodynamic values were computed: Fe(s) and Fe2O3(s) are not in the reference table."
+   ]
+  },
+  {
+   "id": "limitations",
+   "title": "State the limitations",
+   "status": "warning",
+   "summary": "3 limitations apply, 1 of them because of this particular experiment.",
+   "details": [
+    "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+    "No thermodynamic values are given because Fe(s) and Fe2O3(s) are not in the reference table. Nothing is estimated for a missing species, and no value is taken from a similar one.",
+    "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+   ]
+  }
+ ],
+ "equation": {
+  "text": "4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s)",
+  "balanced": {
+   "reactants": [
+    {
+     "formula": "Fe",
+     "phase": "s",
+     "coefficient": 4,
+     "parsed": {
+      "elements": {
+       "Fe": 1
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "O2",
+     "phase": "g",
+     "coefficient": 3,
+     "parsed": {
+      "elements": {
+       "O": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "Fe2O3",
+     "phase": "s",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "Fe": 2,
+       "O": 3
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "balance": {
+   "status": "balanced",
+   "equation": {
+    "reactants": [
+     {
+      "formula": "Fe",
+      "phase": "s",
+      "coefficient": 4,
+      "parsed": {
+       "elements": {
+        "Fe": 1
+       },
+       "charge": 0
+      }
+     },
+     {
+      "formula": "O2",
+      "phase": "g",
+      "coefficient": 3,
+      "parsed": {
+       "elements": {
+        "O": 2
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "products": [
+     {
+      "formula": "Fe2O3",
+      "phase": "s",
+      "coefficient": 2,
+      "parsed": {
+       "elements": {
+        "Fe": 2,
+        "O": 3
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "reversible": false
+   },
+   "message": "Balanced with the smallest whole-number coefficients: 4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s).",
+   "independentSolutions": 1
+  }
+ },
+ "balance": {
+  "status": "balanced",
+  "equation": {
+   "reactants": [
+    {
+     "formula": "Fe",
+     "phase": "s",
+     "coefficient": 4,
+     "parsed": {
+      "elements": {
+       "Fe": 1
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "O2",
+     "phase": "g",
+     "coefficient": 3,
+     "parsed": {
+      "elements": {
+       "O": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "Fe2O3",
+     "phase": "s",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "Fe": 2,
+       "O": 3
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "message": "Balanced with the smallest whole-number coefficients: 4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s).",
+  "independentSolutions": 1
+ },
+ "thermo": {
+  "status": "missing-data",
+  "temperatureK": 298.15,
+  "terms": [
+   {
+    "role": "reactant",
+    "term": "Fe(s)",
+    "coefficient": 4,
+    "lookup": "not-tabulated",
+    "phaseAssumed": false,
+    "availablePhases": []
+   },
+   {
+    "role": "reactant",
+    "term": "O2(g)",
+    "coefficient": 3,
+    "lookup": "found",
+    "speciesId": "O2(g)",
+    "name": "oxygen",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   },
+   {
+    "role": "product",
+    "term": "Fe2O3(s)",
+    "coefficient": 2,
+    "lookup": "not-tabulated",
+    "phaseAssumed": false,
+    "availablePhases": []
+   }
+  ],
+  "conservation": {
+   "balanced": true,
+   "elementImbalance": {
+    "Fe": 0,
+    "O": 0
+   },
+   "chargeImbalance": 0
+  },
+  "missingSpecies": [
+   "Fe(s)",
+   "Fe2O3(s)"
+  ],
+  "missingEntropy": [],
+  "withinValidatedRange": false,
+  "assumptions": [],
+  "warnings": [
+   "Fe(s) is not in the table.",
+   "Fe2O3(s) is not in the table."
+  ],
+  "evidence": "unsupported"
+ },
+ "kineticModel": null,
+ "rateConstant": null,
+ "kinetics": null,
+ "energyDiagrams": [
+  {
+   "quantity": "enthalpy",
+   "unit": "kJ/mol",
+   "levels": [],
+   "notes": [
+    "No enthalpy diagram is drawn: the reaction enthalpy could not be computed because Fe(s) and Fe2O3(s) are not in the reference table."
+   ]
+  }
+ ],
+ "explanation": {
+  "beginner": [
+   {
+    "heading": "What this experiment asks",
+    "paragraphs": [
+     "This experiment looks at the reaction **4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s)**.",
+     "It asks how much heat the reaction gives out or takes in and which side of the reaction is favoured.",
+     "MATTER LAB works on the reaction you entered. It does not decide whether these substances really react."
+    ]
+   },
+   {
+    "heading": "What goes in",
+    "paragraphs": [
+     "Starting substances: iron (Fe, solid) and oxygen (O2, gas). Products entered: iron(III) oxide (Fe2O3, solid).",
+     "Temperature 298.15 K (25 °C), pressure 1 bar."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "How it was worked out",
+    "paragraphs": [
+     "First the equation was balanced, so that no atoms and no electric charge appear or disappear.",
+     "The energy values could not be worked out, because reference data are missing (see below).",
+     "No speed was worked out: MATTER LAB has no published rate data for this reaction and does not borrow data from a similar one."
+    ]
+   },
+   {
+    "heading": "The idea behind the numbers",
+    "paragraphs": [
+     "Balancing rests on one rule: every atom and every unit of electric charge on one side of the arrow is also on the other side."
+    ],
+    "equation": "atoms and charge before = atoms and charge after"
+   },
+   {
+    "heading": "What is assumed",
+    "paragraphs": [
+     "Only that the formulas entered are the substances meant."
+    ]
+   },
+   {
+    "heading": "What came out",
+    "paragraphs": [
+     "Balanced equation: **4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s)**.",
+     "No energy values: MATTER LAB has no usable reference data for Fe(s) and Fe2O3(s)."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "How sure is this",
+    "paragraphs": [
+     "The balanced equation is exact arithmetic; its numbers are certain."
+    ]
+   },
+   {
+    "heading": "Did the calculation finish",
+    "paragraphs": [
+     "Balancing an equation is exact arithmetic. There is no step-by-step calculation that could fail to finish."
+    ]
+   },
+   {
+    "heading": "What is not included",
+    "paragraphs": [
+     "MATTER LAB did not predict that these substances react. It only did the sums for the reaction you entered.",
+     "MATTER LAB has no reference data for Fe(s) and Fe2O3(s), so it gives no energy values. It does not guess them.",
+     "MATTER LAB has no published speed data for this reaction, so it says nothing about how fast it goes."
+    ]
+   },
+   {
+    "heading": "Why reality may differ",
+    "paragraphs": [
+     "The reaction that really happens may not be the one written down: other products can form."
+    ]
+   }
+  ],
+  "advanced": [
+   {
+    "heading": "Objective",
+    "paragraphs": [
+     "Evaluate the reaction 4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s) at 298.15 K and 1 bar: the balanced equation, the standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from reference data and the rate constant and concentration-time curves, if a sourced rate law exists for exactly this reaction.",
+     "Method requested: auto. The equation was built from the species entered as reactants and products; no product was predicted."
+    ]
+   },
+   {
+    "heading": "Initial species and conditions",
+    "paragraphs": [
+     "Fe(s): reactant, iron.",
+     "O2(g): reactant, oxygen.",
+     "Fe2O3(s): product, iron(III) oxide.",
+     "Temperature 298.15 K; pressure 1 bar; duration 60 s; environment unspecified; concentrations in mol/L.",
+     "These values are used as entered. They describe the experiment that was asked for, not a measured system."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "Method",
+    "paragraphs": [
+     "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+     "Thermodynamics: no engine is run, because the reference table does not cover every species of the equation.",
+     "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used.",
+     "Fe(s) and Fe2O3(s) are missing from the reference table, so no thermodynamic values can be computed.",
+     "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated."
+    ]
+   },
+   {
+    "heading": "Mathematical model: conservation",
+    "paragraphs": [
+     "The coefficients ν (negative for reactants, positive for products) have to satisfy the conservation equations for every element and for the charge.",
+     "These equations have a single solution up to scale here; the smallest positive whole numbers are used."
+    ],
+    "equation": "Σ ν·(atoms of each element) = 0,  Σ ν·(charge) = 0"
+   },
+   {
+    "heading": "Assumptions",
+    "paragraphs": [
+     "None beyond the formulas as entered: balancing uses only the composition and charge of each species."
+    ]
+   },
+   {
+    "heading": "Results",
+    "paragraphs": [
+     "Balanced equation: 4 Fe(s) + 3 O2(g) -> 2 Fe2O3(s).",
+     "No thermodynamic values: no usable table entry for Fe(s) and Fe2O3(s).",
+     "No kinetic results: no sourced rate law exists for this reaction."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "Confidence and uncertainty",
+    "paragraphs": [
+     "Stoichiometric coefficients are exact (rational arithmetic)."
+    ]
+   },
+   {
+    "heading": "Convergence status",
+    "paragraphs": [
+     "Balancing: exact, nothing to converge."
+    ]
+   },
+   {
+    "heading": "Known limitations",
+    "paragraphs": [
+     "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+     "No thermodynamic values are given because Fe(s) and Fe2O3(s) are not in the reference table. Nothing is estimated for a missing species, and no value is taken from a similar one.",
+     "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+    ]
+   },
+   {
+    "heading": "Why the prediction may not match reality",
+    "paragraphs": [
+     "The equation as written may not be the reaction that occurs: side reactions, incomplete conversion and other products are not considered."
+    ]
+   }
+  ],
+  "references": []
+ },
+ "warnings": [
+  "Fe(s) is not in the table.",
+  "Fe2O3(s) is not in the table."
+ ],
+ "limitations": [
+  "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+  "No thermodynamic values are given because Fe(s) and Fe2O3(s) are not in the reference table. Nothing is estimated for a missing species, and no value is taken from a similar one.",
+  "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+ ],
+ "reproducibility": {
+  "engine": "@matterlab/reactions",
+  "engineVersion": "0.1.0",
+  "dataSources": [],
+  "solver": null,
+  "deterministic": true
+ }
+}

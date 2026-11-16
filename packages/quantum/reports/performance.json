@@ -1,0 +1,60 @@
+{
+  "report": "performance",
+  "generated": "2026-11-14T10:15:22.165Z",
+  "node": "v24.14.1",
+  "records": {
+    "water": {
+      "nBasis": 7,
+      "coldMs": 67.18010000000004,
+      "bestMs": 2.540599999999813,
+      "iterations": 8,
+      "timings": {
+        "integralsMs": 2.038300000000163,
+        "scfMs": 1.243800000000192,
+        "totalMs": 3.296700000000328
+      },
+      "measuredOverEstimated": 1.4022875070234773
+    },
+    "methane": {
+      "nBasis": 9,
+      "coldMs": 31.726200000000063,
+      "bestMs": 5.366500000000087,
+      "iterations": 7,
+      "timings": {
+        "integralsMs": 3.9327000000002954,
+        "scfMs": 1.2893999999996595,
+        "totalMs": 5.228700000000117
+      },
+      "measuredOverEstimated": 1.766141360420888
+    },
+    "benzene": {
+      "nBasis": 36,
+      "coldMs": 663.7714999999998,
+      "bestMs": 485.9713999999999,
+      "allMs": [
+        663.7714999999998,
+        485.9713999999999,
+        493.6792000000005
+      ],
+      "iterations": 9,
+      "timings": {
+        "integralsMs": 336.8064000000004,
+        "scfMs": 156.4939999999997,
+        "totalMs": 493.3798999999999
+      },
+      "measuredOverEstimated": 2.015219083751686
+    },
+    "benzene-fields": {
+      "gridPoints": 262144,
+      "spacingAngstrom": 0.17142857142857143,
+      "densityGridColdMs": 325.7371000000003,
+      "densityGridBestMs": 294.92149999999947,
+      "orbitalGridBestMs": 56.95310000000063,
+      "marchingCubesBestMs": 16.497999999999593,
+      "meshVertices": 3728,
+      "meshTriangles": 7452,
+      "espAtMeshVerticesMs": 342.3800000000001,
+      "espMicrosecondsPerPoint": 91.84012875536484
+    }
+  }
+}

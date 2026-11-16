@@ -1,0 +1,75 @@
+{
+  "report": "integrals",
+  "generated": "2026-11-14T10:15:18.830Z",
+  "node": "v24.14.1",
+  "records": {
+    "pyscf/LiH": {
+      "pyscf": "2.15.0",
+      "nBasis": 6,
+      "overlap": 2.220446049250313e-16,
+      "kinetic": 4.440892098500626e-16,
+      "nuclearAttraction": 1.4210854715202004e-14,
+      "position": 4.440892098500626e-16,
+      "eri": 3.497202527569243e-15,
+      "eriCount": 231,
+      "largestEri": 1.6803951530513197
+    },
+    "pyscf/H2S": {
+      "pyscf": "2.15.0",
+      "nBasis": 11,
+      "overlap": 5.551115123125783e-16,
+      "kinetic": 7.105427357601002e-15,
+      "nuclearAttraction": 6.039613253960852e-14,
+      "position": 1.3322676295501878e-15,
+      "eri": 3.552713678800501e-15,
+      "eriCount": 2211,
+      "largestEri": 9.663833835925026
+    },
+    "pyscf/HCl": {
+      "pyscf": "2.15.0",
+      "nBasis": 10,
+      "overlap": 6.661338147750939e-16,
+      "kinetic": 3.552713678800501e-15,
+      "nuclearAttraction": 1.0480505352461478e-13,
+      "position": 8.881784197001252e-16,
+      "eri": 6.5503158452884236e-15,
+      "eriCount": 1540,
+      "largestEri": 10.26352876096081
+    },
+    "pyscf/SiH4": {
+      "pyscf": "2.15.0",
+      "nBasis": 13,
+      "overlap": 3.3306690738754696e-16,
+      "kinetic": 1.4210854715202004e-14,
+      "nuclearAttraction": 6.394884621840902e-14,
+      "position": 8.881784197001252e-16,
+      "eri": 6.106226635438361e-15,
+      "eriCount": 4186,
+      "largestEri": 8.451950342799528
+    },
+    "pyscf/NaCl": {
+      "pyscf": "2.15.0",
+      "nBasis": 18,
+      "overlap": 6.661338147750939e-16,
+      "kinetic": 3.552713678800501e-14,
+      "nuclearAttraction": 5.861977570020827e-14,
+      "position": 2.6645352591003757e-15,
+      "eri": 9.35496185456682e-15,
+      "eriCount": 14706,
+      "largestEri": 10.26352876096081
+    },
+    "screening": {
+      "nBasis": 21,
+      "largestDeviation": 2.2859354108295733e-14,
+      "shellQuartets": {
+        "all": 1035,
+        "computed": 171,
+        "screened": 864
+      },
+      "primitiveQuartets": {
+        "all": 66420,
+        "computed": 13851
+      }
+    }
+  }
+}

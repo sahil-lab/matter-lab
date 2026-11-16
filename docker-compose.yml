@@ -1,0 +1,70 @@
+# MATTER LAB backend stack: PostgreSQL (authoritative database) + the Python science service.
+#
+#   docker compose -p matterlab up -d --build      start (builds the science image on first use)
+#   docker compose -p matterlab run --rm science pytest   run the test suite inside the service image
+#   docker compose -p matterlab down               stop; the named volume matterlab_pgdata is kept
+#
+# Every setting has a local-development default and can be overridden from the environment or a
+# .env file next to this file. The credentials below are development defaults, not secrets.
+name: matterlab
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${MATTERLAB_DB_USER:-matterlab}
+      POSTGRES_PASSWORD: ${MATTERLAB_DB_PASSWORD:-matterlab_local_dev}
+      POSTGRES_DB: ${MATTERLAB_DB_NAME:-matterlab}
+    ports:
+      # Published on the loopback interface only.
+      - "${MATTERLAB_BIND_ADDRESS:-127.0.0.1}:${MATTERLAB_DB_HOST_PORT:-55432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # TCP check: during first-time initialisation PostgreSQL listens on its Unix socket only,
+      # so this turns healthy only once the real server accepts connections.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  science:
+    image: matterlab-science:dev
+    build:
+      context: .
+      dockerfile: services/science/Dockerfile
+      args:
+        MATTERLAB_OPTIONAL_ENGINES: ${MATTERLAB_OPTIONAL_ENGINES:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 20s
+    environment:
+      MATTERLAB_DB_HOST: db
+      MATTERLAB_DB_PORT: "5432"
+      MATTERLAB_DB_USER: ${MATTERLAB_DB_USER:-matterlab}
+      MATTERLAB_DB_PASSWORD: ${MATTERLAB_DB_PASSWORD:-matterlab_local_dev}
+      MATTERLAB_DB_NAME: ${MATTERLAB_DB_NAME:-matterlab}
+      MATTERLAB_CORS_ORIGINS: ${MATTERLAB_CORS_ORIGINS:-http://127.0.0.1:5273,http://localhost:5273,http://127.0.0.1:4273,http://localhost:4273}
+      MATTERLAB_AUTO_MIGRATE: ${MATTERLAB_AUTO_MIGRATE:-true}
+      MATTERLAB_AUTO_SEED: ${MATTERLAB_AUTO_SEED:-true}
+      MATTERLAB_JOB_WORKERS: ${MATTERLAB_JOB_WORKERS:-2}
+      MATTERLAB_JOB_WARM_WORKERS: ${MATTERLAB_JOB_WARM_WORKERS:-1}
+      MATTERLAB_JOB_THREADS: ${MATTERLAB_JOB_THREADS:-2}
+      MATTERLAB_JOB_TIMEOUT_SECONDS: ${MATTERLAB_JOB_TIMEOUT_SECONDS:-600}
+      MATTERLAB_JOB_MAX_TIMEOUT_SECONDS: ${MATTERLAB_JOB_MAX_TIMEOUT_SECONDS:-3600}
+      MATTERLAB_DISABLED_ENGINES: ${MATTERLAB_DISABLED_ENGINES:-}
+      MATTERLAB_EXTERNAL_LOOKUPS_ENABLED: ${MATTERLAB_EXTERNAL_LOOKUPS_ENABLED:-true}
+      MATTERLAB_LOG_LEVEL: ${MATTERLAB_LOG_LEVEL:-INFO}
+    ports:
+      - "${MATTERLAB_BIND_ADDRESS:-127.0.0.1}:${MATTERLAB_API_HOST_PORT:-8787}:8787"
+    volumes:
+      # Live, read-only views of the migrations and of the generated reference data. The image
+      # also carries a copy of both, so it runs without these mounts.
+      - ./db/migrations:/db/migrations:ro
+      - ./tools/data/generated:/data/generated:ro
+
+volumes:
+  pgdata:

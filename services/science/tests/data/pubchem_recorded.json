@@ -1,0 +1,28 @@
+{
+  "description": "Answers of PubChem PUG REST recorded verbatim on 2026-11-13 (curl against https://pubchem.ncbi.nlm.nih.gov/rest/pug). The discovery tests replay them from a local HTTP server so that the lookup code is exercised with real response shapes without depending on the network. They are test fixtures, not reference data used by the service.",
+  "retrieved_at": "2026-11-13T19:53:06Z",
+  "structures": {
+    "phenacetin": {
+      "smiles": "CCOC1=CC=C(C=C1)NC(=O)C",
+      "inchikey": "CPJSUEIXXCENMM-UHFFFAOYSA-N",
+      "source_url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/phenacetin/property/Title,InChIKey,SMILES,MolecularFormula/JSON"
+    }
+  },
+  "lookups": {
+    "CPJSUEIXXCENMM-UHFFFAOYSA-N": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/CPJSUEIXXCENMM-UHFFFAOYSA-N/cids/JSON",
+      "http_status": 200,
+      "body": {"IdentifierList": {"CID": [4754]}}
+    },
+    "BSYNRYMUTXBXSQ-UHFFFAOYSA-N": {
+      "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/BSYNRYMUTXBXSQ-UHFFFAOYSA-N/cids/JSON",
+      "http_status": 200,
+      "body": {"IdentifierList": {"CID": [2244]}}
+    }
+  },
+  "not_found": {
+    "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/AAAAAAAAAAAAAA-UHFFFAOYSA-N/cids/JSON",
+    "http_status": 404,
+    "body": {"Fault": {"Code": "PUGREST.NotFound", "Message": "No CID found", "Details": ["No CID found that matches the given InChI key"]}}
+  }
+}

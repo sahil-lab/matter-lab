@@ -1,0 +1,8 @@
+# Keep reference data and migration checksums unchanged across checkouts.
+tools/data/sources/** -text
+packages/reactions/data/sources/** -text
+packages/forcefield/tools/rdkit-src/** -text
+packages/quantum/data/** -text
+**/test/fixtures/** -text
+services/science/tests/data/** -text
+db/migrations/*.sql -text

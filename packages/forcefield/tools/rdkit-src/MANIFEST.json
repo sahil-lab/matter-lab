@@ -1,0 +1,197 @@
+{
+  "repository": "https://github.com/rdkit/rdkit",
+  "tag": "Release_2026_09_2",
+  "commit": "f86b7dc9b31e2531200bbd1f54589bcbd968bb05",
+  "license": "BSD-3-Clause (see license.txt)",
+  "retrieved": "2026-11-13",
+  "files": {
+    "license.txt": {
+      "sha256": "daeb8d194502cbcf34c05c39541a0d02be65bc9bada5b891c1974cd24e9fca30",
+      "bytes": 1580
+    },
+    "Code/ForceField/UFF/Params.cpp": {
+      "sha256": "c2e3fedb28233258a5277dcfddd0e163c55bd4cc9e83b2e242fefb0cb96f787e",
+      "bytes": 12262
+    },
+    "Code/ForceField/UFF/Params.h": {
+      "sha256": "29f0c4ef52d6f44b6b92529fb566e5b06f7e25fc81280e6e38f38e7a21abae6e",
+      "bytes": 4421
+    },
+    "Code/ForceField/UFF/BondStretch.cpp": {
+      "sha256": "e5b9f6a53de4ba98fa802480fc46f983cdb39e6c8f2c7e7e3b81d25a4f0ccea8",
+      "bytes": 3467
+    },
+    "Code/ForceField/UFF/BondStretch.h": {
+      "sha256": "7f89160136df64784ade6c5d938327c08bb353bc6a6a15e8ad0b6c1a98b52ba0",
+      "bytes": 2573
+    },
+    "Code/ForceField/UFF/AngleBend.cpp": {
+      "sha256": "6bad55eed14efe40feeff640c61461bae2004a158914b702e7641741f06f6e80",
+      "bytes": 10145
+    },
+    "Code/ForceField/UFF/AngleBend.h": {
+      "sha256": "8360f107fbb028431137eebd678c009dd70bad63f3d7e3e664b59efea0ab45f8",
+      "bytes": 3539
+    },
+    "Code/ForceField/UFF/TorsionAngle.cpp": {
+      "sha256": "61c44c246b427db0b98ca11f750d3a25a3fb7c939aa6765d0b0bb5dd594e2fd1",
+      "bytes": 10343
+    },
+    "Code/ForceField/UFF/TorsionAngle.h": {
+      "sha256": "7f05e61a9e7c5c94c479f81f3e20e1e5cdc1ef208d49cb190e1bc94e78afefa8",
+      "bytes": 4577
+    },
+    "Code/ForceField/UFF/Inversion.cpp": {
+      "sha256": "5d5bda9cf92c30d103143c9d52bf8fba272b11d6564dcdaa5e9378eb63f92e8d",
+      "bytes": 5253
+    },
+    "Code/ForceField/UFF/Inversion.h": {
+      "sha256": "8ca611d305d9ac4af12171a01f52e842739f192e420216a3f8dcd64eb1b63887",
+      "bytes": 1810
+    },
+    "Code/ForceField/UFF/Inversions.cpp": {
+      "sha256": "6272c3db755f0bdb4737fda0232afd646097c50f09a94c5d9643b0a5645f69d5",
+      "bytes": 7261
+    },
+    "Code/ForceField/UFF/Inversions.h": {
+      "sha256": "31383a0c66efe780fbacc8b72c39a8f7063559d8f29be63f343343acf29e7482",
+      "bytes": 4218
+    },
+    "Code/ForceField/UFF/Nonbonded.cpp": {
+      "sha256": "1f7e01677f373b54f8118bc8f8dd7217f69f42c0a5f6fbca5f844d8beef5855b",
+      "bytes": 3254
+    },
+    "Code/ForceField/UFF/Nonbonded.h": {
+      "sha256": "38c813e1611c5d91ba48064db4eb8630a99c9ae7c62980856668a76c35c8fc4d",
+      "bytes": 2875
+    },
+    "Code/ForceField/UFF/Utils.cpp": {
+      "sha256": "768e9d937a5847cc45ae36d4d7853a2b4c8e944d81e203545f9cff3d8059ace2",
+      "bytes": 2407
+    },
+    "Code/ForceField/UFF/Utils.h": {
+      "sha256": "c4d78bd0e881af458a61ea706c4f197ed944a8b3ff77140a4bae1d272135da72",
+      "bytes": 1368
+    },
+    "Code/ForceField/UFF/Contribs.h": {
+      "sha256": "7e2ece058ca40accddae654d97e3924a026fd4bd25a61c53c9f63a50097c5c00",
+      "bytes": 623
+    },
+    "Code/ForceField/UFF/testUFFForceField.cpp": {
+      "sha256": "d99585aa400b44ca8326f28e869be35a39c05a809f6131631a4e9edb475ce337",
+      "bytes": 57918
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/AtomTyper.cpp": {
+      "sha256": "f2e5c625891e55d505713a73c0c941b614986bfda2706bc86906b5eae3d55715",
+      "bytes": 22336
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/AtomTyper.h": {
+      "sha256": "c6ae9bae26622a66fe55fada6f77f053f01f7d50d49f5c167a4da521cf605634",
+      "bytes": 2111
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/Builder.cpp": {
+      "sha256": "c97305215b8aa32dceb84f11e11e12f7ae08f9e5289ff0f7a8ba9cdd64ab24ab",
+      "bytes": 26102
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/Builder.h": {
+      "sha256": "a2a02b73b11bbdc846ae80c0b60f1c0ad180a3778014aa0d5604f4a05ac03ff1",
+      "bytes": 5143
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/UFF.h": {
+      "sha256": "33b87b37291e9b43ae0240661019a803b9ac31da8e639113db1bb60de886f188",
+      "bytes": 3360
+    },
+    "Code/GraphMol/ForceFieldHelpers/UFF/testUFFHelpers.cpp": {
+      "sha256": "de1c39a8d8c236ccf2d3a9096181f5a7cfbb5ed8f258d1657a4b90cefb6d04af",
+      "bytes": 44840
+    },
+    "Code/GraphMol/ForceFieldHelpers/FFConvenience.h": {
+      "sha256": "849ad6353b7ca52308b0d03e8f256b666b7fe4f7e17f686be858ee0a3dceb692",
+      "bytes": 5257
+    },
+    "Code/GraphMol/ForceFieldHelpers/Wrap/rdForceFields.cpp": {
+      "sha256": "aedf9f56ffb2e4813179ef9ac70dedfeb796476c5c7c31b05045c89e221b7455",
+      "bytes": 20256
+    },
+    "Code/GraphMol/ConjugHybrid.cpp": {
+      "sha256": "f891eb7a0ff010ce19aad88617861369ba5c2f1ea3f2e0342079dda197308a0c",
+      "bytes": 8508
+    },
+    "Code/GraphMol/Aromaticity.cpp": {
+      "sha256": "0249e581b2995a39ceb9faf9722915edd7c96d4734a30824ee5c06c11381c924",
+      "bytes": 38998
+    },
+    "Code/GraphMol/AddHs.cpp": {
+      "sha256": "eaa087e002fb99da2429ba27f8636c68a460f88806b8bf27d7633c673356d165",
+      "bytes": 50859
+    },
+    "Code/GraphMol/MolOps.h": {
+      "sha256": "8dcb41735b2e03f9db3d6e0ac4090ca113f00b5b76a498cc8624034e22435dd0",
+      "bytes": 59736
+    },
+    "Code/Geometry/point.h": {
+      "sha256": "5fc752e4d2653420322b55779f6c37f4faea2220c26120979468fd8fe48ff113",
+      "bytes": 16222
+    },
+    "Code/GraphMol/Atom.cpp": {
+      "sha256": "57b28e64cc50acebea1b3da8cb8db7710c7989502e07d29085d4100982b9e88f",
+      "bytes": 33065
+    },
+    "Code/GraphMol/Atom.h": {
+      "sha256": "fb35f19b15be0d150ac2cfafa1e1f2cdfc5f4d6a2fddfe86b34376e69afac563",
+      "bytes": 16719
+    },
+    "Code/GraphMol/Bond.cpp": {
+      "sha256": "b0f1d069c4ba60880368595117211d5fef41154a7f7cd3608314f54c88daf7e8",
+      "bytes": 12233
+    },
+    "Code/GraphMol/Bond.h": {
+      "sha256": "1eb11206390ffd75131f122ee31a94ffdcd02f113b37f641b8816e57cdb386ed",
+      "bytes": 13908
+    },
+    "Code/GraphMol/MolOps.cpp": {
+      "sha256": "32feabab1c677619b1ca6156801d60c2a6a197fbb244c67622d2108562e0e7f2",
+      "bytes": 49679
+    },
+    "Code/GraphMol/PeriodicTable.h": {
+      "sha256": "87dedcb3ebee3bc84e0568fb36d1101d750d5e7251f1e562fa7a71e877002775",
+      "bytes": 12251
+    },
+    "Code/GraphMol/atomic_data.cpp": {
+      "sha256": "7f9cee6e430b60d303a0a7fa9e33c45e5c529ee204f86afeab6a20f68b6b0631",
+      "bytes": 97166
+    },
+    "Code/GraphMol/FindRings.cpp": {
+      "sha256": "41a9e0a32247caa0143c39a0ee90e6af4a0bf00384fd3eaef7e780023a2864af",
+      "bytes": 41961
+    },
+    "Code/GraphMol/RingInfo.h": {
+      "sha256": "94b8fb843710653bb6fd27194a2983e89e0f1244026885850750fcf9f272aa0d",
+      "bytes": 10734
+    },
+    "Code/ForceField/ForceField.cpp": {
+      "sha256": "ea3236cdba7d44eb695c259e135b2fe016feac7927fb4ac2f29ae10e436b0219",
+      "bytes": 12117
+    },
+    "Code/ForceField/ForceField.h": {
+      "sha256": "9da42abe0767e21f325ecac0d9d1f989972e9779af3831c0c0194c9bb28839be",
+      "bytes": 9291
+    },
+    "Code/ForceField/Contrib.h": {
+      "sha256": "922596d333c7eeb3b5edb56aa7aa537603ca51f0319c46a3b0ab9cdb7a0be289",
+      "bytes": 1116
+    },
+    "Code/Numerics/Optimizer/BFGSOpt.h": {
+      "sha256": "f90a8708f43e337ea3ac3d90cb4c5cec11587161f5f0db58b735bd044d176638",
+      "bytes": 14321
+    },
+    "Code/Numerics/Optimizer/BFGSOpt.cpp": {
+      "sha256": "c4210d7ec935ba5bdfebd2055fcd7ea7b15c95bae65eb2218e3f5a2772765d4a",
+      "bytes": 372
+    },
+    "Code/Numerics/Optimizer/LinearSearch.cpp": {
+      "sha256": "850040434af5de1692f54f12787fcb82279947526190f43a99edb23f869d3105",
+      "bytes": 382
+    }
+  }
+}

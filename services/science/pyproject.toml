@@ -1,0 +1,23 @@
+[project]
+name = "matterlab-science"
+version = "0.1.0"
+description = "MATTER LAB science service: validated scientific libraries behind a typed HTTP API"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -p no:cacheprovider"
+markers = [
+    "network: needs the public internet (PubChem); skipped with a reason when it is unreachable",
+]
+filterwarnings = [
+    "error",
+    # Emitted by third-party libraries while they are imported; not something this code base can fix.
+    "ignore::DeprecationWarning:ase.*",
+    "ignore::DeprecationWarning:pyscf.*",
+    "ignore::UserWarning:pyscf.*",
+]
+
+[tool.ruff]
+line-length = 160
+target-version = "py312"

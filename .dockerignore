@@ -1,0 +1,24 @@
+# The science image is built with the repository root as its build context so that it can copy
+# the SQL migrations (db/migrations) and the generated reference data (tools/data/generated).
+# Everything else is kept out of the context.
+*
+
+!services/
+services/*
+!services/science/
+
+!db/
+db/*
+!db/migrations/
+
+!tools/
+tools/*
+!tools/data/
+tools/data/*
+!tools/data/generated/
+
+services/science/.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/*.xlsx

@@ -1,0 +1,19 @@
+{
+  "report": "boys",
+  "generated": "2026-11-14T10:15:17.775Z",
+  "node": "v24.14.1",
+  "records": {
+    "mpmath": {
+      "mpmath": "1.4.1",
+      "arguments": 454,
+      "orders": 9,
+      "worstRelative": 1.2696922292248542e-15,
+      "worstAbsolute": 2.220446049250313e-16,
+      "worstAt": "m=1, T=29.737338978518025",
+      "range": [
+        0,
+        100000000
+      ]
+    }
+  }
+}

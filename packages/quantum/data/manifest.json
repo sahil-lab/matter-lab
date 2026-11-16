@@ -1,0 +1,36 @@
+{
+  "sto-3g": {
+    "source": "Basis Set Exchange",
+    "homepage": "https://www.basissetexchange.org",
+    "bseVersion": "0.12",
+    "basisName": "STO-3G",
+    "basisVersion": "1",
+    "revisionDescription": "Data from Gaussian09",
+    "revisionDate": "2018-06-19",
+    "elements": "1-18",
+    "retrieved": "2026-11-13",
+    "files": {
+      "sto-3g.bse.json": {
+        "role": "Basis set (exponents and contraction coefficients), MolSSI BSE JSON schema",
+        "url": "https://www.basissetexchange.org/api/basis/sto-3g/format/json/?elements=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        "retrieved": "2026-11-13",
+        "bytes": 39406,
+        "sha256": "138c7b6b356329ea6167660296b231f1c80e5ec84ce7097900146b57ec8a4f39"
+      },
+      "sto-3g.references.bse.json": {
+        "role": "Literature references the Basis Set Exchange lists for this basis set",
+        "url": "https://www.basissetexchange.org/api/references/sto-3g/format/json/?elements=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        "retrieved": "2026-11-13",
+        "bytes": 4413,
+        "sha256": "6680e39a55500fe82230574f6e9d721f2e326918551cf5c1ecc09e075e4c5a02"
+      },
+      "sto-3g.bse.nw": {
+        "role": "Same basis in NWChem format; kept because its header states the Basis Set Exchange version",
+        "url": "https://www.basissetexchange.org/api/basis/sto-3g/format/nwchem/?elements=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        "retrieved": "2026-11-13",
+        "bytes": 8806,
+        "sha256": "cce776f7309c3cb45f4940545d202a6832266a2789a4a74ff9486d8019929d5a"
+      }
+    }
+  }
+}

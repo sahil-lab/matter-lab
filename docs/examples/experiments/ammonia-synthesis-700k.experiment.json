@@ -1,0 +1,684 @@
+{
+ "schema": "matterlab.experiment-result",
+ "schemaVersion": 1,
+ "input": {
+  "title": "Ammonia synthesis at 700 K and 200 bar",
+  "species": [
+   {
+    "formula": "N2",
+    "phase": "g",
+    "role": "reactant",
+    "name": "nitrogen"
+   },
+   {
+    "formula": "H2",
+    "phase": "g",
+    "role": "reactant",
+    "name": "hydrogen"
+   },
+   {
+    "formula": "NH3",
+    "phase": "g",
+    "role": "product",
+    "name": "ammonia"
+   },
+   {
+    "formula": "Fe",
+    "phase": "s",
+    "role": "catalyst",
+    "name": "iron"
+   }
+  ],
+  "conditions": {
+   "temperatureK": 700,
+   "pressureBar": 200,
+   "durationSeconds": 60,
+   "environment": "gas-phase",
+   "concentrationUnit": "mol/L"
+  },
+  "method": "auto"
+ },
+ "inputHash": "1435a91fbc07919035b2a3fb3a35c0c677fac0be7a9e82a70987c0db7be3e746",
+ "status": "completed",
+ "evidence": "rule-based",
+ "steps": [
+  {
+   "id": "validate-species",
+   "title": "Validate the species and conditions",
+   "status": "passed",
+   "summary": "All 4 species can be read, the roles make an experiment and the conditions are physical.",
+   "details": [
+    "Species: N2(g): reactant, nitrogen; H2(g): reactant, hydrogen; NH3(g): product, ammonia; Fe(s): catalyst, iron.",
+    "Conditions: 700 K, 200 bar, 60 s, environment gas-phase."
+   ]
+  },
+  {
+   "id": "conservation",
+   "title": "Check conservation of atoms and charge",
+   "status": "passed",
+   "summary": "Balanced with the smallest whole-number coefficients: N2(g) + 3 H2(g) -> 2 NH3(g).",
+   "details": [
+    "Atoms on the reactant side and on the product side: N 2 = 2, H 6 = 6.",
+    "Charge on the reactant side and on the product side: 0 = 0.",
+    "Balancing is bookkeeping: it shows that the equation is possible, not that the reaction takes place."
+   ]
+  },
+  {
+   "id": "model-selection",
+   "title": "Select the models that apply",
+   "status": "passed",
+   "summary": "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated.",
+   "details": [
+    "Stoichiometry: applies. The equation is balanced.",
+    "Thermodynamics: selected. Standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from the reference table, as far as the table covers the species.",
+    "Kinetics: not available. No sourced rate law exists for this reaction, and the rate law of a similar reaction is never substituted."
+   ]
+  },
+  {
+   "id": "reference-data",
+   "title": "Look up the reference data",
+   "status": "passed",
+   "summary": "Every species of the equation is in the reference table.",
+   "details": [
+    "N2(g): nitrogen (CODATA Key Values for Thermodynamics); ΔfH° = 0 kJ/mol (zero by definition); S° = 191.609 ± 0.004 J/(mol K), as printed by the source.",
+    "H2(g): hydrogen (CODATA Key Values for Thermodynamics); ΔfH° = 0 kJ/mol (zero by definition); S° = 130.680 ± 0.003 J/(mol K), as printed by the source.",
+    "NH3(g): ammonia (CODATA Key Values for Thermodynamics); ΔfH° = −45.94 ± 0.35 kJ/mol; S° = 192.77 ± 0.05 J/(mol K), as printed by the source."
+   ]
+  },
+  {
+   "id": "engine",
+   "title": "Name the calculation engine",
+   "status": "passed",
+   "summary": "Engines used: exact rational balancing and Hess's law on reference values.",
+   "details": [
+    "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+    "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+    "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used."
+   ]
+  },
+  {
+   "id": "calculation",
+   "title": "Run the calculation",
+   "status": "passed",
+   "summary": "Calculated: thermodynamic values from the reference table.",
+   "details": [
+    "Reaction enthalpy ΔrH°(298.15 K) = −91.88 ± 0.70 kJ/mol; reaction entropy ΔrS°(298.15 K) = −198.11 ± 0.10 J/(mol K).",
+    "Gibbs energy ΔrG°(700 K) ≈ 47 kJ/mol (a rough estimate at this temperature); log10 K ≈ −3.5, K ≈ 10⁻³.",
+    "With every species in its standard state the reaction is reactant-favoured.",
+    "Thermodynamics: closed-form sums over table values; there is nothing to converge."
+   ]
+  },
+  {
+   "id": "limitations",
+   "title": "State the limitations",
+   "status": "warning",
+   "summary": "7 limitations apply, 3 of them because of this particular experiment.",
+   "details": [
+    "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+    "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: Fe(s) (catalyst).",
+    "The pressure of 200 bar is recorded but does not enter the calculation: thermodynamic values are standard-state (1 bar) values and no pressure dependence is modelled.",
+    "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+    "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+    "The temperature of 700 K is outside the range in which the constant-enthalpy, constant-entropy estimate is trusted (within 100 K of 298.15 K): it is 401.9 K away. The Gibbs energy and the equilibrium constant are rough estimates, labelled rule-based; the size of their error is unknown, and melting, boiling or decomposition in between is not checked.",
+    "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+   ]
+  }
+ ],
+ "equation": {
+  "text": "N2(g) + 3 H2(g) -> 2 NH3(g)",
+  "balanced": {
+   "reactants": [
+    {
+     "formula": "N2",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "N": 2
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "H2",
+     "phase": "g",
+     "coefficient": 3,
+     "parsed": {
+      "elements": {
+       "H": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "NH3",
+     "phase": "g",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "N": 1,
+       "H": 3
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "balance": {
+   "status": "balanced",
+   "equation": {
+    "reactants": [
+     {
+      "formula": "N2",
+      "phase": "g",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "N": 2
+       },
+       "charge": 0
+      }
+     },
+     {
+      "formula": "H2",
+      "phase": "g",
+      "coefficient": 3,
+      "parsed": {
+       "elements": {
+        "H": 2
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "products": [
+     {
+      "formula": "NH3",
+      "phase": "g",
+      "coefficient": 2,
+      "parsed": {
+       "elements": {
+        "N": 1,
+        "H": 3
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "reversible": false
+   },
+   "message": "Balanced with the smallest whole-number coefficients: N2(g) + 3 H2(g) -> 2 NH3(g).",
+   "independentSolutions": 1
+  }
+ },
+ "balance": {
+  "status": "balanced",
+  "equation": {
+   "reactants": [
+    {
+     "formula": "N2",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "N": 2
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "H2",
+     "phase": "g",
+     "coefficient": 3,
+     "parsed": {
+      "elements": {
+       "H": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "NH3",
+     "phase": "g",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "N": 1,
+       "H": 3
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "message": "Balanced with the smallest whole-number coefficients: N2(g) + 3 H2(g) -> 2 NH3(g).",
+  "independentSolutions": 1
+ },
+ "thermo": {
+  "status": "ok",
+  "temperatureK": 700,
+  "terms": [
+   {
+    "role": "reactant",
+    "term": "N2(g)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "N2(g)",
+    "name": "nitrogen",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   },
+   {
+    "role": "reactant",
+    "term": "H2(g)",
+    "coefficient": 3,
+    "lookup": "found",
+    "speciesId": "H2(g)",
+    "name": "hydrogen",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   },
+   {
+    "role": "product",
+    "term": "NH3(g)",
+    "coefficient": 2,
+    "lookup": "found",
+    "speciesId": "NH3(g)",
+    "name": "ammonia",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   }
+  ],
+  "conservation": {
+   "balanced": true,
+   "elementImbalance": {
+    "N": 0,
+    "H": 0
+   },
+   "chargeImbalance": 0
+  },
+  "missingSpecies": [],
+  "missingEntropy": [],
+  "deltaH": {
+   "value": -91.88,
+   "unit": "kJ/mol",
+   "uncertainty": 0.7,
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction enthalpy at 298.15 K by Hess's law from tabulated enthalpies of formation. Reaction: N2(g) + 3 H2(g) -> 2 NH3(g). Table entries used: N2(g), H2(g), NH3(g)."
+   }
+  },
+  "deltaS": {
+   "value": -198.10899999999998,
+   "unit": "J/(mol K)",
+   "uncertainty": 0.10048382954485763,
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction entropy at 298.15 K by Hess's law from tabulated standard entropies. Reaction: N2(g) + 3 H2(g) -> 2 NH3(g). Table entries used: N2(g), H2(g), NH3(g)."
+   }
+  },
+  "deltaG": {
+   "value": 46.7963,
+   "unit": "kJ/mol",
+   "uncertainty": 0.7035250741800181,
+   "evidence": "rule-based",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction Gibbs energy at 700 K estimated from the 298.15 K reaction enthalpy and entropy, taken as independent of temperature. Reaction: N2(g) + 3 H2(g) -> 2 NH3(g). Table entries used: N2(g), H2(g), NH3(g)."
+   }
+  },
+  "lnK": -8.040430297551316,
+  "log10K": -3.4919145103542575,
+  "equilibriumConstant": 0.0003221702912014513,
+  "spontaneity": "reactant-favoured",
+  "withinValidatedRange": false,
+  "assumptions": [
+   "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+   "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+   "Uncertainties are the limits printed by the sources, combined in quadrature as if they were independent; correlations between tabulated values are not known to this package.",
+   "The Gibbs energy at 700 K is estimated as ΔG°(T) ≈ ΔH°(298.15 K) − T ΔS°(298.15 K): the reaction enthalpy and entropy are taken as independent of temperature, which amounts to neglecting the difference in heat capacity between products and reactants, and no phase change between 298.15 K and T is considered.",
+   "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+   "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all."
+  ],
+  "warnings": [
+   "FAR FROM 298.15 K: 700 K is 401.9 K away from the temperature of the tabulated data. The Gibbs energy and equilibrium constant are rough estimates from temperature-independent reaction enthalpy and entropy; the table holds no heat capacities, so the size of the error is unknown and it grows with the distance from 298.15 K. Any species may also have melted, boiled or decomposed in between, which is not checked."
+  ],
+  "evidence": "rule-based"
+ },
+ "kineticModel": null,
+ "rateConstant": null,
+ "kinetics": null,
+ "energyDiagrams": [
+  {
+   "quantity": "enthalpy",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: N2(g) + 3 H2(g)",
+     "value": 0,
+     "evidence": "computed",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: 2 NH3(g)",
+     "value": -91.88,
+     "evidence": "computed",
+     "note": "Standard reaction enthalpy at 298.15 K: −91.88 ± 0.70 kJ/mol, by Hess's law from the reference table."
+    }
+   ],
+   "notes": [
+    "Levels are enthalpies relative to the reactants, in kJ per mole of reaction as written. They are standard-state values at 298.15 K, not at the temperature of the experiment; the lines between them are not a computed reaction path.",
+    "No barrier is drawn: no sourced rate law was used for this reaction, and MATTER LAB does not estimate activation energies."
+   ]
+  },
+  {
+   "quantity": "gibbs",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: N2(g) + 3 H2(g)",
+     "value": 0,
+     "evidence": "rule-based",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: 2 NH3(g)",
+     "value": 46.7963,
+     "evidence": "rule-based",
+     "note": "Standard reaction Gibbs energy at 700 K: about 47 kJ/mol, estimated from the 298.15 K reaction enthalpy and entropy."
+    }
+   ],
+   "notes": [
+    "Levels are standard Gibbs energies at 700 K relative to the reactants, in kJ per mole of reaction as written, with every species in its standard state.",
+    "Away from 298.15 K the Gibbs energy is an estimate that takes the reaction enthalpy and entropy as independent of temperature.",
+    "No barrier is drawn: MATTER LAB has no Gibbs energy of activation for this reaction."
+   ]
+  }
+ ],
+ "explanation": {
+  "beginner": [
+   {
+    "heading": "What this experiment asks",
+    "paragraphs": [
+     "This experiment looks at the reaction **N2(g) + 3 H2(g) -> 2 NH3(g)**.",
+     "It asks how much heat the reaction gives out or takes in and which side of the reaction is favoured.",
+     "MATTER LAB works on the reaction you entered. It does not decide whether these substances really react."
+    ]
+   },
+   {
+    "heading": "What goes in",
+    "paragraphs": [
+     "Starting substances: nitrogen (N2, gas) and hydrogen (H2, gas). Products entered: ammonia (NH3, gas).",
+     "Also listed: iron (Fe, solid) as catalyst.",
+     "Temperature 700 K (427 °C), pressure 200 bar."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "How it was worked out",
+    "paragraphs": [
+     "First the equation was balanced, so that no atoms and no electric charge appear or disappear.",
+     "Then published reference values for each substance were added up, products minus starting substances. This is known as Hess's law. Nothing was simulated for it.",
+     "No speed was worked out: MATTER LAB has no published rate data for this reaction and does not borrow data from a similar one."
+    ]
+   },
+   {
+    "heading": "The idea behind the numbers: energy",
+    "paragraphs": [
+     "The heat of reaction, written ΔH, is the heat content of the products minus that of the starting substances. A negative value means that heat is given out.",
+     "Whether a reaction is favoured depends on that heat and on the change in disorder (the entropy, ΔS). The two are combined in the Gibbs energy ΔG. A negative ΔG means that the products are favoured."
+    ],
+    "equation": "ΔG = ΔH − TΔS"
+   },
+   {
+    "heading": "What is assumed",
+    "paragraphs": [
+     "Every substance is treated as pure and under standard conditions (a pressure of 1 bar).",
+     "The table values are for 25 °C; they are assumed not to change with temperature."
+    ]
+   },
+   {
+    "heading": "What came out",
+    "paragraphs": [
+     "Balanced equation: **N2(g) + 3 H2(g) -> 2 NH3(g)**.",
+     "Heat of reaction: **−91.88 ± 0.70 kJ/mol** for the amounts in the equation, counted in moles. The minus sign means that heat is **given out** (the reaction is exothermic).",
+     "Gibbs energy at 700 K: about **47 kJ/mol**, a rough estimate. The starting substances are favoured.",
+     "Equilibrium constant: K ≈ 10⁻³. The larger this number, the further the balance lies towards the products."
+    ],
+    "evidence": "rule-based"
+   },
+   {
+    "heading": "How sure is this",
+    "paragraphs": [
+     "The balanced equation is exact arithmetic; its numbers are certain.",
+     "The ± values come from the uncertainties given in the reference tables.",
+     "At this temperature the Gibbs energy and the equilibrium constant are only rough estimates; how far off they are is not known.",
+     "These numbers carry the label \"Rule-based\": Derived from a textbook rule or heuristic. It is an estimate, not a simulation.",
+     "Numbers are rounded so that they show no more digits than the data behind them support."
+    ]
+   },
+   {
+    "heading": "Did the calculation finish",
+    "paragraphs": [
+     "These results are exact arithmetic and sums of table values. There is no step-by-step calculation that could fail to finish."
+    ]
+   },
+   {
+    "heading": "What is not included",
+    "paragraphs": [
+     "MATTER LAB did not predict that these substances react. It only did the sums for the reaction you entered.",
+     "Fe(s) (catalyst) is noted down but not part of the calculation. The results are for the reaction exactly as written.",
+     "The pressure you set (200 bar) is not used. All values are for the standard pressure of 1 bar.",
+     "The energy values are for pure substances under standard conditions, not for a real mixture.",
+     "Being favoured is not the same as being fast. A favoured reaction can be far too slow to notice, or may need a spark to start.",
+     "The table values are for 25 °C. At 700 K (427 °C) the energy balance is only a rough estimate.",
+     "MATTER LAB has no published speed data for this reaction, so it says nothing about how fast it goes."
+    ]
+   },
+   {
+    "heading": "Why reality may differ",
+    "paragraphs": [
+     "Real mixtures are not under standard conditions: the actual pressures and concentrations shift the balance.",
+     "A favoured reaction can still be so slow that nothing visible happens, or it may need a spark or a catalyst to start.",
+     "Away from 25 °C the heat and entropy values change; that change is ignored here.",
+     "The reaction that really happens may not be the one written down: other products can form."
+    ]
+   }
+  ],
+  "advanced": [
+   {
+    "heading": "Objective",
+    "paragraphs": [
+     "Evaluate the reaction N2(g) + 3 H2(g) -> 2 NH3(g) at 700 K and 200 bar: the balanced equation, the standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from reference data and the rate constant and concentration-time curves, if a sourced rate law exists for exactly this reaction.",
+     "Method requested: auto. The equation was built from the species entered as reactants and products; no product was predicted."
+    ]
+   },
+   {
+    "heading": "Initial species and conditions",
+    "paragraphs": [
+     "N2(g): reactant, nitrogen.",
+     "H2(g): reactant, hydrogen.",
+     "NH3(g): product, ammonia.",
+     "Fe(s): catalyst, iron.",
+     "Temperature 700 K; pressure 200 bar; duration 60 s; environment gas-phase; concentrations in mol/L.",
+     "These values are used as entered. They describe the experiment that was asked for, not a measured system."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "Method",
+    "paragraphs": [
+     "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+     "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+     "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used.",
+     "Every species of the equation is in the reference table.",
+     "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated."
+    ]
+   },
+   {
+    "heading": "Mathematical model: conservation",
+    "paragraphs": [
+     "The coefficients ν (negative for reactants, positive for products) have to satisfy the conservation equations for every element and for the charge.",
+     "These equations have a single solution up to scale here; the smallest positive whole numbers are used."
+    ],
+    "equation": "Σ ν·(atoms of each element) = 0,  Σ ν·(charge) = 0"
+   },
+   {
+    "heading": "Mathematical model: reaction enthalpy and entropy",
+    "paragraphs": [
+     "Hess's law: the standard reaction enthalpy and entropy at 298.15 K are the stoichiometric sums of the tabulated standard enthalpies of formation and standard entropies."
+    ],
+    "equation": "ΔrH° = Σ ν·ΔfH°,  ΔrS° = Σ ν·S°"
+   },
+   {
+    "heading": "Mathematical model: Gibbs energy and equilibrium constant",
+    "paragraphs": [
+     "The standard Gibbs energy of reaction at 700 K is estimated from the 298.15 K reaction enthalpy and entropy, taken as independent of temperature; the thermodynamic equilibrium constant follows from it.",
+     "K is dimensionless: it is expressed in activities relative to the standard states."
+    ],
+    "equation": "ΔrG°(T) = ΔrH°(298.15 K) − T·ΔrS°(298.15 K),  K = exp(−ΔrG°/RT)"
+   },
+   {
+    "heading": "Assumptions",
+    "paragraphs": [
+     "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+     "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+     "Uncertainties are the limits printed by the sources, combined in quadrature as if they were independent; correlations between tabulated values are not known to this package.",
+     "The Gibbs energy at 700 K is estimated as ΔG°(T) ≈ ΔH°(298.15 K) − T ΔS°(298.15 K): the reaction enthalpy and entropy are taken as independent of temperature, which amounts to neglecting the difference in heat capacity between products and reactants, and no phase change between 298.15 K and T is considered.",
+     "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+     "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all.",
+     "Catalysts and solvents take no part in any of the models."
+    ]
+   },
+   {
+    "heading": "Results",
+    "paragraphs": [
+     "Balanced equation: N2(g) + 3 H2(g) -> 2 NH3(g).",
+     "ΔrH°(298.15 K) = −91.88 ± 0.70 kJ/mol, per mole of reaction as written.",
+     "ΔrS°(298.15 K) = −198.11 ± 0.10 J/(mol K).",
+     "ΔrG°(700 K) ≈ 47 kJ/mol (rule-based estimate).",
+     "log10 K ≈ −3.5; K ≈ 10⁻³.",
+     "Direction with every species in its standard state: reactant-favoured.",
+     "No kinetic results: no sourced rate law exists for this reaction."
+    ],
+    "evidence": "rule-based"
+   },
+   {
+    "heading": "Confidence and uncertainty",
+    "paragraphs": [
+     "Stoichiometric coefficients are exact (rational arithmetic).",
+     "Uncertainties are the limits printed by the sources, combined in quadrature as independent quantities; correlations between tabulated values are unknown. The CODATA table gives \"stated uncertainty limits\" without a coverage factor.",
+     "Evidence: reaction enthalpy and entropy are computed from reference data; the Gibbs energy and equilibrium constant are labelled rule-based.",
+     "The reaction enthalpy is rounded to the second significant figure of its uncertainty.",
+     "Outside the temperature range in which the constant-enthalpy estimate is trusted, the Gibbs energy is given to the nearest kJ/mol and the equilibrium constant as a bare power of ten, both without an uncertainty: the error of the estimate is unknown and is not covered by the uncertainties of the table values.",
+     "A value that has an uncertainty is rounded, together with that uncertainty, to the decimal place of the second significant figure of the uncertainty."
+    ]
+   },
+   {
+    "heading": "Convergence status",
+    "paragraphs": [
+     "Balancing: exact, nothing to converge.",
+     "Thermodynamics: closed-form sums over table values, nothing to converge."
+    ]
+   },
+   {
+    "heading": "Known limitations",
+    "paragraphs": [
+     "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+     "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: Fe(s) (catalyst).",
+     "The pressure of 200 bar is recorded but does not enter the calculation: thermodynamic values are standard-state (1 bar) values and no pressure dependence is modelled.",
+     "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+     "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+     "The temperature of 700 K is outside the range in which the constant-enthalpy, constant-entropy estimate is trusted (within 100 K of 298.15 K): it is 401.9 K away. The Gibbs energy and the equilibrium constant are rough estimates, labelled rule-based; the size of their error is unknown, and melting, boiling or decomposition in between is not checked.",
+     "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+    ]
+   },
+   {
+    "heading": "Why the prediction may not match reality",
+    "paragraphs": [
+     "The equation as written may not be the reaction that occurs: side reactions, incomplete conversion and other products are not considered.",
+     "Composition and non-ideality: the driving force in an actual mixture is ΔG = ΔG° + RT ln Q with activities that differ from the standard states; neither Q nor activity coefficients are computed.",
+     "Kinetic hindrance: thermodynamics implies nothing about rate, and metastable mixtures are common.",
+     "Temperature dependence: heat capacities and any phase transition between 298.15 K and the temperature of the experiment are neglected.",
+     "Reference data: tabulated values carry their own uncertainties and, where two tables are combined, need not be mutually consistent."
+    ]
+   }
+  ],
+  "references": [
+   {
+    "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+    "title": "CODATA Key Values for Thermodynamics",
+    "source": "Hemisphere Publishing Corp., New York",
+    "year": 1989
+   }
+  ]
+ },
+ "warnings": [
+  "FAR FROM 298.15 K: 700 K is 401.9 K away from the temperature of the tabulated data. The Gibbs energy and equilibrium constant are rough estimates from temperature-independent reaction enthalpy and entropy; the table holds no heat capacities, so the size of the error is unknown and it grows with the distance from 298.15 K. Any species may also have melted, boiled or decomposed in between, which is not checked."
+ ],
+ "limitations": [
+  "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+  "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: Fe(s) (catalyst).",
+  "The pressure of 200 bar is recorded but does not enter the calculation: thermodynamic values are standard-state (1 bar) values and no pressure dependence is modelled.",
+  "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+  "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+  "The temperature of 700 K is outside the range in which the constant-enthalpy, constant-entropy estimate is trusted (within 100 K of 298.15 K): it is 401.9 K away. The Gibbs energy and the equilibrium constant are rough estimates, labelled rule-based; the size of their error is unknown, and melting, boiling or decomposition in between is not checked.",
+  "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+ ],
+ "reproducibility": {
+  "engine": "@matterlab/reactions",
+  "engineVersion": "0.1.0",
+  "dataSources": [
+   {
+    "id": "codata-key-values",
+    "title": "CODATA Key Values for Thermodynamics (table page)",
+    "retrieved": "2026-11-13",
+    "sha256": "88049de2c7700bf44d233dacee019ac70c9b46ad280596270ebb3d5d0235d460"
+   }
+  ],
+  "solver": null,
+  "deterministic": true
+ }
+}

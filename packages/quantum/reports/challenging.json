@@ -1,0 +1,399 @@
+{
+  "report": "challenging",
+  "generated": "2026-11-14T10:15:19.397Z",
+  "node": "v24.14.1",
+  "records": {
+    "systems": {
+      "pyscf": "2.15.0",
+      "rows": [
+        {
+          "system": "N2 (1.098 A)",
+          "nBasis": 10,
+          "iterations": 15,
+          "energy": -107.49597508136766,
+          "pyscfLowestStable": -107.49597508136672,
+          "pyscfLowestSeen": -107.49597508136672,
+          "deviation": -9.379164112033322e-13,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": 0.27271238357648,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 42,
+          "distinctPlateaus": [
+            "-106.766594",
+            "-107.495975"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "N2 stretched (1.6 A)",
+          "nBasis": 10,
+          "iterations": 24,
+          "energy": -107.22566926288619,
+          "pyscfLowestStable": -107.2256692628862,
+          "pyscfLowestSeen": -107.2256692628862,
+          "deviation": 1.4210854715202004e-14,
+          "saddlePointsLeft": 2,
+          "lowestHessianEigenvalue": 1.6126439065359174e-7,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 63,
+          "distinctPlateaus": [
+            "-106.952063",
+            "-107.184846",
+            "-107.225669"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "minao-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "N2 stretched (2.5 A)",
+          "nBasis": 10,
+          "iterations": 26,
+          "energy": -106.93425548342955,
+          "pyscfLowestStable": -106.93425548342928,
+          "pyscfLowestSeen": -106.93425548342935,
+          "deviation": -2.7000623958883807e-13,
+          "saddlePointsLeft": 2,
+          "lowestHessianEigenvalue": -2.449082006274988e-8,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 63,
+          "distinctPlateaus": [
+            "-106.807966",
+            "-106.931738",
+            "-106.934255"
+          ],
+          "pyscfConvergedRuns": [
+            "minao"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "H2 stretched (2.5 A)",
+          "nBasis": 2,
+          "iterations": 2,
+          "energy": -0.7029436001756798,
+          "pyscfLowestStable": -0.7029436001756787,
+          "pyscfLowestSeen": -0.7029436001756787,
+          "deviation": -1.1102230246251565e-15,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.6179346498880216,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 1,
+          "distinctPlateaus": [
+            "-0.702944"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "O2 closed-shell singlet",
+          "nBasis": 10,
+          "iterations": 15,
+          "energy": -147.55112740308314,
+          "pyscfLowestStable": -147.55112740308346,
+          "pyscfLowestSeen": -147.55112740308346,
+          "deviation": 3.126388037344441e-13,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": 1.868862997630991e-8,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 32,
+          "distinctPlateaus": [
+            "-147.015899",
+            "-147.551127"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "O3",
+          "nBasis": 15,
+          "iterations": 13,
+          "energy": -221.28872765331533,
+          "pyscfLowestStable": -221.2887276533151,
+          "pyscfLowestSeen": -221.2887276533151,
+          "deviation": -2.2737367544323206e-13,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.06492676651645399,
+          "lowestHessianEigenvalueIsExact": false,
+          "hessianProducts": 15,
+          "distinctPlateaus": [
+            "-221.288728"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "C2",
+          "nBasis": 10,
+          "iterations": 20,
+          "energy": -74.422320496992,
+          "pyscfLowestStable": null,
+          "pyscfLowestSeen": -74.42232049699115,
+          "deviation": null,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": -3.774033091439592e-9,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 48,
+          "distinctPlateaus": [
+            "-74.422019",
+            "-74.422320"
+          ],
+          "pyscfConvergedRuns": [],
+          "warnings": []
+        },
+        {
+          "system": "BN",
+          "nBasis": 10,
+          "iterations": 13,
+          "energy": -77.84305055673109,
+          "pyscfLowestStable": -77.84305055673114,
+          "pyscfLowestSeen": -77.84305055673114,
+          "deviation": 5.684341886080802e-14,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.01872203507180435,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 24,
+          "distinctPlateaus": [
+            "-77.843051"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "CH2 singlet",
+          "nBasis": 7,
+          "iterations": 14,
+          "energy": -38.37195890937567,
+          "pyscfLowestStable": -38.3719589093756,
+          "pyscfLowestSeen": -38.3719589093756,
+          "deviation": -7.105427357601002e-14,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": 0.11563931055879134,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 24,
+          "distinctPlateaus": [
+            "-38.172406",
+            "-38.371959"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "P2",
+          "nBasis": 18,
+          "iterations": 16,
+          "energy": -673.7559803114322,
+          "pyscfLowestStable": -673.7559803114304,
+          "pyscfLowestSeen": -673.7559803114304,
+          "deviation": -1.7053025658242404e-12,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": 0.06598080353447752,
+          "lowestHessianEigenvalueIsExact": false,
+          "hessianProducts": 20,
+          "distinctPlateaus": [
+            "-673.397189",
+            "-673.755980"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "H4 square (1.2 A)",
+          "nBasis": 4,
+          "iterations": 12,
+          "energy": -1.7823613218101353,
+          "pyscfLowestStable": -1.7823613218101841,
+          "pyscfLowestSeen": -1.7823613218101841,
+          "deviation": 4.884981308350689e-14,
+          "saddlePointsLeft": 1,
+          "lowestHessianEigenvalue": 0.15204535395886373,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 8,
+          "distinctPlateaus": [
+            "-1.705931",
+            "-1.782361"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "H6 ring (1.5 A)",
+          "nBasis": 6,
+          "iterations": 2,
+          "energy": -2.8187573493737004,
+          "pyscfLowestStable": -2.8187573493737283,
+          "pyscfLowestSeen": -2.8187573493737283,
+          "deviation": 2.7977620220553945e-14,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.19800057212657104,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 9,
+          "distinctPlateaus": [
+            "-2.818757"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "H2O stretched (2.0 A)",
+          "nBasis": 7,
+          "iterations": 39,
+          "energy": -74.40084283563337,
+          "pyscfLowestStable": -74.40084283563334,
+          "pyscfLowestSeen": -74.40084283563334,
+          "deviation": -2.842170943040401e-14,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.017872731304995768,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 10,
+          "distinctPlateaus": [
+            "-73.218374",
+            "-74.400843"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "LiH stretched (4.0 A)",
+          "nBasis": 6,
+          "iterations": 11,
+          "energy": -7.624975679837173,
+          "pyscfLowestStable": -7.624975679837168,
+          "pyscfLowestSeen": -7.624975679837168,
+          "deviation": -5.329070518200751e-15,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.13476040332535186,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 8,
+          "distinctPlateaus": [
+            "-7.624976"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "NO+",
+          "nBasis": 10,
+          "iterations": 13,
+          "energy": -127.18607469552875,
+          "pyscfLowestStable": -127.18607469552886,
+          "pyscfLowestSeen": -127.18607469552886,
+          "deviation": 1.1368683772161603e-13,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.28208304058406913,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 21,
+          "distinctPlateaus": [
+            "-127.186075"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e",
+            "minao-levelshift",
+            "1e-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "F2 stretched (2.2 A)",
+          "nBasis": 10,
+          "iterations": 11,
+          "energy": -195.6716263866129,
+          "pyscfLowestStable": -195.67162638661284,
+          "pyscfLowestSeen": -195.67162638661284,
+          "deviation": -5.684341886080802e-14,
+          "saddlePointsLeft": 2,
+          "lowestHessianEigenvalue": 0.03792904719602036,
+          "lowestHessianEigenvalueIsExact": true,
+          "hessianProducts": 27,
+          "distinctPlateaus": [
+            "-195.524617",
+            "-195.596567",
+            "-195.671626"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "minao-levelshift"
+          ],
+          "warnings": []
+        },
+        {
+          "system": "C2H4 twisted 90 deg",
+          "nBasis": 14,
+          "iterations": 14,
+          "energy": -76.85614935995056,
+          "pyscfLowestStable": -76.85614935995031,
+          "pyscfLowestSeen": -76.85614935995031,
+          "deviation": -2.5579538487363607e-13,
+          "saddlePointsLeft": 0,
+          "lowestHessianEigenvalue": 0.10902917958887447,
+          "lowestHessianEigenvalueIsExact": false,
+          "hessianProducts": 10,
+          "distinctPlateaus": [
+            "-76.856149"
+          ],
+          "pyscfConvergedRuns": [
+            "minao",
+            "1e"
+          ],
+          "warnings": []
+        }
+      ]
+    }
+  }
+}

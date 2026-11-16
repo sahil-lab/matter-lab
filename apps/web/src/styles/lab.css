@@ -1,0 +1,1512 @@
+/* MATTER LAB - charts, the Reaction Laboratory and the Discovery Vault. Builds on app.css. */
+
+/* ---------- Charts ---------- */
+
+.ml-chart {
+  width: 100%;
+  min-width: 0;
+}
+
+.ml-chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.ml-chart__grid {
+  stroke: rgba(135, 170, 198, 0.1);
+  shape-rendering: crispEdges;
+}
+
+.ml-chart__axis {
+  stroke: rgba(135, 170, 198, 0.42);
+  shape-rendering: crispEdges;
+}
+
+.ml-chart__tick {
+  fill: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-chart__label {
+  fill: var(--text-3);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.ml-chart__value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.ml-chart__cursor {
+  stroke: var(--text);
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.ml-chart__hover {
+  stroke: rgba(227, 241, 255, 0.4);
+  stroke-dasharray: 2 3;
+  pointer-events: none;
+}
+
+.ml-chart__join {
+  stroke: rgba(135, 170, 198, 0.5);
+  stroke-dasharray: 3 4;
+}
+
+.ml-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px 2px;
+  padding: 3px 0 0 6px;
+  min-height: 24px;
+}
+
+.ml-chart__legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: var(--text);
+  transition: background var(--fast) var(--ease);
+}
+
+.ml-chart__legend button:hover {
+  background: var(--hover);
+}
+
+.ml-chart__legend button[data-off='true'] {
+  opacity: 0.38;
+}
+
+.ml-chart__legend button b {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-chart__at {
+  margin-left: auto;
+  padding-right: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+/* ---------- Shared form controls ---------- */
+
+.ml-select {
+  width: 100%;
+  height: 28px;
+  padding: 0 24px 0 8px;
+  border-radius: 7px;
+  border: 1px solid var(--stroke);
+  background-color: rgba(8, 13, 24, 0.5);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2387aac6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  color: var(--text);
+  font-size: 12.5px;
+  appearance: none;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  transition: border-color var(--fast) var(--ease);
+}
+
+.ml-select:hover {
+  border-color: var(--stroke-strong);
+}
+
+.ml-select:focus {
+  border-color: var(--accent-ring);
+}
+
+.ml-select option {
+  background: #111e32;
+  color: var(--text);
+}
+
+.ml-labelled {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ml-labelled > span {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.ml-labelled > span em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.ml-formgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.ml-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(85, 226, 209, 0.4);
+  text-underline-offset: 2px;
+  font-size: inherit;
+}
+
+.ml-link:hover {
+  text-decoration-color: var(--accent);
+}
+
+.ml-bullets {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.ml-bullets li + li {
+  margin-top: 4px;
+}
+
+input[type='range'].ml-timeline__slider,
+.ml-slider input[type='range'],
+.ml-scrub input[type='range'] {
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+  min-width: 0;
+}
+
+input[type='range'].ml-timeline__slider::-webkit-slider-runnable-track,
+.ml-slider input[type='range']::-webkit-slider-runnable-track,
+.ml-scrub input[type='range']::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(135, 170, 198, 0.28);
+}
+
+input[type='range'].ml-timeline__slider::-webkit-slider-thumb,
+.ml-slider input[type='range']::-webkit-slider-thumb,
+.ml-scrub input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(85, 226, 209, 0.18);
+}
+
+input[type='range'].ml-timeline__slider::-moz-range-track,
+.ml-slider input[type='range']::-moz-range-track,
+.ml-scrub input[type='range']::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(135, 170, 198, 0.28);
+}
+
+input[type='range'].ml-timeline__slider::-moz-range-thumb,
+.ml-slider input[type='range']::-moz-range-thumb,
+.ml-scrub input[type='range']::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* A labelled slider with its value written out: name, track, value. */
+.ml-slider {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.ml-slider__label {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.ml-slider__value {
+  min-width: 62px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ml-slider__value sub,
+.ml-slider__value sup,
+.ml-kv dd sub,
+.ml-kv dd sup,
+.ml-legend sub,
+.ml-legend sup {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+/* Choosing a molecular orbital. */
+.ml-orbital-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px 8px 9px;
+  border-radius: 10px;
+  background: rgba(8, 13, 24, 0.42);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-orbital-picker__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ml-orbital-picker__name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  text-align: center;
+}
+
+.ml-orbital-picker__name b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ml-orbital-picker__name span {
+  font-size: 10.5px;
+  color: var(--text-2);
+}
+
+.ml-orbital-picker .ml-isotopes {
+  justify-content: center;
+}
+
+/* ---------- Result blocks (inspector and results panel) ---------- */
+
+.ml-statusline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ml-statusline b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ml-statusline[data-tone='ok'] b {
+  color: var(--ok);
+}
+
+.ml-statusline[data-tone='warning'] b {
+  color: var(--energy);
+}
+
+.ml-statusline[data-tone='error'] b {
+  color: var(--danger);
+}
+
+.ml-statusline[data-tone='muted'] b {
+  color: var(--text-2);
+}
+
+.ml-result {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  background: rgba(8, 13, 24, 0.42);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-running {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.ml-running .ml-progress {
+  grid-column: 1 / -1;
+}
+
+.ml-running span {
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.ml-scrub {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.ml-scrub span {
+  font-size: 11px;
+  color: var(--text-3);
+  min-width: 96px;
+  text-align: right;
+}
+
+/* ---------- Formulas and equations ---------- */
+
+.ml-chem__phase {
+  font-size: 0.82em;
+  color: var(--text-2);
+  margin-left: 0.04em;
+}
+
+.ml-equation {
+  display: inline;
+  line-height: 1.5;
+}
+
+.ml-equation__op {
+  margin: 0 0.4em;
+  color: var(--text-2);
+}
+
+.ml-equation__arrow {
+  margin: 0 0.5em;
+  color: var(--accent);
+}
+
+.ml-equation__coef {
+  margin-right: 0.22em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ml-equation-hero {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--text);
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Reaction Laboratory ---------- */
+
+.ml-sideslot {
+  position: absolute;
+  left: 14px;
+  top: 68px;
+  bottom: 68px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.ml-sideslot > * {
+  pointer-events: auto;
+}
+
+.ml-sidepanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  animation: ml-slide-in-left var(--medium) var(--ease);
+}
+
+@keyframes ml-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+
+.ml-sidepanel__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px 4px 14px;
+}
+
+.ml-sidepanel__head > :first-child {
+  flex: 1;
+}
+
+.ml-sidepanel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-height: 0;
+  padding: 8px 14px 14px;
+}
+
+.ml-sidepanel__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--stroke);
+}
+
+.ml-species {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 7px 6px 7px 8px;
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  border-left: 2px solid var(--text-3);
+}
+
+.ml-species[data-role='reactant'] {
+  border-left-color: var(--energy);
+}
+
+.ml-species[data-role='product'] {
+  border-left-color: var(--accent);
+}
+
+.ml-species[data-role='catalyst'] {
+  border-left-color: var(--quantum);
+}
+
+.ml-species__main {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr) 88px 26px;
+  align-items: center;
+  gap: 5px;
+}
+
+.ml-species__amount {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.ml-species__amount em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-3);
+  min-width: 74px;
+}
+
+.ml-species__problem {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--danger);
+}
+
+.ml-species__note {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.ml-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  font-size: 12.5px;
+}
+
+.ml-suggestion > span {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.ml-step {
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-step > summary {
+  display: grid;
+  grid-template-columns: 16px 14px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+  padding: 7px 9px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.ml-step > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ml-step > summary svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: var(--text-3);
+}
+
+.ml-step[data-status='passed'] > summary svg {
+  color: var(--ok);
+}
+
+.ml-step[data-status='warning'] > summary svg {
+  color: var(--energy);
+}
+
+.ml-step[data-status='failed'] > summary svg {
+  color: var(--danger);
+}
+
+.ml-step__n {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  line-height: 18px;
+}
+
+.ml-step__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ml-step__text b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ml-step__text span {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.ml-step[data-status='skipped'] .ml-step__text b {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.ml-step > ul,
+.ml-step > p {
+  margin: 0;
+  padding: 0 10px 9px 46px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+  user-select: text;
+}
+
+.ml-step > ul {
+  list-style: disc;
+  padding-left: 60px;
+}
+
+.ml-source {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  font-size: 11.5px;
+  line-height: 1.4;
+  user-select: text;
+}
+
+.ml-source b {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.ml-source span {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.ml-saved {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px 2px 0;
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-saved[data-current='true'] {
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+
+.ml-saved__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 4px 6px 10px;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.ml-saved__main:hover b {
+  color: var(--accent);
+}
+
+.ml-saved__main b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ml-saved__main span {
+  font-size: 11.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ml-saved__main span.ml-mono {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+.ml-compare {
+  overflow-x: auto;
+  border-radius: 9px;
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-compare table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.ml-compare th,
+.ml-compare td {
+  padding: 5px 8px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.ml-compare tr:last-child th,
+.ml-compare tr:last-child td {
+  border-bottom: 0;
+}
+
+.ml-compare th {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.ml-compare tbody th {
+  text-align: left;
+}
+
+.ml-compare thead th {
+  color: var(--text);
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ml-compare td {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* The strip under the chamber. */
+
+.ml-timeline {
+  gap: 2px;
+  padding: 5px 10px 5px 6px;
+  width: min(660px, 100%);
+}
+
+.ml-timeline__slider {
+  flex: 1;
+  min-width: 48px;
+  margin: 0 8px;
+}
+
+.ml-timeline__time {
+  flex: none;
+  min-width: 118px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ml-timeline__time small {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.ml-timeline__label {
+  flex: none;
+  padding: 0 4px 0 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.ml-timeline__speed {
+  flex: none;
+  width: 70px;
+  height: 26px;
+  margin-left: 6px;
+}
+
+/* What the chamber shows, between the top bars. */
+
+.ml-legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 42px;
+  padding: 5px 12px 6px 8px;
+  max-width: 100%;
+}
+
+.ml-legend__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+}
+
+.ml-legend__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  color: var(--text);
+  white-space: nowrap;
+  transition: background var(--fast) var(--ease);
+}
+
+button.ml-legend__chip:hover {
+  background: var(--hover);
+}
+
+.ml-legend__chip[aria-pressed='true'] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+
+.ml-legend__chip b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.ml-legend__chip[data-side='reactant'] b {
+  color: var(--energy);
+}
+
+.ml-legend__chip[data-undrawn] {
+  color: var(--text-3);
+}
+
+.ml-legend__chip i {
+  font-style: normal;
+  font-size: 11px;
+}
+
+.ml-legend__note {
+  padding-left: 4px;
+  max-width: 82ch;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+/* Entries of the legend for computed fields: a name, colour keys with their values, a unit. */
+.ml-legend--fields .ml-legend__row {
+  column-gap: 10px;
+}
+
+.ml-legend__name {
+  padding: 2px 0 2px 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ml-legend__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ml-legend__unit,
+.ml-scalestrip__unit {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.ml-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.ml-swatch[data-round='true'] {
+  border-radius: 50%;
+}
+
+/* A colour scale: the bar, and under it the values at its marks. */
+.ml-scalestrip {
+  display: inline-grid;
+  grid-template-columns: 168px auto;
+  grid-template-rows: 9px 13px;
+  column-gap: 9px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 4px 0 1px;
+}
+
+.ml-scalestrip__bar {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  height: 9px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.ml-scalestrip__bar i {
+  position: absolute;
+  top: 100%;
+  width: 1px;
+  height: 3px;
+  background: var(--text-3);
+}
+
+.ml-scalestrip__ticks {
+  position: relative;
+  grid-column: 1;
+  grid-row: 2;
+  height: 13px;
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+.ml-scalestrip__ticks b {
+  position: absolute;
+  top: 1px;
+  font-weight: 400;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ml-scalestrip__ticks b[data-edge='start'] {
+  transform: none;
+}
+
+.ml-scalestrip__ticks b[data-edge='end'] {
+  transform: translateX(-100%);
+}
+
+.ml-scalestrip__unit {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/*
+ * The legend may wrap and grow downwards. With the right-hand panel open the orientation gizmo sits
+ * beside that panel, under the right-hand end of the top row, so the legend stops short of it. The
+ * margin is sized for the narrowest top-right bar (before any calculation has run, when it has no
+ * calculations indicator), and follows the width of the panel.
+ */
+.ml-app[data-workspace='reactions'][data-inspector='open'] .ml-top__center,
+.ml-app[data-workspace='vault'][data-inspector='open'] .ml-top__center {
+  padding-right: calc(var(--inspector-w) - 16px);
+}
+
+/* Blocks of mathematics or rate laws, wherever they appear. */
+.ml-eq {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.5);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.ml-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  user-select: text;
+}
+
+.ml-notes dt {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.ml-notes dd {
+  margin: 1px 0 0;
+  color: var(--text-2);
+}
+
+.ml-bar--wrap {
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 4px;
+}
+
+/*
+ * In the reaction laboratory and the vault the legend owns the top of the view, so the performance
+ * read-out sits at the bottom left of the free area, clear of the side panel when that is open.
+ */
+.ml-app[data-workspace='reactions'] .ml-perf,
+.ml-app[data-workspace='vault'] .ml-perf {
+  top: auto;
+  bottom: 68px;
+  left: 76px;
+}
+
+.ml-app[data-workspace='reactions'][data-side='open'] .ml-perf,
+.ml-app[data-workspace='vault'][data-side='open'] .ml-perf {
+  left: 378px;
+}
+
+/* ---------- Discovery Vault ---------- */
+
+/* Where a candidate stands. The colour deepens with the rung; it never turns into a "success" green. */
+.ml-rung-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--text-2);
+  background: rgba(135, 170, 198, 0.12);
+  box-shadow: inset 0 0 0 1px var(--stroke-strong);
+}
+
+.ml-rung-chip[data-rung='3'],
+.ml-rung-chip[data-rung='4'] {
+  color: var(--quantum);
+  background: rgba(140, 146, 252, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(140, 146, 252, 0.4);
+}
+
+.ml-rung-chip[data-rung='5'],
+.ml-rung-chip[data-rung='6'] {
+  color: var(--energy);
+  background: rgba(255, 182, 107, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 182, 107, 0.4);
+}
+
+/* What a status means, in full: the text a reader must not miss. */
+.ml-vault-meaning {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 2px solid var(--quantum);
+  background: rgba(140, 146, 252, 0.07);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  user-select: text;
+}
+
+.ml-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ml-ladder__rung {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  padding: 5px 6px;
+  border-radius: 8px;
+}
+
+.ml-ladder__rung > i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  box-shadow: inset 0 0 0 1px var(--stroke-strong);
+}
+
+.ml-ladder__rung > i svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ml-ladder__rung > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ml-ladder__rung b {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.ml-ladder__rung span {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.ml-ladder__rung[data-state='reached'] > i {
+  color: var(--text);
+  background: rgba(135, 170, 198, 0.2);
+}
+
+.ml-ladder__rung[data-state='reached'] b {
+  color: var(--text);
+}
+
+.ml-ladder__rung[data-state='current'] {
+  background: rgba(140, 146, 252, 0.09);
+  box-shadow: inset 0 0 0 1px rgba(140, 146, 252, 0.32);
+}
+
+.ml-ladder__rung[data-state='current'] > i {
+  color: #0b1020;
+  background: var(--quantum);
+  box-shadow: none;
+}
+
+.ml-ladder__rung[data-state='current'] b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ml-ladder__rung[data-state='current'] span {
+  color: var(--text-2);
+}
+
+.ml-ladder__rung[data-state='closed'] {
+  opacity: 0.55;
+}
+
+.ml-vault-advance {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.ml-checkline {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ml-checkline input {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.ml-checkline small {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.ml-textarea {
+  width: 100%;
+  height: auto;
+  min-height: 58px;
+  padding: 6px 8px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.ml-similar {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ml-trail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ml-trail__entry {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-trail__entry > svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: var(--text-3);
+}
+
+.ml-trail__entry[data-kind='calculation'][data-converged='true'] > svg,
+.ml-trail__entry[data-kind='structure-validation'] > svg {
+  color: var(--quantum);
+}
+
+.ml-trail__entry[data-kind='calculation'][data-converged='false'] > svg {
+  color: var(--energy);
+}
+
+.ml-trail__entry[data-kind='experimental-observation'] > svg,
+.ml-trail__entry[data-kind='independent-validation'] > svg {
+  color: var(--energy);
+}
+
+.ml-trail__entry > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  user-select: text;
+}
+
+.ml-trail__entry b {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ml-trail__entry span {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.ml-trail__entry .ml-trail__reference {
+  color: var(--text);
+}
+
+.ml-trail__entry small {
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+
+/* ---------- finding structures (library dialog) ---------- */
+
+.ml-find {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ml-find__section {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ml-find__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 26px;
+}
+
+.ml-find__bar {
+  display: flex;
+  gap: 8px;
+}
+
+.ml-find__bar .ml-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+}
+
+.ml-find__bar .ml-btn {
+  flex: none;
+}
+
+.ml-find__section .ml-running {
+  grid-template-columns: 1fr auto;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.4);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-row.ml-find__row {
+  min-height: 44px;
+  padding: 5px 6px 5px 12px;
+}
+
+.ml-find__row .ml-row__grow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: normal;
+}
+
+.ml-find__title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ml-find__meta {
+  font-size: 11.5px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: text;
+}
+
+.ml-find__link {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  color: var(--text-3);
+  flex: none;
+}
+
+.ml-find__link:hover {
+  color: var(--accent);
+  background: rgba(85, 226, 209, 0.08);
+}
+
+.ml-find__link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ml-find__model {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: rgba(8, 13, 24, 0.42);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-find__model-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ml-find__model-head .ml-find__title {
+  flex: none;
+}
+
+/* ---------- the nucleus view ---------- */
+
+.ml-nucleus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+
+.ml-nucleus__stage {
+  position: relative;
+  min-height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 44%, #16263f 0%, #0b1424 62%, #080d18 100%);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+.ml-nucleus__stage canvas {
+  display: block;
+  cursor: grab;
+}
+
+.ml-nucleus__legend {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.ml-nucleus__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ml-nucleus__scale {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.ml-nucleus__scale i {
+  display: block;
+  height: 6px;
+  min-width: 2px;
+  border: 1px solid var(--text-2);
+  border-top: 0;
+  border-radius: 0 0 2px 2px;
+}
+
+.ml-nucleus__scale span {
+  font-size: 11px;
+  color: var(--text);
+}
+
+.ml-nucleus__replay {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+}
+
+.ml-nucleus__caption {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: min(360px, 80%);
+  margin: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.ml-nucleus__caption:empty {
+  display: none;
+}
+
+.ml-nucleus__side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+@media (max-width: 1180px) {
+  .ml-sideslot {
+    width: 310px;
+  }
+
+  .ml-legend__note {
+    display: none;
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "report": "large",
+  "generated": "2026-11-14T10:15:25.942Z",
+  "node": "v24.14.1",
+  "records": {
+    "C13H28": {
+      "pyscf": "2.15.0",
+      "nBasis": 93,
+      "energy": -502.6765917288425,
+      "referenceEnergy": -502.67659172885897,
+      "totalEnergy": 1.6484591469634324e-11,
+      "nuclearRepulsion": 1.4210854715202004e-11,
+      "orbitalEnergies": 7.448278260824281e-8,
+      "mullikenCharges": 2.1246699688504123e-7,
+      "dipole": 1.3863544134906647e-7,
+      "iterations": 15,
+      "hessianProducts": 7,
+      "orbitalRotations": 2120,
+      "lowestHessianEigenvalue": 0.6532324336454493,
+      "lowestHessianEigenvalueIsExact": false,
+      "shellQuartets": 1103355,
+      "shellQuartetsScreened": 685529,
+      "primitiveQuartetsComputed": 15410787,
+      "primitiveQuartetsWithoutScreening": 89371755,
+      "wallMs": 7541.4701000000005,
+      "timings": {
+        "integralsMs": 4946.9356,
+        "scfMs": 2591.6557000000003,
+        "totalMs": 7539.123100000001
+      }
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "description": "STO-3G parameters for H, C and O exactly as printed in the PSI3 basis-set library (lib/pbasis.dat). Exponents in bohr^-2; contraction coefficients for normalised primitives. Extracted by tools/fetch-crawford.mjs.",
+  "source": {
+    "repository": "https://github.com/psi4/psi3",
+    "commit": "d6289507905a293b61fcc6257f73812abc5ad0c5",
+    "path": "lib/pbasis.dat",
+    "url": "https://raw.githubusercontent.com/psi4/psi3/d6289507905a293b61fcc6257f73812abc5ad0c5/lib/pbasis.dat",
+    "sha256": "1c9061699a9e6d6e821dc56e096e47d2a677492703d67fa6ffee7afd5d47a364",
+    "retrieved": "2026-11-13"
+  },
+  "basis": {
+    "HYDROGEN": [
+      {
+        "type": "S",
+        "primitives": [
+          {
+            "exponent": "3.4252509100",
+            "coefficient": "0.1543289700"
+          },
+          {
+            "exponent": "0.6239137300",
+            "coefficient": "0.5353281400"
+          },
+          {
+            "exponent": "0.1688554000",
+            "coefficient": "0.4446345400"
+          }
+        ]
+      }
+    ],
+    "CARBON": [
+      {
+        "type": "S",
+        "primitives": [
+          {
+            "exponent": "71.6168370000",
+            "coefficient": "0.1543289700"
+          },
+          {
+            "exponent": "13.0450960000",
+            "coefficient": "0.5353281400"
+          },
+          {
+            "exponent": "3.5305122000",
+            "coefficient": "0.4446345400"
+          }
+        ]
+      },
+      {
+        "type": "S",
+        "primitives": [
+          {
+            "exponent": "2.9412494000",
+            "coefficient": "-0.0999672300"
+          },
+          {
+            "exponent": "0.6834831000",
+            "coefficient": "0.3995128300"
+          },
+          {
+            "exponent": "0.2222899000",
+            "coefficient": "0.7001154700"
+          }
+        ]
+      },
+      {
+        "type": "P",
+        "primitives": [
+          {
+            "exponent": "2.9412494000",
+            "coefficient": "0.1559162700"
+          },
+          {
+            "exponent": "0.6834831000",
+            "coefficient": "0.6076837200"
+          },
+          {
+            "exponent": "0.2222899000",
+            "coefficient": "0.3919573900"
+          }
+        ]
+      }
+    ],
+    "OXYGEN": [
+      {
+        "type": "S",
+        "primitives": [
+          {
+            "exponent": "130.7093200000",
+            "coefficient": "0.1543289700"
+          },
+          {
+            "exponent": "23.8088610000",
+            "coefficient": "0.5353281400"
+          },
+          {
+            "exponent": "6.4436083000",
+            "coefficient": "0.4446345400"
+          }
+        ]
+      },
+      {
+        "type": "S",
+        "primitives": [
+          {
+            "exponent": "5.0331513000",
+            "coefficient": "-0.0999672300"
+          },
+          {
+            "exponent": "1.1695961000",
+            "coefficient": "0.3995128300"
+          },
+          {
+            "exponent": "0.3803890000",
+            "coefficient": "0.7001154700"
+          }
+        ]
+      },
+      {
+        "type": "P",
+        "primitives": [
+          {
+            "exponent": "5.0331513000",
+            "coefficient": "0.1559162700"
+          },
+          {
+            "exponent": "1.1695961000",
+            "coefficient": "0.6076837200"
+          },
+          {
+            "exponent": "0.3803890000",
+            "coefficient": "0.3919573900"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1085 @@
+{
+ "description": "RHF/STO-3G energies (hartree) of systems with several SCF solutions, from PySCF with internal-stability following. Positions in angstrom.",
+ "generator": "packages/quantum/tools/gen_challenging.py",
+ "generated": "2026-11-13T19:48:36Z",
+ "versions": {
+  "pyscf": "2.15.0",
+  "numpy": "2.5.4",
+  "python": "3.12.16"
+ },
+ "bohrToAngstrom": 0.529177210903,
+ "basis": {
+  "name": "STO-3G",
+  "version": "1",
+  "revisionDescription": "Data from Gaussian09",
+  "revisionDate": "2018-06-19",
+  "snapshot": "packages/quantum/data/sto-3g.bse.json",
+  "sha256": "138c7b6b356329ea6167660296b231f1c80e5ec84ce7097900146b57ec8a4f39"
+ },
+ "systems": [
+  {
+   "name": "N2 (1.098 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      1.098
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 14,
+   "runs": {
+    "minao": {
+     "energies": [
+      -107.49597508136667
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -106.76659388330056,
+      -107.49597508136672
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -107.49597508136664
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -106.76659388330053,
+      -107.4959750813667
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -107.49597508136672
+  },
+  {
+   "name": "N2 stretched (1.6 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      1.6
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 14,
+   "runs": {
+    "minao": {
+     "energies": [
+      -107.18484649611445,
+      -107.22566926288611
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -106.95206293414013,
+      -107.18484649611445
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "minao-levelshift": {
+     "energies": [
+      -107.18484649611445,
+      -107.2256692628862
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -106.95206293414013,
+      -107.18484649611449
+     ],
+     "internalStable": false,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -107.2256692628862
+  },
+  {
+   "name": "N2 stretched (2.5 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      2.5
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 14,
+   "runs": {
+    "minao": {
+     "energies": [
+      -106.6169591289997,
+      -106.93425548342928
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -106.80796635714319,
+      -106.93173768455176
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "minao-levelshift": {
+     "energies": [
+      -106.61695912899971,
+      -106.93425548342935
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "1e-levelshift": {
+     "energies": [
+      -106.80796635714323,
+      -106.9317376845448
+     ],
+     "internalStable": false,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -106.93425548342928
+  },
+  {
+   "name": "H2 stretched (2.5 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      0.0,
+      2.5
+     ]
+    }
+   ],
+   "nBasis": 2,
+   "nElectrons": 2,
+   "runs": {
+    "minao": {
+     "energies": [
+      -0.7029436001756786
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -0.7029436001756787
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -0.7029436001756787
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -0.7029436001756786
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -0.7029436001756787
+  },
+  {
+   "name": "O2 closed-shell singlet",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 8,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 8,
+     "position": [
+      0.0,
+      0.0,
+      1.208
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 16,
+   "runs": {
+    "minao": {
+     "energies": [
+      -147.55112740308346
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -147.01589909014876,
+      -147.5511274030834
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -147.5511274030834
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -147.0158990901487,
+      -147.55112740308346
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -147.55112740308346
+  },
+  {
+   "name": "O3",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 8,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 8,
+     "position": [
+      1.076,
+      0.0,
+      0.672
+     ]
+    },
+    {
+     "z": 8,
+     "position": [
+      -1.076,
+      0.0,
+      0.672
+     ]
+    }
+   ],
+   "nBasis": 15,
+   "nElectrons": 24,
+   "runs": {
+    "minao": {
+     "energies": [
+      -221.2887276533151
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -221.288727653315
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -221.288727653315
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -221.2887276533151
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -221.2887276533151
+  },
+  {
+   "name": "C2",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 6,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 6,
+     "position": [
+      0.0,
+      0.0,
+      1.243
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 12,
+   "runs": {
+    "minao": {
+     "energies": [
+      -74.42201924823178,
+      -74.42232049699115
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "1e": {
+     "energies": [
+      -74.4220192482318,
+      -74.4223204969911
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "minao-levelshift": {
+     "energies": [
+      -74.42201924823172,
+      -74.42232049699106
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "1e-levelshift": {
+     "energies": [
+      -74.42201924823173,
+      -74.42232049699103
+     ],
+     "internalStable": false,
+     "converged": false
+    }
+   },
+   "lowestEnergy": null
+  },
+  {
+   "name": "BN",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 5,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      1.281
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 12,
+   "runs": {
+    "minao": {
+     "energies": [
+      -77.84305055673111
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -77.84305055673109
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -77.84305055673111
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -77.84305055673114
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -77.84305055673114
+  },
+  {
+   "name": "CH2 singlet",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 6,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.862,
+      0.0,
+      0.697
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -0.862,
+      0.0,
+      0.697
+     ]
+    }
+   ],
+   "nBasis": 7,
+   "nElectrons": 8,
+   "runs": {
+    "minao": {
+     "energies": [
+      -38.3719589093756
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -38.172406062628504,
+      -38.3719589093756
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -38.37195890937557
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -38.172406062628525,
+      -38.371958909375586
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -38.3719589093756
+  },
+  {
+   "name": "P2",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 15,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 15,
+     "position": [
+      0.0,
+      0.0,
+      1.893
+     ]
+    }
+   ],
+   "nBasis": 18,
+   "nElectrons": 30,
+   "runs": {
+    "minao": {
+     "energies": [
+      -673.7559803114299
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -673.3971889722538,
+      -673.75598031143
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -673.7559803114304
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -673.3971889722537,
+      -673.7559803114302
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -673.7559803114304
+  },
+  {
+   "name": "H4 square (1.2 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      1.2,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      1.2,
+      1.2,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      1.2,
+      0.0
+     ]
+    }
+   ],
+   "nBasis": 4,
+   "nElectrons": 4,
+   "runs": {
+    "minao": {
+     "energies": [
+      -1.7823613218101833
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -1.7059312367932287,
+      -1.7823613218101833
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -1.7823613218101841
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -1.7059312367933095
+     ],
+     "internalStable": null,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -1.7823613218101841
+  },
+  {
+   "name": "H6 ring (1.5 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 1,
+     "position": [
+      1.5,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.7500000000000002,
+      1.299038105676658,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -0.7499999999999997,
+      1.299038105676658,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -1.5,
+      1.8369701987210297e-16,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -0.7500000000000007,
+      -1.2990381056766576,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.7500000000000002,
+      -1.299038105676658,
+      0.0
+     ]
+    }
+   ],
+   "nBasis": 6,
+   "nElectrons": 6,
+   "runs": {
+    "minao": {
+     "energies": [
+      -2.8187573493737283
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -2.8187573493737266
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -2.8187573493737266
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -2.8187573493737275
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -2.8187573493737283
+  },
+  {
+   "name": "H2O stretched (2.0 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 8,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      1.6,
+      0.0,
+      1.2
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -1.6,
+      0.0,
+      1.2
+     ]
+    }
+   ],
+   "nBasis": 7,
+   "nElectrons": 10,
+   "runs": {
+    "minao": {
+     "energies": [
+      -74.40084283563331
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -74.40084283563334
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -74.40084283563328
+     ],
+     "internalStable": null,
+     "converged": false
+    },
+    "1e-levelshift": {
+     "energies": [
+      -74.40084283563334
+     ],
+     "internalStable": null,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -74.40084283563334
+  },
+  {
+   "name": "LiH stretched (4.0 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 3,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      0.0,
+      4.0
+     ]
+    }
+   ],
+   "nBasis": 6,
+   "nElectrons": 4,
+   "runs": {
+    "minao": {
+     "energies": [
+      -7.624975679837168
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -7.624975679837168
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -7.624975679837164
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -7.624975679837168
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -7.624975679837168
+  },
+  {
+   "name": "NO+",
+   "charge": 1,
+   "atoms": [
+    {
+     "z": 7,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 8,
+     "position": [
+      0.0,
+      0.0,
+      1.063
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 14,
+   "runs": {
+    "minao": {
+     "energies": [
+      -127.1860746955288
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -127.1860746955288
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -127.18607469552886
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -127.18607469552886
+     ],
+     "internalStable": true,
+     "converged": true
+    }
+   },
+   "lowestEnergy": -127.18607469552886
+  },
+  {
+   "name": "F2 stretched (2.2 A)",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 9,
+     "position": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "z": 9,
+     "position": [
+      0.0,
+      0.0,
+      2.2
+     ]
+    }
+   ],
+   "nBasis": 10,
+   "nElectrons": 18,
+   "runs": {
+    "minao": {
+     "energies": [
+      -195.67162638661276
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -195.52461683988423,
+      -195.59656671146098
+     ],
+     "internalStable": false,
+     "converged": false
+    },
+    "minao-levelshift": {
+     "energies": [
+      -195.67162638661284
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e-levelshift": {
+     "energies": [
+      -195.52461683988417,
+      -195.59656671145643,
+      -195.67162638661284
+     ],
+     "internalStable": false,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -195.67162638661284
+  },
+  {
+   "name": "C2H4 twisted 90 deg",
+   "charge": 0,
+   "atoms": [
+    {
+     "z": 6,
+     "position": [
+      0.0,
+      0.0,
+      0.67
+     ]
+    },
+    {
+     "z": 6,
+     "position": [
+      0.0,
+      0.0,
+      -0.67
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.92,
+      0.0,
+      1.24
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      -0.92,
+      0.0,
+      1.24
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      0.92,
+      -1.24
+     ]
+    },
+    {
+     "z": 1,
+     "position": [
+      0.0,
+      -0.92,
+      -1.24
+     ]
+    }
+   ],
+   "nBasis": 14,
+   "nElectrons": 16,
+   "runs": {
+    "minao": {
+     "energies": [
+      -76.7979054451748,
+      -76.85614935995024
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "1e": {
+     "energies": [
+      -76.85614935995031
+     ],
+     "internalStable": true,
+     "converged": true
+    },
+    "minao-levelshift": {
+     "energies": [
+      -76.79790544517489
+     ],
+     "internalStable": null,
+     "converged": false
+    },
+    "1e-levelshift": {
+     "energies": [
+      -76.79790544517493
+     ],
+     "internalStable": null,
+     "converged": false
+    }
+   },
+   "lowestEnergy": -76.85614935995031
+  }
+ ]
+}

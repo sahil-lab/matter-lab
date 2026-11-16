@@ -1,0 +1,167 @@
+EXCERPTS kept as the provenance record for the kinetic models of @matterlab/reactions, taken from:
+
+  Atkinson, R., Baulch, D. L., Cox, R. A., Crowley, J. N., Hampson, R. F., Hynes, R. G., Jenkin, M. E., Rossi, M. J., Troe, J.:
+  Evaluated kinetic and photochemical data for atmospheric chemistry: Volume I - gas phase reactions of Ox, HOx, NOx and SOx species,
+  Atmospheric Chemistry and Physics, 4, 1461-1738, 2004. https://doi.org/10.5194/acp-4-1461-2004
+
+  Article page: https://acp.copernicus.org/articles/4/1461/2004/ (retrieved 2026-11-13T16:27:35.507Z, SHA-256 de054afa4402ace5156f0ae8b60ae192bf203de89efe800ed85b910dadc1bcd5).
+  The article page states: "© Author(s) 2004. This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License."
+  PDF: https://acp.copernicus.org/articles/4/1461/2004/acp-4-1461-2004.pdf (retrieved 2026-11-13T16:07:26.973Z, 1005718 bytes, SHA-256 599924f67a87e9ac95f1f2459b94d796e5fac8b71a67c4ecf6bd806d2058e104).
+  The PDF itself is not stored in this repository; these excerpts are distributed under the same licence as the article.
+
+Text extracted with pdftotext 4.00: "-layout" for the data sheets, default reading order for the quoted passages.
+Everything between === markers is extractor output and is otherwise unchanged; the quoted passages have their line
+breaks (and end-of-line hyphenation) removed. This header and the notes in [square brackets] are ours.
+Extraction artefacts to keep in mind when reading:
+  - superscripts and subscripts are flattened, so "1.4×10−12" is 1.4 x 10^-12, "1016" after a multiplication sign is 10^16,
+    "cm3 molecule−1 s−1" is cm^3 molecule^-1 s^-1 and "O3" is O with subscript 3;
+  - the extractor emits no upper-case Greek letter anywhere in this article. The capital delta of the PDF is therefore missing:
+    "H ◦ = ..." under a reaction is its standard enthalpy change, and "log k = ± ..." and "(E/R) = ± ..." under "Reliability"
+    are the uncertainties of log k and of E/R that the quoted "Assignment of uncertainties" passage defines.
+
+--- Passages that define the conventions ---
+
+=== QUOTE === Summary table, footnote a (PDF page 6, journal page 1466)
+a The cited uncertainty is an expanded uncertainty corresponding approximately to a 95% conﬁdence limit.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Conventions concerning rate coefficients" (first sentence) (PDF page 7, journal page 1467)
+All of the reactions in the table are elementary processes.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Conventions concerning rate coefficients" (sentence after the rate expression for A + A -> B + C) (PDF page 8, journal page 1468)
+Note that the stoichiometric coefﬁcient for A, i.e. 2, appears in the denominator before the rate of change of [A] (which is equal to 2k[A]2) and as a power on the right-hand side.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (first paragraph) (PDF page 11, journal page 1471)
+Under the heading “reliability”, estimates have been made of the absolute accuracies of the preferred values of k at 298 K and of the preferred values of E/R over the quoted temperature range. The accuracy of the preferred rate coefﬁcient at 298 K is quoted as the term log k, where log k = D and D is deﬁned by the equation, log10k = C ± D. This is equivalent to the statement that k is uncertain to a factor of F , where D = log10F . The accuracy of the preferred value of E/R is quoted as the term (E/R), where (E/R) = G and G is deﬁned by the equation E/R = H ± G. D and G are expanded uncertainties corresponding approximately to a 95% conﬁdence limit.
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (sentence introducing the temperature dependence of the uncertainty) (PDF page 11, journal page 1471)
+For second-order rate coefﬁcients listed in this evaluation, an estimate of the uncertainty at any given temperature within the recommended temperature range may be obtained from the equation:
+=== END QUOTE ===
+
+=== QUOTE === Guide to the data sheets, "Assignment of uncertainties" (the equation that sentence introduces) (PDF page 11, journal page 1471)
+log k(T ) = log k(298 K) + 0.4343{ E/R(1/T − 1/298)}
+=== END QUOTE ===
+
+--- Data sheets used ---
+
+=== DATA SHEET I.A3.54 === (PDF pages 114-115, journal pages 1574-1575)
+I.A3.54                                          NO + O3 → NO2 + O2
+
+  H ◦ = −199.8 kJ mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k = 1.8×10−14 cm3 molecule−1 s−1 at 298 K.
+k = 1.4×10−12 exp(−1310/T ) cm3 molecule−1 s−1 over the temperature range 195–308 K.
+
+[page break: journal page 1574 -> 1575; running foot and head omitted]
+
+Reliability
+
+log k = ± 0.08 at 298 K.
+(E/R) = ± 200 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A3.54 ===
+
+=== DATA SHEET I.A3.58 === (PDF page 122, journal page 1582)
+I.A3.58                                    NO2 + O3 → NO3 + O2
+  H ◦ = −102.2 kJ mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k= 3.5×10−17 cm3 molecule−1 s−1 at 298 K.
+k = 1.4×10−13 exp(−2470/T ) cm3 molecule−1 s−1 over the temperature range 230–360 K.
+
+Reliability
+
+  log k = ± 0.06 at 298 K.
+  (E/R) = ± 150 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A3.58 ===
+
+=== DATA SHEET I.A1.2 === (PDF page 15, journal page 1475)
+I.A1.2                               O + O3→ 2O2
+  H ◦ = -391.9 kJ·mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k = 8.0×10−15 cm3 molecule−1 s−1 at 298 K.
+k = 8.0×10−12 exp(−2060/T ) cm3 molecule−1 s−1 over the temperature range 200–400 K.
+
+Reliability
+
+  log k = ±0.08 at 298 K.
+  (E/R ) = ±200 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A1.2 ===
+
+=== DATA SHEET I.A2.20 === (PDF page 52, journal page 1512)
+I.A2.20                                                   HO + H2 → H2O + H
+
+  H ◦ = −62.0 kJ·mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k = 6.7×10−15 cm3 molecule−1 s−1 at 298 K.
+k = 7.7×10−12 exp(−2100/T ) cm3 molecule−1 s−1 over the temperature range 200–450 K.
+
+Reliability
+
+  log k = ±0.1 at 298 K.
+  (E/R) = ±200 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A2.20 ===
+
+=== DATA SHEET I.A3.57 === (PDF page 120, journal page 1580)
+I.A3.57                                          NO + NO3 → 2NO2
+
+  H ◦ = −97.6 kJ mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k= 2.6×10−11 cm3 molecule−1 s−1 at 298 K.
+k = 1.8×10−11 exp(110/T ) cm3 molecule−1 s−1 over the temperature range 220–420 K.
+
+Reliability
+
+  log k = ± 0.1 at 298 K.
+  (E/R) = ± 100 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A3.57 ===
+
+=== DATA SHEET I.A3.53 === (PDF page 113, journal page 1573)
+I.A3.53                                       2NO + O2 → 2NO2
+  H ◦ = −114.1 kJ mol−1
+
+[... table of rate coefficient data and the comments on it omitted ...]
+
+Preferred Values
+
+k= 2.0×10−38 cm6 molecule−2 s−1 at 298 K.
+k = 3.3×10−39 exp(530/T ) cm6 molecule−2 s−1 over the temperature range 270–600 K.
+
+Reliability
+
+  log k = ± 0.1 at 298 K.
+  (E/R) = ± 400 K.
+
+[... comments on preferred values and references omitted ...]
+=== END I.A3.53 ===

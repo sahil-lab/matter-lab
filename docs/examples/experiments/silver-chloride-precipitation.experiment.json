@@ -1,0 +1,670 @@
+{
+ "schema": "matterlab.experiment-result",
+ "schemaVersion": 1,
+ "input": {
+  "title": "Precipitation of silver chloride",
+  "species": [
+   {
+    "formula": "Ag+",
+    "phase": "aq",
+    "role": "reactant",
+    "name": "silver ion"
+   },
+   {
+    "formula": "Cl-",
+    "phase": "aq",
+    "role": "reactant",
+    "name": "chloride ion"
+   },
+   {
+    "formula": "AgCl",
+    "phase": "s",
+    "role": "product",
+    "name": "silver chloride"
+   },
+   {
+    "formula": "H2O",
+    "phase": "l",
+    "role": "solvent",
+    "name": "water"
+   }
+  ],
+  "conditions": {
+   "temperatureK": 298.15,
+   "pressureBar": 1,
+   "durationSeconds": 60,
+   "environment": "aqueous-solution",
+   "concentrationUnit": "mol/L"
+  },
+  "method": "auto"
+ },
+ "inputHash": "8ecb0021ded663ae19d856903f75e457d6b37b925434dd543235a317baf01cf7",
+ "status": "completed",
+ "evidence": "computed",
+ "steps": [
+  {
+   "id": "validate-species",
+   "title": "Validate the species and conditions",
+   "status": "passed",
+   "summary": "All 4 species can be read, the roles make an experiment and the conditions are physical.",
+   "details": [
+    "Species: Ag+(aq): reactant, silver ion; Cl-(aq): reactant, chloride ion; AgCl(s): product, silver chloride; H2O(l): solvent, water.",
+    "Conditions: 298.15 K, 1 bar, 60 s, environment aqueous-solution."
+   ]
+  },
+  {
+   "id": "conservation",
+   "title": "Check conservation of atoms and charge",
+   "status": "passed",
+   "summary": "Balanced with the smallest whole-number coefficients: Ag+(aq) + Cl-(aq) -> AgCl(s).",
+   "details": [
+    "Atoms on the reactant side and on the product side: Ag 1 = 1, Cl 1 = 1.",
+    "Charge on the reactant side and on the product side: 0 = 0.",
+    "Balancing is bookkeeping: it shows that the equation is possible, not that the reaction takes place."
+   ]
+  },
+  {
+   "id": "model-selection",
+   "title": "Select the models that apply",
+   "status": "passed",
+   "summary": "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated.",
+   "details": [
+    "Stoichiometry: applies. The equation is balanced.",
+    "Thermodynamics: selected. Standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from the reference table, as far as the table covers the species.",
+    "Kinetics: not available. No sourced rate law exists for this reaction, and the rate law of a similar reaction is never substituted."
+   ]
+  },
+  {
+   "id": "reference-data",
+   "title": "Look up the reference data",
+   "status": "passed",
+   "summary": "Every species of the equation is in the reference table.",
+   "details": [
+    "Ag+(aq): silver ion (CODATA Key Values for Thermodynamics); ΔfH° = 105.79 ± 0.08 kJ/mol; S° = 73.45 ± 0.40 J/(mol K), as printed by the source.",
+    "Cl-(aq): chloride ion (CODATA Key Values for Thermodynamics); ΔfH° = −167.080 ± 0.10 kJ/mol; S° = 56.60 ± 0.20 J/(mol K), as printed by the source.",
+    "AgCl(s): silver chloride (CODATA Key Values for Thermodynamics); ΔfH° = −127.01 ± 0.05 kJ/mol; S° = 96.25 ± 0.20 J/(mol K), as printed by the source."
+   ]
+  },
+  {
+   "id": "engine",
+   "title": "Name the calculation engine",
+   "status": "passed",
+   "summary": "Engines used: exact rational balancing and Hess's law on reference values.",
+   "details": [
+    "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+    "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+    "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used."
+   ]
+  },
+  {
+   "id": "calculation",
+   "title": "Run the calculation",
+   "status": "passed",
+   "summary": "Calculated: thermodynamic values from the reference table.",
+   "details": [
+    "Reaction enthalpy ΔrH°(298.15 K) = −65.72 ± 0.14 kJ/mol; reaction entropy ΔrS°(298.15 K) = −33.80 ± 0.49 J/(mol K).",
+    "Gibbs energy ΔrG°(298.15 K) = −55.64 ± 0.20 kJ/mol; log10 K = 9.748 ± 0.035, K ≈ 5.6 × 10⁹.",
+    "With every species in its standard state the reaction is product-favoured.",
+    "Thermodynamics: closed-form sums over table values; there is nothing to converge."
+   ]
+  },
+  {
+   "id": "limitations",
+   "title": "State the limitations",
+   "status": "warning",
+   "summary": "5 limitations apply, 1 of them because of this particular experiment.",
+   "details": [
+    "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+    "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: H2O(l) (solvent).",
+    "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+    "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+    "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+   ]
+  }
+ ],
+ "equation": {
+  "text": "Ag+(aq) + Cl-(aq) -> AgCl(s)",
+  "balanced": {
+   "reactants": [
+    {
+     "formula": "Ag+",
+     "phase": "aq",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Ag": 1
+      },
+      "charge": 1
+     }
+    },
+    {
+     "formula": "Cl-",
+     "phase": "aq",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Cl": 1
+      },
+      "charge": -1
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "AgCl",
+     "phase": "s",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Ag": 1,
+       "Cl": 1
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "balance": {
+   "status": "already-balanced",
+   "equation": {
+    "reactants": [
+     {
+      "formula": "Ag+",
+      "phase": "aq",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "Ag": 1
+       },
+       "charge": 1
+      }
+     },
+     {
+      "formula": "Cl-",
+      "phase": "aq",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "Cl": 1
+       },
+       "charge": -1
+      }
+     }
+    ],
+    "products": [
+     {
+      "formula": "AgCl",
+      "phase": "s",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "Ag": 1,
+        "Cl": 1
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "reversible": false
+   },
+   "message": "The equation is already balanced as written: every element and the charge are conserved.",
+   "independentSolutions": 1
+  }
+ },
+ "balance": {
+  "status": "already-balanced",
+  "equation": {
+   "reactants": [
+    {
+     "formula": "Ag+",
+     "phase": "aq",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Ag": 1
+      },
+      "charge": 1
+     }
+    },
+    {
+     "formula": "Cl-",
+     "phase": "aq",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Cl": 1
+      },
+      "charge": -1
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "AgCl",
+     "phase": "s",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "Ag": 1,
+       "Cl": 1
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "message": "The equation is already balanced as written: every element and the charge are conserved.",
+  "independentSolutions": 1
+ },
+ "thermo": {
+  "status": "ok",
+  "temperatureK": 298.15,
+  "terms": [
+   {
+    "role": "reactant",
+    "term": "Ag+(aq)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "Ag+(aq)",
+    "name": "silver ion",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "aq"
+    ]
+   },
+   {
+    "role": "reactant",
+    "term": "Cl-(aq)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "Cl-(aq)",
+    "name": "chloride ion",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "aq"
+    ]
+   },
+   {
+    "role": "product",
+    "term": "AgCl(s)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "AgCl(s)",
+    "name": "silver chloride",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "s"
+    ]
+   }
+  ],
+  "conservation": {
+   "balanced": true,
+   "elementImbalance": {
+    "Ag": 0,
+    "Cl": 0
+   },
+   "chargeImbalance": 0
+  },
+  "missingSpecies": [],
+  "missingEntropy": [],
+  "deltaH": {
+   "value": -65.72,
+   "unit": "kJ/mol",
+   "uncertainty": 0.1374772708486752,
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction enthalpy at 298.15 K by Hess's law from tabulated enthalpies of formation. Reaction: Ag+(aq) + Cl-(aq) -> AgCl(s). Table entries used: Ag+(aq), Cl-(aq), AgCl(s)."
+   }
+  },
+  "deltaS": {
+   "value": -33.80000000000001,
+   "unit": "J/(mol K)",
+   "uncertainty": 0.48989794855663565,
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction entropy at 298.15 K by Hess's law from tabulated standard entropies. Reaction: Ag+(aq) + Cl-(aq) -> AgCl(s). Table entries used: Ag+(aq), Cl-(aq), AgCl(s)."
+   }
+  },
+  "deltaG": {
+   "value": -55.642529999999994,
+   "unit": "kJ/mol",
+   "uncertainty": 0.20058519736012426,
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction Gibbs energy at 298.15 K from the reaction enthalpy and entropy. Reaction: Ag+(aq) + Cl-(aq) -> AgCl(s). Table entries used: Ag+(aq), Cl-(aq), AgCl(s)."
+   }
+  },
+  "lnK": 22.445943731797872,
+  "log10K": 9.7481495038307,
+  "equilibriumConstant": 5599503285.848316,
+  "spontaneity": "product-favoured",
+  "withinValidatedRange": true,
+  "assumptions": [
+   "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+   "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+   "Aqueous ions follow the convention of the source table, in which H+(aq) has an enthalpy of formation of 0 and an entropy of 0; single-ion values are meaningful only in charge-balanced combinations.",
+   "Uncertainties are the limits printed by the sources, combined in quadrature as if they were independent; correlations between tabulated values are not known to this package.",
+   "The Gibbs energy is ΔG° = ΔH° − TΔS° at 298.15 K, the temperature of the tabulated data.",
+   "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+   "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all."
+  ],
+  "warnings": [],
+  "evidence": "computed"
+ },
+ "kineticModel": null,
+ "rateConstant": null,
+ "kinetics": null,
+ "energyDiagrams": [
+  {
+   "quantity": "enthalpy",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: Ag+(aq) + Cl-(aq)",
+     "value": 0,
+     "evidence": "computed",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: AgCl(s)",
+     "value": -65.72,
+     "evidence": "computed",
+     "note": "Standard reaction enthalpy at 298.15 K: −65.72 ± 0.14 kJ/mol, by Hess's law from the reference table."
+    }
+   ],
+   "notes": [
+    "Levels are enthalpies relative to the reactants, in kJ per mole of reaction as written. They are standard-state values at 298.15 K, not at the temperature of the experiment; the lines between them are not a computed reaction path.",
+    "No barrier is drawn: no sourced rate law was used for this reaction, and MATTER LAB does not estimate activation energies."
+   ]
+  },
+  {
+   "quantity": "gibbs",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: Ag+(aq) + Cl-(aq)",
+     "value": 0,
+     "evidence": "computed",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: AgCl(s)",
+     "value": -55.642529999999994,
+     "evidence": "computed",
+     "note": "Standard reaction Gibbs energy at 298.15 K: −55.64 ± 0.20 kJ/mol."
+    }
+   ],
+   "notes": [
+    "Levels are standard Gibbs energies at 298.15 K relative to the reactants, in kJ per mole of reaction as written, with every species in its standard state.",
+    "No barrier is drawn: MATTER LAB has no Gibbs energy of activation for this reaction."
+   ]
+  }
+ ],
+ "explanation": {
+  "beginner": [
+   {
+    "heading": "What this experiment asks",
+    "paragraphs": [
+     "This experiment looks at the reaction **Ag+(aq) + Cl-(aq) -> AgCl(s)**.",
+     "It asks how much heat the reaction gives out or takes in and which side of the reaction is favoured.",
+     "MATTER LAB works on the reaction you entered. It does not decide whether these substances really react."
+    ]
+   },
+   {
+    "heading": "What goes in",
+    "paragraphs": [
+     "Starting substances: silver ion (Ag+, aqueous solution) and chloride ion (Cl-, aqueous solution). Products entered: silver chloride (AgCl, solid).",
+     "Also listed: water (H2O, liquid) as solvent.",
+     "Temperature 298.15 K (25 °C), pressure 1 bar."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "How it was worked out",
+    "paragraphs": [
+     "First the equation was balanced, so that no atoms and no electric charge appear or disappear.",
+     "Then published reference values for each substance were added up, products minus starting substances. This is known as Hess's law. Nothing was simulated for it.",
+     "No speed was worked out: MATTER LAB has no published rate data for this reaction and does not borrow data from a similar one."
+    ]
+   },
+   {
+    "heading": "The idea behind the numbers: energy",
+    "paragraphs": [
+     "The heat of reaction, written ΔH, is the heat content of the products minus that of the starting substances. A negative value means that heat is given out.",
+     "Whether a reaction is favoured depends on that heat and on the change in disorder (the entropy, ΔS). The two are combined in the Gibbs energy ΔG. A negative ΔG means that the products are favoured."
+    ],
+    "equation": "ΔG = ΔH − TΔS"
+   },
+   {
+    "heading": "What is assumed",
+    "paragraphs": [
+     "Every substance is treated as pure and under standard conditions (a pressure of 1 bar)."
+    ]
+   },
+   {
+    "heading": "What came out",
+    "paragraphs": [
+     "Balanced equation: **Ag+(aq) + Cl-(aq) -> AgCl(s)**.",
+     "Heat of reaction: **−65.72 ± 0.14 kJ/mol** for the amounts in the equation, counted in moles. The minus sign means that heat is **given out** (the reaction is exothermic).",
+     "Gibbs energy at 298.15 K: **−55.64 ± 0.20 kJ/mol**. The products are favoured.",
+     "Equilibrium constant: K ≈ 5.6 × 10⁹. The larger this number, the further the balance lies towards the products."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "How sure is this",
+    "paragraphs": [
+     "The balanced equation is exact arithmetic; its numbers are certain.",
+     "The ± values come from the uncertainties given in the reference tables.",
+     "These numbers carry the label \"Computed\": Produced by a real calculation. The method, settings and limitations are recorded.",
+     "Numbers are rounded so that they show no more digits than the data behind them support."
+    ]
+   },
+   {
+    "heading": "Did the calculation finish",
+    "paragraphs": [
+     "These results are exact arithmetic and sums of table values. There is no step-by-step calculation that could fail to finish."
+    ]
+   },
+   {
+    "heading": "What is not included",
+    "paragraphs": [
+     "MATTER LAB did not predict that these substances react. It only did the sums for the reaction you entered.",
+     "H2O(l) (solvent) is noted down but not part of the calculation. The results are for the reaction exactly as written.",
+     "The energy values are for pure substances under standard conditions, not for a real mixture.",
+     "Being favoured is not the same as being fast. A favoured reaction can be far too slow to notice, or may need a spark to start.",
+     "MATTER LAB has no published speed data for this reaction, so it says nothing about how fast it goes."
+    ]
+   },
+   {
+    "heading": "Why reality may differ",
+    "paragraphs": [
+     "Real mixtures are not under standard conditions: the actual pressures and concentrations shift the balance.",
+     "A favoured reaction can still be so slow that nothing visible happens, or it may need a spark or a catalyst to start.",
+     "The reaction that really happens may not be the one written down: other products can form."
+    ]
+   }
+  ],
+  "advanced": [
+   {
+    "heading": "Objective",
+    "paragraphs": [
+     "Evaluate the reaction Ag+(aq) + Cl-(aq) -> AgCl(s) at 298.15 K and 1 bar: the balanced equation, the standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from reference data and the rate constant and concentration-time curves, if a sourced rate law exists for exactly this reaction.",
+     "Method requested: auto. The equation was built from the species entered as reactants and products; no product was predicted."
+    ]
+   },
+   {
+    "heading": "Initial species and conditions",
+    "paragraphs": [
+     "Ag+(aq): reactant, silver ion.",
+     "Cl-(aq): reactant, chloride ion.",
+     "AgCl(s): product, silver chloride.",
+     "H2O(l): solvent, water.",
+     "Temperature 298.15 K; pressure 1 bar; duration 60 s; environment aqueous-solution; concentrations in mol/L.",
+     "These values are used as entered. They describe the experiment that was asked for, not a measured system."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "Method",
+    "paragraphs": [
+     "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+     "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+     "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used.",
+     "Every species of the equation is in the reference table.",
+     "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated."
+    ]
+   },
+   {
+    "heading": "Mathematical model: conservation",
+    "paragraphs": [
+     "The coefficients ν (negative for reactants, positive for products) have to satisfy the conservation equations for every element and for the charge.",
+     "These equations have a single solution up to scale here; the smallest positive whole numbers are used."
+    ],
+    "equation": "Σ ν·(atoms of each element) = 0,  Σ ν·(charge) = 0"
+   },
+   {
+    "heading": "Mathematical model: reaction enthalpy and entropy",
+    "paragraphs": [
+     "Hess's law: the standard reaction enthalpy and entropy at 298.15 K are the stoichiometric sums of the tabulated standard enthalpies of formation and standard entropies."
+    ],
+    "equation": "ΔrH° = Σ ν·ΔfH°,  ΔrS° = Σ ν·S°"
+   },
+   {
+    "heading": "Mathematical model: Gibbs energy and equilibrium constant",
+    "paragraphs": [
+     "The standard Gibbs energy of reaction at 298.15 K follows from the reaction enthalpy and entropy, and the thermodynamic equilibrium constant from the Gibbs energy.",
+     "K is dimensionless: it is expressed in activities relative to the standard states."
+    ],
+    "equation": "ΔrG°(T) = ΔrH°(298.15 K) − T·ΔrS°(298.15 K),  K = exp(−ΔrG°/RT)"
+   },
+   {
+    "heading": "Assumptions",
+    "paragraphs": [
+     "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+     "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+     "Aqueous ions follow the convention of the source table, in which H+(aq) has an enthalpy of formation of 0 and an entropy of 0; single-ion values are meaningful only in charge-balanced combinations.",
+     "Uncertainties are the limits printed by the sources, combined in quadrature as if they were independent; correlations between tabulated values are not known to this package.",
+     "The Gibbs energy is ΔG° = ΔH° − TΔS° at 298.15 K, the temperature of the tabulated data.",
+     "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+     "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all.",
+     "Catalysts and solvents take no part in any of the models."
+    ]
+   },
+   {
+    "heading": "Results",
+    "paragraphs": [
+     "Balanced equation: Ag+(aq) + Cl-(aq) -> AgCl(s).",
+     "ΔrH°(298.15 K) = −65.72 ± 0.14 kJ/mol, per mole of reaction as written.",
+     "ΔrS°(298.15 K) = −33.80 ± 0.49 J/(mol K).",
+     "ΔrG°(298.15 K) = −55.64 ± 0.20 kJ/mol.",
+     "log10 K = 9.748 ± 0.035; K ≈ 5.6 × 10⁹.",
+     "Direction with every species in its standard state: product-favoured.",
+     "No kinetic results: no sourced rate law exists for this reaction."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "Confidence and uncertainty",
+    "paragraphs": [
+     "Stoichiometric coefficients are exact (rational arithmetic).",
+     "Uncertainties are the limits printed by the sources, combined in quadrature as independent quantities; correlations between tabulated values are unknown. The CODATA table gives \"stated uncertainty limits\" without a coverage factor.",
+     "Evidence: reaction enthalpy and entropy are computed from reference data; the Gibbs energy and equilibrium constant are labelled computed.",
+     "The reaction enthalpy is rounded to the second significant figure of its uncertainty.",
+     "The reaction entropy and the Gibbs energy are rounded to the second significant figure of their uncertainties.",
+     "The equilibrium constant is given with the digits that the uncertainty of the Gibbs energy supports (log10 K is uncertain by about 0.04).",
+     "A value that has an uncertainty is rounded, together with that uncertainty, to the decimal place of the second significant figure of the uncertainty."
+    ]
+   },
+   {
+    "heading": "Convergence status",
+    "paragraphs": [
+     "Balancing: exact, nothing to converge.",
+     "Thermodynamics: closed-form sums over table values, nothing to converge."
+    ]
+   },
+   {
+    "heading": "Known limitations",
+    "paragraphs": [
+     "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+     "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: H2O(l) (solvent).",
+     "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+     "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+     "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+    ]
+   },
+   {
+    "heading": "Why the prediction may not match reality",
+    "paragraphs": [
+     "The equation as written may not be the reaction that occurs: side reactions, incomplete conversion and other products are not considered.",
+     "Composition and non-ideality: the driving force in an actual mixture is ΔG = ΔG° + RT ln Q with activities that differ from the standard states; neither Q nor activity coefficients are computed.",
+     "Kinetic hindrance: thermodynamics implies nothing about rate, and metastable mixtures are common.",
+     "Reference data: tabulated values carry their own uncertainties and, where two tables are combined, need not be mutually consistent."
+    ]
+   }
+  ],
+  "references": [
+   {
+    "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+    "title": "CODATA Key Values for Thermodynamics",
+    "source": "Hemisphere Publishing Corp., New York",
+    "year": 1989
+   }
+  ]
+ },
+ "warnings": [],
+ "limitations": [
+  "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+  "Catalysts and solvents are recorded with the experiment but not modelled: no supported model describes catalysis or solvation, so the results are those of the reaction as written. Recorded: H2O(l) (solvent).",
+  "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+  "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+  "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+ ],
+ "reproducibility": {
+  "engine": "@matterlab/reactions",
+  "engineVersion": "0.1.0",
+  "dataSources": [
+   {
+    "id": "codata-key-values",
+    "title": "CODATA Key Values for Thermodynamics (table page)",
+    "retrieved": "2026-11-13",
+    "sha256": "88049de2c7700bf44d233dacee019ac70c9b46ad280596270ebb3d5d0235d460"
+   }
+  ],
+  "solver": null,
+  "deterministic": true
+ }
+}

@@ -1,0 +1,778 @@
+{
+ "schema": "matterlab.experiment-result",
+ "schemaVersion": 1,
+ "input": {
+  "title": "Combustion of methane",
+  "species": [
+   {
+    "formula": "CH4",
+    "phase": "g",
+    "role": "reactant",
+    "name": "methane"
+   },
+   {
+    "formula": "O2",
+    "phase": "g",
+    "role": "reactant",
+    "name": "oxygen"
+   },
+   {
+    "formula": "CO2",
+    "phase": "g",
+    "role": "product",
+    "name": "carbon dioxide"
+   },
+   {
+    "formula": "H2O",
+    "phase": "l",
+    "role": "product",
+    "name": "water"
+   }
+  ],
+  "conditions": {
+   "temperatureK": 298.15,
+   "pressureBar": 1,
+   "durationSeconds": 60,
+   "environment": "unspecified",
+   "concentrationUnit": "mol/L"
+  },
+  "method": "auto"
+ },
+ "inputHash": "e5f3ce434fb8780678cbc29894bc6990bc2886abbd27cdee5a5dc5f0005ca365",
+ "status": "completed",
+ "evidence": "computed",
+ "steps": [
+  {
+   "id": "validate-species",
+   "title": "Validate the species and conditions",
+   "status": "passed",
+   "summary": "All 4 species can be read, the roles make an experiment and the conditions are physical.",
+   "details": [
+    "Species: CH4(g): reactant, methane; O2(g): reactant, oxygen; CO2(g): product, carbon dioxide; H2O(l): product, water.",
+    "Conditions: 298.15 K, 1 bar, 60 s, environment unspecified."
+   ]
+  },
+  {
+   "id": "conservation",
+   "title": "Check conservation of atoms and charge",
+   "status": "passed",
+   "summary": "Balanced with the smallest whole-number coefficients: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l).",
+   "details": [
+    "Atoms on the reactant side and on the product side: C 1 = 1, H 4 = 4, O 4 = 4.",
+    "Charge on the reactant side and on the product side: 0 = 0.",
+    "Balancing is bookkeeping: it shows that the equation is possible, not that the reaction takes place."
+   ]
+  },
+  {
+   "id": "model-selection",
+   "title": "Select the models that apply",
+   "status": "passed",
+   "summary": "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated.",
+   "details": [
+    "Stoichiometry: applies. The equation is balanced.",
+    "Thermodynamics: selected. Standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from the reference table, as far as the table covers the species.",
+    "Kinetics: not available. No sourced rate law exists for this reaction, and the rate law of a similar reaction is never substituted."
+   ]
+  },
+  {
+   "id": "reference-data",
+   "title": "Look up the reference data",
+   "status": "passed",
+   "summary": "Every species of the equation is in the reference table.",
+   "details": [
+    "CH4(g): methane (NIST Chemistry WebBook, NIST Standard Reference Database Number 69); ΔfH° = −74.87 kJ/mol; S° = 186.25 J/(mol K), as printed by the source.",
+    "O2(g): oxygen (CODATA Key Values for Thermodynamics); ΔfH° = 0 kJ/mol (zero by definition); S° = 205.152 ± 0.005 J/(mol K), as printed by the source.",
+    "CO2(g): carbon dioxide (CODATA Key Values for Thermodynamics); ΔfH° = −393.51 ± 0.13 kJ/mol; S° = 213.785 ± 0.010 J/(mol K), as printed by the source.",
+    "H2O(l): water (CODATA Key Values for Thermodynamics); ΔfH° = −285.830 ± 0.040 kJ/mol; S° = 69.95 ± 0.03 J/(mol K), as printed by the source."
+   ]
+  },
+  {
+   "id": "engine",
+   "title": "Name the calculation engine",
+   "status": "passed",
+   "summary": "Engines used: exact rational balancing and Hess's law on reference values.",
+   "details": [
+    "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+    "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+    "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used."
+   ]
+  },
+  {
+   "id": "calculation",
+   "title": "Run the calculation",
+   "status": "passed",
+   "summary": "Calculated: thermodynamic values from the reference table.",
+   "details": [
+    "Reaction enthalpy ΔrH°(298.15 K) = −890.30 kJ/mol; reaction entropy ΔrS°(298.15 K) = −242.87 J/(mol K).",
+    "Gibbs energy ΔrG°(298.15 K) = −817.89 kJ/mol; log10 K = 143.29, K ≈ 1.9 × 10¹⁴³.",
+    "With every species in its standard state the reaction is product-favoured.",
+    "Thermodynamics: closed-form sums over table values; there is nothing to converge."
+   ]
+  },
+  {
+   "id": "limitations",
+   "title": "State the limitations",
+   "status": "passed",
+   "summary": "4 limitations apply.",
+   "details": [
+    "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+    "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+    "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+    "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+   ]
+  }
+ ],
+ "equation": {
+  "text": "CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l)",
+  "balanced": {
+   "reactants": [
+    {
+     "formula": "CH4",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "C": 1,
+       "H": 4
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "O2",
+     "phase": "g",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "O": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "CO2",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "C": 1,
+       "O": 2
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "H2O",
+     "phase": "l",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "H": 2,
+       "O": 1
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "balance": {
+   "status": "balanced",
+   "equation": {
+    "reactants": [
+     {
+      "formula": "CH4",
+      "phase": "g",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "C": 1,
+        "H": 4
+       },
+       "charge": 0
+      }
+     },
+     {
+      "formula": "O2",
+      "phase": "g",
+      "coefficient": 2,
+      "parsed": {
+       "elements": {
+        "O": 2
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "products": [
+     {
+      "formula": "CO2",
+      "phase": "g",
+      "coefficient": 1,
+      "parsed": {
+       "elements": {
+        "C": 1,
+        "O": 2
+       },
+       "charge": 0
+      }
+     },
+     {
+      "formula": "H2O",
+      "phase": "l",
+      "coefficient": 2,
+      "parsed": {
+       "elements": {
+        "H": 2,
+        "O": 1
+       },
+       "charge": 0
+      }
+     }
+    ],
+    "reversible": false
+   },
+   "message": "Balanced with the smallest whole-number coefficients: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l).",
+   "independentSolutions": 1
+  }
+ },
+ "balance": {
+  "status": "balanced",
+  "equation": {
+   "reactants": [
+    {
+     "formula": "CH4",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "C": 1,
+       "H": 4
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "O2",
+     "phase": "g",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "O": 2
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "products": [
+    {
+     "formula": "CO2",
+     "phase": "g",
+     "coefficient": 1,
+     "parsed": {
+      "elements": {
+       "C": 1,
+       "O": 2
+      },
+      "charge": 0
+     }
+    },
+    {
+     "formula": "H2O",
+     "phase": "l",
+     "coefficient": 2,
+     "parsed": {
+      "elements": {
+       "H": 2,
+       "O": 1
+      },
+      "charge": 0
+     }
+    }
+   ],
+   "reversible": false
+  },
+  "message": "Balanced with the smallest whole-number coefficients: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l).",
+  "independentSolutions": 1
+ },
+ "thermo": {
+  "status": "ok",
+  "temperatureK": 298.15,
+  "terms": [
+   {
+    "role": "reactant",
+    "term": "CH4(g)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "CH4(g)",
+    "name": "methane",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   },
+   {
+    "role": "reactant",
+    "term": "O2(g)",
+    "coefficient": 2,
+    "lookup": "found",
+    "speciesId": "O2(g)",
+    "name": "oxygen",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g"
+    ]
+   },
+   {
+    "role": "product",
+    "term": "CO2(g)",
+    "coefficient": 1,
+    "lookup": "found",
+    "speciesId": "CO2(g)",
+    "name": "carbon dioxide",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "g",
+     "aq"
+    ]
+   },
+   {
+    "role": "product",
+    "term": "H2O(l)",
+    "coefficient": 2,
+    "lookup": "found",
+    "speciesId": "H2O(l)",
+    "name": "water",
+    "phaseAssumed": false,
+    "availablePhases": [
+     "l",
+     "g"
+    ]
+   }
+  ],
+  "conservation": {
+   "balanced": true,
+   "elementImbalance": {
+    "C": 0,
+    "O": 0,
+    "H": 0
+   },
+   "chargeImbalance": 0
+  },
+  "missingSpecies": [],
+  "missingEntropy": [],
+  "deltaH": {
+   "value": -890.3,
+   "unit": "kJ/mol",
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Chase, M.W., Jr.",
+      "title": "NIST-JANAF Themochemical Tables, Fourth Edition",
+      "source": "J. Phys. Chem. Ref. Data, Monograph 9, 1-1951",
+      "year": 1998
+     },
+     {
+      "authors": "P.J. Linstrom and W.G. Mallard, Eds.",
+      "title": "NIST Chemistry WebBook, NIST Standard Reference Database Number 69",
+      "source": "National Institute of Standards and Technology, Gaithersburg MD, 20899 (retrieved November 13, 2026)",
+      "doi": "10.18434/T4D303",
+      "url": "https://doi.org/10.18434/T4D303"
+     },
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction enthalpy at 298.15 K by Hess's law from tabulated enthalpies of formation. Reaction: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l). Table entries used: CH4(g), O2(g), CO2(g), H2O(l)."
+   }
+  },
+  "deltaS": {
+   "value": -242.869,
+   "unit": "J/(mol K)",
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Chase, M.W., Jr.",
+      "title": "NIST-JANAF Themochemical Tables, Fourth Edition",
+      "source": "J. Phys. Chem. Ref. Data, Monograph 9, 1-1951",
+      "year": 1998
+     },
+     {
+      "authors": "P.J. Linstrom and W.G. Mallard, Eds.",
+      "title": "NIST Chemistry WebBook, NIST Standard Reference Database Number 69",
+      "source": "National Institute of Standards and Technology, Gaithersburg MD, 20899 (retrieved November 13, 2026)",
+      "doi": "10.18434/T4D303",
+      "url": "https://doi.org/10.18434/T4D303"
+     },
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction entropy at 298.15 K by Hess's law from tabulated standard entropies. Reaction: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l). Table entries used: CH4(g), O2(g), CO2(g), H2O(l)."
+   }
+  },
+  "deltaG": {
+   "value": -817.8886076499999,
+   "unit": "kJ/mol",
+   "evidence": "computed",
+   "provenance": {
+    "source": "@matterlab/reactions",
+    "citations": [
+     {
+      "authors": "Chase, M.W., Jr.",
+      "title": "NIST-JANAF Themochemical Tables, Fourth Edition",
+      "source": "J. Phys. Chem. Ref. Data, Monograph 9, 1-1951",
+      "year": 1998
+     },
+     {
+      "authors": "P.J. Linstrom and W.G. Mallard, Eds.",
+      "title": "NIST Chemistry WebBook, NIST Standard Reference Database Number 69",
+      "source": "National Institute of Standards and Technology, Gaithersburg MD, 20899 (retrieved November 13, 2026)",
+      "doi": "10.18434/T4D303",
+      "url": "https://doi.org/10.18434/T4D303"
+     },
+     {
+      "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+      "title": "CODATA Key Values for Thermodynamics",
+      "source": "Hemisphere Publishing Corp., New York",
+      "year": 1989
+     }
+    ],
+    "notes": "Standard reaction Gibbs energy at 298.15 K from the reaction enthalpy and entropy. Reaction: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l). Table entries used: CH4(g), O2(g), CO2(g), H2O(l)."
+   }
+  },
+  "lnK": 329.9325473911845,
+  "log10K": 143.28788473227456,
+  "equilibriumConstant": 1.9403708081571626e+143,
+  "spontaneity": "product-favoured",
+  "withinValidatedRange": true,
+  "assumptions": [
+   "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+   "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+   "The Gibbs energy is ΔG° = ΔH° − TΔS° at 298.15 K, the temperature of the tabulated data.",
+   "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+   "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all."
+  ],
+  "warnings": [
+   "Values from 2 reference tables are combined (CODATA Key Values for Thermodynamics; NIST Chemistry WebBook, NIST Standard Reference Database Number 69). They were evaluated separately and are not guaranteed to be mutually consistent.",
+   "No uncertainty is given for the reaction enthalpy because the source prints none for CH4(g).",
+   "No uncertainty is given for the reaction entropy because the source prints none for CH4(g)."
+  ],
+  "evidence": "computed"
+ },
+ "kineticModel": null,
+ "rateConstant": null,
+ "kinetics": null,
+ "energyDiagrams": [
+  {
+   "quantity": "enthalpy",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: CH4(g) + 2 O2(g)",
+     "value": 0,
+     "evidence": "computed",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: CO2(g) + 2 H2O(l)",
+     "value": -890.3,
+     "evidence": "computed",
+     "note": "Standard reaction enthalpy at 298.15 K: −890.30 kJ/mol, by Hess's law from the reference table."
+    }
+   ],
+   "notes": [
+    "Levels are enthalpies relative to the reactants, in kJ per mole of reaction as written. They are standard-state values at 298.15 K, not at the temperature of the experiment; the lines between them are not a computed reaction path.",
+    "No barrier is drawn: no sourced rate law was used for this reaction, and MATTER LAB does not estimate activation energies."
+   ]
+  },
+  {
+   "quantity": "gibbs",
+   "unit": "kJ/mol",
+   "levels": [
+    {
+     "kind": "reactants",
+     "label": "Reactants: CH4(g) + 2 O2(g)",
+     "value": 0,
+     "evidence": "computed",
+     "note": "Reference level: the reactants are at zero by definition."
+    },
+    {
+     "kind": "products",
+     "label": "Products: CO2(g) + 2 H2O(l)",
+     "value": -817.8886076499999,
+     "evidence": "computed",
+     "note": "Standard reaction Gibbs energy at 298.15 K: −817.89 kJ/mol."
+    }
+   ],
+   "notes": [
+    "Levels are standard Gibbs energies at 298.15 K relative to the reactants, in kJ per mole of reaction as written, with every species in its standard state.",
+    "No barrier is drawn: MATTER LAB has no Gibbs energy of activation for this reaction."
+   ]
+  }
+ ],
+ "explanation": {
+  "beginner": [
+   {
+    "heading": "What this experiment asks",
+    "paragraphs": [
+     "This experiment looks at the reaction **CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l)**.",
+     "It asks how much heat the reaction gives out or takes in and which side of the reaction is favoured.",
+     "MATTER LAB works on the reaction you entered. It does not decide whether these substances really react."
+    ]
+   },
+   {
+    "heading": "What goes in",
+    "paragraphs": [
+     "Starting substances: methane (CH4, gas) and oxygen (O2, gas). Products entered: carbon dioxide (CO2, gas) and water (H2O, liquid).",
+     "Temperature 298.15 K (25 °C), pressure 1 bar."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "How it was worked out",
+    "paragraphs": [
+     "First the equation was balanced, so that no atoms and no electric charge appear or disappear.",
+     "Then published reference values for each substance were added up, products minus starting substances. This is known as Hess's law. Nothing was simulated for it.",
+     "No speed was worked out: MATTER LAB has no published rate data for this reaction and does not borrow data from a similar one."
+    ]
+   },
+   {
+    "heading": "The idea behind the numbers: energy",
+    "paragraphs": [
+     "The heat of reaction, written ΔH, is the heat content of the products minus that of the starting substances. A negative value means that heat is given out.",
+     "Whether a reaction is favoured depends on that heat and on the change in disorder (the entropy, ΔS). The two are combined in the Gibbs energy ΔG. A negative ΔG means that the products are favoured."
+    ],
+    "equation": "ΔG = ΔH − TΔS"
+   },
+   {
+    "heading": "What is assumed",
+    "paragraphs": [
+     "Every substance is treated as pure and under standard conditions (a pressure of 1 bar)."
+    ]
+   },
+   {
+    "heading": "What came out",
+    "paragraphs": [
+     "Balanced equation: **CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l)**.",
+     "Heat of reaction: **−890.30 kJ/mol** for the amounts in the equation, counted in moles. The minus sign means that heat is **given out** (the reaction is exothermic).",
+     "Gibbs energy at 298.15 K: **−817.89 kJ/mol**. The products are favoured.",
+     "Equilibrium constant: K ≈ 1.9 × 10¹⁴³. The larger this number, the further the balance lies towards the products."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "How sure is this",
+    "paragraphs": [
+     "The balanced equation is exact arithmetic; its numbers are certain.",
+     "The reference table gives no uncertainty for some of the values used, so none can be given for the result.",
+     "These numbers carry the label \"Computed\": Produced by a real calculation. The method, settings and limitations are recorded.",
+     "Numbers are rounded so that they show no more digits than the data behind them support."
+    ]
+   },
+   {
+    "heading": "Did the calculation finish",
+    "paragraphs": [
+     "These results are exact arithmetic and sums of table values. There is no step-by-step calculation that could fail to finish."
+    ]
+   },
+   {
+    "heading": "What is not included",
+    "paragraphs": [
+     "MATTER LAB did not predict that these substances react. It only did the sums for the reaction you entered.",
+     "The energy values are for pure substances under standard conditions, not for a real mixture.",
+     "Being favoured is not the same as being fast. A favoured reaction can be far too slow to notice, or may need a spark to start.",
+     "MATTER LAB has no published speed data for this reaction, so it says nothing about how fast it goes."
+    ]
+   },
+   {
+    "heading": "Why reality may differ",
+    "paragraphs": [
+     "Real mixtures are not under standard conditions: the actual pressures and concentrations shift the balance.",
+     "A favoured reaction can still be so slow that nothing visible happens, or it may need a spark or a catalyst to start.",
+     "The reaction that really happens may not be the one written down: other products can form."
+    ]
+   }
+  ],
+  "advanced": [
+   {
+    "heading": "Objective",
+    "paragraphs": [
+     "Evaluate the reaction CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l) at 298.15 K and 1 bar: the balanced equation, the standard reaction enthalpy, entropy, Gibbs energy and equilibrium constant from reference data and the rate constant and concentration-time curves, if a sourced rate law exists for exactly this reaction.",
+     "Method requested: auto. The equation was built from the species entered as reactants and products; no product was predicted."
+    ]
+   },
+   {
+    "heading": "Initial species and conditions",
+    "paragraphs": [
+     "CH4(g): reactant, methane.",
+     "O2(g): reactant, oxygen.",
+     "CO2(g): product, carbon dioxide.",
+     "H2O(l): product, water.",
+     "Temperature 298.15 K; pressure 1 bar; duration 60 s; environment unspecified; concentrations in mol/L.",
+     "These values are used as entered. They describe the experiment that was asked for, not a measured system."
+    ],
+    "evidence": "user-input"
+   },
+   {
+    "heading": "Method",
+    "paragraphs": [
+     "Balancing: exact rational null space of the element-and-charge composition matrix, scaled to the smallest whole numbers; no floating-point arithmetic.",
+     "Thermodynamics: Hess's law on the tabulated standard enthalpies of formation and standard entropies at 298.15 K; ΔG°(T) = ΔH°(298.15 K) − T·ΔS°(298.15 K) with the reaction enthalpy and entropy taken as independent of temperature; K = exp(−ΔG°/RT); uncertainties of the table values combined in quadrature.",
+     "Engine: @matterlab/reactions 0.1.0. It is deterministic: no clock and no random numbers are used.",
+     "Every species of the equation is in the reference table.",
+     "Thermodynamics is selected; no sourced rate law exists for this reaction, so its kinetics is not simulated."
+    ]
+   },
+   {
+    "heading": "Mathematical model: conservation",
+    "paragraphs": [
+     "The coefficients ν (negative for reactants, positive for products) have to satisfy the conservation equations for every element and for the charge.",
+     "These equations have a single solution up to scale here; the smallest positive whole numbers are used."
+    ],
+    "equation": "Σ ν·(atoms of each element) = 0,  Σ ν·(charge) = 0"
+   },
+   {
+    "heading": "Mathematical model: reaction enthalpy and entropy",
+    "paragraphs": [
+     "Hess's law: the standard reaction enthalpy and entropy at 298.15 K are the stoichiometric sums of the tabulated standard enthalpies of formation and standard entropies."
+    ],
+    "equation": "ΔrH° = Σ ν·ΔfH°,  ΔrS° = Σ ν·S°"
+   },
+   {
+    "heading": "Mathematical model: Gibbs energy and equilibrium constant",
+    "paragraphs": [
+     "The standard Gibbs energy of reaction at 298.15 K follows from the reaction enthalpy and entropy, and the thermodynamic equilibrium constant from the Gibbs energy.",
+     "K is dimensionless: it is expressed in activities relative to the standard states."
+    ],
+    "equation": "ΔrG°(T) = ΔrH°(298.15 K) − T·ΔrS°(298.15 K),  K = exp(−ΔrG°/RT)"
+   },
+   {
+    "heading": "Assumptions",
+    "paragraphs": [
+     "All species are in their standard states: pure solids and liquids, ideal gases at 1 bar, and aqueous species in the solute standard state of the source table.",
+     "Reaction enthalpy and entropy follow from Hess's law: the sum over products minus the sum over reactants of the tabulated enthalpies of formation and standard entropies at 298.15 K, each multiplied by its coefficient.",
+     "The Gibbs energy is ΔG° = ΔH° − TΔS° at 298.15 K, the temperature of the tabulated data.",
+     "K = exp(−ΔG°/RT) is the dimensionless thermodynamic equilibrium constant, expressed in activities relative to the standard states above.",
+     "The direction label compares ΔG° with RT and with its own uncertainty; it describes all species in their standard states, not an arbitrary mixture, and says nothing about how fast the reaction is or whether it proceeds at all."
+    ]
+   },
+   {
+    "heading": "Results",
+    "paragraphs": [
+     "Balanced equation: CH4(g) + 2 O2(g) -> CO2(g) + 2 H2O(l).",
+     "ΔrH°(298.15 K) = −890.30 kJ/mol, per mole of reaction as written.",
+     "ΔrS°(298.15 K) = −242.87 J/(mol K).",
+     "ΔrG°(298.15 K) = −817.89 kJ/mol.",
+     "log10 K = 143.29; K ≈ 1.9 × 10¹⁴³.",
+     "Direction with every species in its standard state: product-favoured.",
+     "No kinetic results: no sourced rate law exists for this reaction."
+    ],
+    "evidence": "computed"
+   },
+   {
+    "heading": "Confidence and uncertainty",
+    "paragraphs": [
+     "Stoichiometric coefficients are exact (rational arithmetic).",
+     "No uncertainty is given for the reaction enthalpy because the source prints none for CH4(g). No uncertainty is given for the reaction entropy because the source prints none for CH4(g).",
+     "Evidence: reaction enthalpy and entropy are computed from reference data; the Gibbs energy and equilibrium constant are labelled computed.",
+     "Values from 2 reference tables are combined (CODATA Key Values for Thermodynamics; NIST Chemistry WebBook, NIST Standard Reference Database Number 69). They were evaluated separately and are not guaranteed to be mutually consistent.",
+     "The reaction enthalpy has no uncertainty and is rounded to 2 decimals, the fewest printed by the source among the enthalpies of formation used.",
+     "The Gibbs energy has no uncertainty and is rounded to 2 decimals, as far as the printed digits of the enthalpies and entropies used reach.",
+     "The equilibrium constant is given with at most two significant figures: the source states no uncertainty, so the printed digits of the Gibbs energy are the only guide to its precision."
+    ]
+   },
+   {
+    "heading": "Convergence status",
+    "paragraphs": [
+     "Balancing: exact, nothing to converge.",
+     "Thermodynamics: closed-form sums over table values, nothing to converge."
+    ]
+   },
+   {
+    "heading": "Known limitations",
+    "paragraphs": [
+     "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+     "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+     "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+     "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+    ]
+   },
+   {
+    "heading": "Why the prediction may not match reality",
+    "paragraphs": [
+     "The equation as written may not be the reaction that occurs: side reactions, incomplete conversion and other products are not considered.",
+     "Composition and non-ideality: the driving force in an actual mixture is ΔG = ΔG° + RT ln Q with activities that differ from the standard states; neither Q nor activity coefficients are computed.",
+     "Kinetic hindrance: thermodynamics implies nothing about rate, and metastable mixtures are common.",
+     "Reference data: tabulated values carry their own uncertainties and, where two tables are combined, need not be mutually consistent."
+    ]
+   }
+  ],
+  "references": [
+   {
+    "authors": "Chase, M.W., Jr.",
+    "title": "NIST-JANAF Themochemical Tables, Fourth Edition",
+    "source": "J. Phys. Chem. Ref. Data, Monograph 9, 1-1951",
+    "year": 1998
+   },
+   {
+    "authors": "P.J. Linstrom and W.G. Mallard, Eds.",
+    "title": "NIST Chemistry WebBook, NIST Standard Reference Database Number 69",
+    "source": "National Institute of Standards and Technology, Gaithersburg MD, 20899 (retrieved November 13, 2026)",
+    "doi": "10.18434/T4D303",
+    "url": "https://doi.org/10.18434/T4D303"
+   },
+   {
+    "authors": "Cox, J. D., Wagman, D. D., and Medvedev, V. A.",
+    "title": "CODATA Key Values for Thermodynamics",
+    "source": "Hemisphere Publishing Corp., New York",
+    "year": 1989
+   }
+  ]
+ },
+ "warnings": [
+  "Values from 2 reference tables are combined (CODATA Key Values for Thermodynamics; NIST Chemistry WebBook, NIST Standard Reference Database Number 69). They were evaluated separately and are not guaranteed to be mutually consistent.",
+  "No uncertainty is given for the reaction enthalpy because the source prints none for CH4(g).",
+  "No uncertainty is given for the reaction entropy because the source prints none for CH4(g)."
+ ],
+ "limitations": [
+  "MATTER LAB did not predict this reaction: it evaluated the equation built from the species that were entered. A balanced equation is bookkeeping, not evidence that the reaction takes place.",
+  "Thermodynamic values refer to every species in its standard state (pure solids and liquids, ideal gases at 1 bar, ideal solutes). They are not the values of an actual mixture, and no equilibrium composition is computed.",
+  "A favourable Gibbs energy says nothing about rate: thermodynamics tells where the equilibrium lies, not how fast it is reached or whether the reaction starts at all without ignition or a catalyst.",
+  "No sourced rate law is available for this reaction, so nothing is said about how fast it is. MATTER LAB does not substitute the rate law of a similar reaction."
+ ],
+ "reproducibility": {
+  "engine": "@matterlab/reactions",
+  "engineVersion": "0.1.0",
+  "dataSources": [
+   {
+    "id": "webbook-C74828",
+    "title": "NIST Chemistry WebBook, NIST Standard Reference Database Number 69: Methane | CH4 | CAS 74-82-8",
+    "retrieved": "2026-11-13",
+    "sha256": "62e80b578d6685d32dc0adf65337aa42b2031cf56f551af6f09a938481b90eb4"
+   },
+   {
+    "id": "codata-key-values",
+    "title": "CODATA Key Values for Thermodynamics (table page)",
+    "retrieved": "2026-11-13",
+    "sha256": "88049de2c7700bf44d233dacee019ac70c9b46ad280596270ebb3d5d0235d460"
+   }
+  ],
+  "solver": null,
+  "deterministic": true
+ }
+}

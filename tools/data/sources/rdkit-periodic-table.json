@@ -1,0 +1,1689 @@
+{
+ "source": "RDKit PeriodicTable",
+ "rdkitVersion": "2026.09.2",
+ "generated": "2026-11-13T15:42:02+00:00",
+ "elements": [
+  {
+   "z": 1,
+   "symbol": "H",
+   "atomicWeight": 1.008,
+   "covalentRadius": 0.31,
+   "vdwRadius": 1.2,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 1,
+   "mostCommonIsotopeMass": 1.007825032
+  },
+  {
+   "z": 2,
+   "symbol": "He",
+   "atomicWeight": 4.003,
+   "covalentRadius": 0.28,
+   "vdwRadius": 1.4,
+   "defaultValence": 0,
+   "valenceList": [
+    0
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 4,
+   "mostCommonIsotopeMass": 4.002603254
+  },
+  {
+   "z": 3,
+   "symbol": "Li",
+   "atomicWeight": 6.941,
+   "covalentRadius": 1.28,
+   "vdwRadius": 2.2,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    -1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 7,
+   "mostCommonIsotopeMass": 7.01600455
+  },
+  {
+   "z": 4,
+   "symbol": "Be",
+   "atomicWeight": 9.012,
+   "covalentRadius": 0.96,
+   "vdwRadius": 1.9,
+   "defaultValence": 2,
+   "valenceList": [
+    2
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 9,
+   "mostCommonIsotopeMass": 9.0121822
+  },
+  {
+   "z": 5,
+   "symbol": "B",
+   "atomicWeight": 10.812,
+   "covalentRadius": 0.84,
+   "vdwRadius": 1.8,
+   "defaultValence": 3,
+   "valenceList": [
+    3
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 11,
+   "mostCommonIsotopeMass": 11.0093054
+  },
+  {
+   "z": 6,
+   "symbol": "C",
+   "atomicWeight": 12.011,
+   "covalentRadius": 0.76,
+   "vdwRadius": 1.7,
+   "defaultValence": 4,
+   "valenceList": [
+    4
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 12,
+   "mostCommonIsotopeMass": 12.0
+  },
+  {
+   "z": 7,
+   "symbol": "N",
+   "atomicWeight": 14.007,
+   "covalentRadius": 0.71,
+   "vdwRadius": 1.6,
+   "defaultValence": 3,
+   "valenceList": [
+    3
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 14,
+   "mostCommonIsotopeMass": 14.003074
+  },
+  {
+   "z": 8,
+   "symbol": "O",
+   "atomicWeight": 15.999,
+   "covalentRadius": 0.66,
+   "vdwRadius": 1.55,
+   "defaultValence": 2,
+   "valenceList": [
+    2
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 16,
+   "mostCommonIsotopeMass": 15.99491462
+  },
+  {
+   "z": 9,
+   "symbol": "F",
+   "atomicWeight": 18.998,
+   "covalentRadius": 0.57,
+   "vdwRadius": 1.5,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 19,
+   "mostCommonIsotopeMass": 18.99840322
+  },
+  {
+   "z": 10,
+   "symbol": "Ne",
+   "atomicWeight": 20.18,
+   "covalentRadius": 0.58,
+   "vdwRadius": 1.54,
+   "defaultValence": 0,
+   "valenceList": [
+    0
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 20,
+   "mostCommonIsotopeMass": 19.99244018
+  },
+  {
+   "z": 11,
+   "symbol": "Na",
+   "atomicWeight": 22.99,
+   "covalentRadius": 1.66,
+   "vdwRadius": 2.4,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    -1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 23,
+   "mostCommonIsotopeMass": 22.98976928
+  },
+  {
+   "z": 12,
+   "symbol": "Mg",
+   "atomicWeight": 24.305,
+   "covalentRadius": 1.41,
+   "vdwRadius": 2.2,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 24,
+   "mostCommonIsotopeMass": 23.9850417
+  },
+  {
+   "z": 13,
+   "symbol": "Al",
+   "atomicWeight": 26.982,
+   "covalentRadius": 1.21,
+   "vdwRadius": 2.1,
+   "defaultValence": 3,
+   "valenceList": [
+    3
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 27,
+   "mostCommonIsotopeMass": 26.98153863
+  },
+  {
+   "z": 14,
+   "symbol": "Si",
+   "atomicWeight": 28.086,
+   "covalentRadius": 1.11,
+   "vdwRadius": 2.1,
+   "defaultValence": 4,
+   "valenceList": [
+    4
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 28,
+   "mostCommonIsotopeMass": 27.97692653
+  },
+  {
+   "z": 15,
+   "symbol": "P",
+   "atomicWeight": 30.974,
+   "covalentRadius": 1.07,
+   "vdwRadius": 1.95,
+   "defaultValence": 3,
+   "valenceList": [
+    3,
+    5
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 31,
+   "mostCommonIsotopeMass": 30.97376163
+  },
+  {
+   "z": 16,
+   "symbol": "S",
+   "atomicWeight": 32.067,
+   "covalentRadius": 1.05,
+   "vdwRadius": 1.8,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4,
+    6
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 32,
+   "mostCommonIsotopeMass": 31.972071
+  },
+  {
+   "z": 17,
+   "symbol": "Cl",
+   "atomicWeight": 35.453,
+   "covalentRadius": 1.02,
+   "vdwRadius": 1.8,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 35,
+   "mostCommonIsotopeMass": 34.96885268
+  },
+  {
+   "z": 18,
+   "symbol": "Ar",
+   "atomicWeight": 39.948,
+   "covalentRadius": 1.06,
+   "vdwRadius": 1.88,
+   "defaultValence": 0,
+   "valenceList": [
+    0
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 40,
+   "mostCommonIsotopeMass": 39.96238312
+  },
+  {
+   "z": 19,
+   "symbol": "K",
+   "atomicWeight": 39.098,
+   "covalentRadius": 2.03,
+   "vdwRadius": 2.8,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    -1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 39,
+   "mostCommonIsotopeMass": 38.96370668
+  },
+  {
+   "z": 20,
+   "symbol": "Ca",
+   "atomicWeight": 40.078,
+   "covalentRadius": 1.76,
+   "vdwRadius": 2.4,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 40,
+   "mostCommonIsotopeMass": 39.96259098
+  },
+  {
+   "z": 21,
+   "symbol": "Sc",
+   "atomicWeight": 44.956,
+   "covalentRadius": 1.7,
+   "vdwRadius": 2.3,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 45,
+   "mostCommonIsotopeMass": 44.9559119
+  },
+  {
+   "z": 22,
+   "symbol": "Ti",
+   "atomicWeight": 47.867,
+   "covalentRadius": 1.6,
+   "vdwRadius": 2.15,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 48,
+   "mostCommonIsotopeMass": 47.9479463
+  },
+  {
+   "z": 23,
+   "symbol": "V",
+   "atomicWeight": 50.944,
+   "covalentRadius": 1.52,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 51,
+   "mostCommonIsotopeMass": 50.9439595
+  },
+  {
+   "z": 24,
+   "symbol": "Cr",
+   "atomicWeight": 51.996,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 52,
+   "mostCommonIsotopeMass": 51.9405075
+  },
+  {
+   "z": 25,
+   "symbol": "Mn",
+   "atomicWeight": 54.938,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 55,
+   "mostCommonIsotopeMass": 54.9380451
+  },
+  {
+   "z": 26,
+   "symbol": "Fe",
+   "atomicWeight": 55.845,
+   "covalentRadius": 1.32,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 56,
+   "mostCommonIsotopeMass": 55.9349375
+  },
+  {
+   "z": 27,
+   "symbol": "Co",
+   "atomicWeight": 58.933,
+   "covalentRadius": 1.26,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 9,
+   "mostCommonIsotope": 59,
+   "mostCommonIsotopeMass": 58.933195
+  },
+  {
+   "z": 28,
+   "symbol": "Ni",
+   "atomicWeight": 58.693,
+   "covalentRadius": 1.24,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 10,
+   "mostCommonIsotope": 58,
+   "mostCommonIsotopeMass": 57.9353429
+  },
+  {
+   "z": 29,
+   "symbol": "Cu",
+   "atomicWeight": 63.546,
+   "covalentRadius": 1.32,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 11,
+   "mostCommonIsotope": 63,
+   "mostCommonIsotopeMass": 62.9295975
+  },
+  {
+   "z": 30,
+   "symbol": "Zn",
+   "atomicWeight": 65.39,
+   "covalentRadius": 1.22,
+   "vdwRadius": 2.1,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 64,
+   "mostCommonIsotopeMass": 63.9291422
+  },
+  {
+   "z": 31,
+   "symbol": "Ga",
+   "atomicWeight": 69.723,
+   "covalentRadius": 1.22,
+   "vdwRadius": 2.1,
+   "defaultValence": 3,
+   "valenceList": [
+    3
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 69,
+   "mostCommonIsotopeMass": 68.9255736
+  },
+  {
+   "z": 32,
+   "symbol": "Ge",
+   "atomicWeight": 72.61,
+   "covalentRadius": 1.2,
+   "vdwRadius": 2.1,
+   "defaultValence": 4,
+   "valenceList": [
+    4
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 74,
+   "mostCommonIsotopeMass": 73.9211778
+  },
+  {
+   "z": 33,
+   "symbol": "As",
+   "atomicWeight": 74.922,
+   "covalentRadius": 1.19,
+   "vdwRadius": 2.05,
+   "defaultValence": 3,
+   "valenceList": [
+    3,
+    5
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 75,
+   "mostCommonIsotopeMass": 74.9215965
+  },
+  {
+   "z": 34,
+   "symbol": "Se",
+   "atomicWeight": 78.96,
+   "covalentRadius": 1.2,
+   "vdwRadius": 1.9,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4,
+    6
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 80,
+   "mostCommonIsotopeMass": 79.9165213
+  },
+  {
+   "z": 35,
+   "symbol": "Br",
+   "atomicWeight": 79.904,
+   "covalentRadius": 1.2,
+   "vdwRadius": 1.9,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 79,
+   "mostCommonIsotopeMass": 78.9183371
+  },
+  {
+   "z": 36,
+   "symbol": "Kr",
+   "atomicWeight": 83.8,
+   "covalentRadius": 1.16,
+   "vdwRadius": 2.02,
+   "defaultValence": 0,
+   "valenceList": [
+    0
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 84,
+   "mostCommonIsotopeMass": 83.911507
+  },
+  {
+   "z": 37,
+   "symbol": "Rb",
+   "atomicWeight": 85.468,
+   "covalentRadius": 2.2,
+   "vdwRadius": 2.9,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    -1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 85,
+   "mostCommonIsotopeMass": 84.91178974
+  },
+  {
+   "z": 38,
+   "symbol": "Sr",
+   "atomicWeight": 87.62,
+   "covalentRadius": 1.95,
+   "vdwRadius": 2.55,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 88,
+   "mostCommonIsotopeMass": 87.9056121
+  },
+  {
+   "z": 39,
+   "symbol": "Y",
+   "atomicWeight": 88.906,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.4,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 89,
+   "mostCommonIsotopeMass": 88.9058483
+  },
+  {
+   "z": 40,
+   "symbol": "Zr",
+   "atomicWeight": 91.224,
+   "covalentRadius": 1.75,
+   "vdwRadius": 2.3,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 90,
+   "mostCommonIsotopeMass": 89.9047044
+  },
+  {
+   "z": 41,
+   "symbol": "Nb",
+   "atomicWeight": 92.906,
+   "covalentRadius": 1.64,
+   "vdwRadius": 2.15,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 93,
+   "mostCommonIsotopeMass": 92.9063781
+  },
+  {
+   "z": 42,
+   "symbol": "Mo",
+   "atomicWeight": 95.94,
+   "covalentRadius": 1.54,
+   "vdwRadius": 2.1,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 98,
+   "mostCommonIsotopeMass": 97.9054082
+  },
+  {
+   "z": 43,
+   "symbol": "Tc",
+   "atomicWeight": 98.0,
+   "covalentRadius": 1.47,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 97,
+   "mostCommonIsotopeMass": 96.906365
+  },
+  {
+   "z": 44,
+   "symbol": "Ru",
+   "atomicWeight": 101.07,
+   "covalentRadius": 1.46,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 102,
+   "mostCommonIsotopeMass": 101.9043493
+  },
+  {
+   "z": 45,
+   "symbol": "Rh",
+   "atomicWeight": 102.906,
+   "covalentRadius": 1.42,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 9,
+   "mostCommonIsotope": 103,
+   "mostCommonIsotopeMass": 102.905504
+  },
+  {
+   "z": 46,
+   "symbol": "Pd",
+   "atomicWeight": 106.42,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 10,
+   "mostCommonIsotope": 106,
+   "mostCommonIsotopeMass": 105.903486
+  },
+  {
+   "z": 47,
+   "symbol": "Ag",
+   "atomicWeight": 107.868,
+   "covalentRadius": 1.45,
+   "vdwRadius": 2.1,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 11,
+   "mostCommonIsotope": 107,
+   "mostCommonIsotopeMass": 106.905097
+  },
+  {
+   "z": 48,
+   "symbol": "Cd",
+   "atomicWeight": 112.412,
+   "covalentRadius": 1.44,
+   "vdwRadius": 2.2,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 114,
+   "mostCommonIsotopeMass": 113.9033585
+  },
+  {
+   "z": 49,
+   "symbol": "In",
+   "atomicWeight": 114.818,
+   "covalentRadius": 1.42,
+   "vdwRadius": 2.2,
+   "defaultValence": 3,
+   "valenceList": [
+    3
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 115,
+   "mostCommonIsotopeMass": 114.903878
+  },
+  {
+   "z": 50,
+   "symbol": "Sn",
+   "atomicWeight": 118.711,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.25,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 120,
+   "mostCommonIsotopeMass": 119.9021947
+  },
+  {
+   "z": 51,
+   "symbol": "Sb",
+   "atomicWeight": 121.76,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.2,
+   "defaultValence": 3,
+   "valenceList": [
+    3,
+    5
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 121,
+   "mostCommonIsotopeMass": 120.9038157
+  },
+  {
+   "z": 52,
+   "symbol": "Te",
+   "atomicWeight": 127.6,
+   "covalentRadius": 1.38,
+   "vdwRadius": 2.1,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4,
+    6
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 130,
+   "mostCommonIsotopeMass": 129.9062244
+  },
+  {
+   "z": 53,
+   "symbol": "I",
+   "atomicWeight": 126.904,
+   "covalentRadius": 1.39,
+   "vdwRadius": 2.1,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    3,
+    5
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 127,
+   "mostCommonIsotopeMass": 126.904473
+  },
+  {
+   "z": 54,
+   "symbol": "Xe",
+   "atomicWeight": 131.29,
+   "covalentRadius": 1.4,
+   "vdwRadius": 2.16,
+   "defaultValence": 0,
+   "valenceList": [
+    0,
+    2,
+    4,
+    6
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 132,
+   "mostCommonIsotopeMass": 131.9041535
+  },
+  {
+   "z": 55,
+   "symbol": "Cs",
+   "atomicWeight": 132.905,
+   "covalentRadius": 2.44,
+   "vdwRadius": 3.0,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 133,
+   "mostCommonIsotopeMass": 132.9054519
+  },
+  {
+   "z": 56,
+   "symbol": "Ba",
+   "atomicWeight": 137.328,
+   "covalentRadius": 2.15,
+   "vdwRadius": 2.7,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 138,
+   "mostCommonIsotopeMass": 137.9052472
+  },
+  {
+   "z": 57,
+   "symbol": "La",
+   "atomicWeight": 138.906,
+   "covalentRadius": 2.07,
+   "vdwRadius": 2.5,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 139,
+   "mostCommonIsotopeMass": 138.9063533
+  },
+  {
+   "z": 58,
+   "symbol": "Ce",
+   "atomicWeight": 140.116,
+   "covalentRadius": 2.04,
+   "vdwRadius": 2.48,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 140,
+   "mostCommonIsotopeMass": 139.9054387
+  },
+  {
+   "z": 59,
+   "symbol": "Pr",
+   "atomicWeight": 140.908,
+   "covalentRadius": 2.03,
+   "vdwRadius": 2.47,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 141,
+   "mostCommonIsotopeMass": 140.9076528
+  },
+  {
+   "z": 60,
+   "symbol": "Nd",
+   "atomicWeight": 144.24,
+   "covalentRadius": 2.01,
+   "vdwRadius": 2.45,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 142,
+   "mostCommonIsotopeMass": 141.9077233
+  },
+  {
+   "z": 61,
+   "symbol": "Pm",
+   "atomicWeight": 145.0,
+   "covalentRadius": 1.99,
+   "vdwRadius": 2.43,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 145,
+   "mostCommonIsotopeMass": 144.912749
+  },
+  {
+   "z": 62,
+   "symbol": "Sm",
+   "atomicWeight": 150.36,
+   "covalentRadius": 1.98,
+   "vdwRadius": 2.42,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 152,
+   "mostCommonIsotopeMass": 151.9197324
+  },
+  {
+   "z": 63,
+   "symbol": "Eu",
+   "atomicWeight": 151.964,
+   "covalentRadius": 1.98,
+   "vdwRadius": 2.4,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 153,
+   "mostCommonIsotopeMass": 152.9212303
+  },
+  {
+   "z": 64,
+   "symbol": "Gd",
+   "atomicWeight": 157.25,
+   "covalentRadius": 1.96,
+   "vdwRadius": 2.38,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 158,
+   "mostCommonIsotopeMass": 157.9241039
+  },
+  {
+   "z": 65,
+   "symbol": "Tb",
+   "atomicWeight": 158.925,
+   "covalentRadius": 1.94,
+   "vdwRadius": 2.37,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 9,
+   "mostCommonIsotope": 159,
+   "mostCommonIsotopeMass": 158.9253468
+  },
+  {
+   "z": 66,
+   "symbol": "Dy",
+   "atomicWeight": 162.5,
+   "covalentRadius": 1.92,
+   "vdwRadius": 2.35,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 10,
+   "mostCommonIsotope": 164,
+   "mostCommonIsotopeMass": 163.9291748
+  },
+  {
+   "z": 67,
+   "symbol": "Ho",
+   "atomicWeight": 164.93,
+   "covalentRadius": 1.92,
+   "vdwRadius": 2.33,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 11,
+   "mostCommonIsotope": 165,
+   "mostCommonIsotopeMass": 164.9303221
+  },
+  {
+   "z": 68,
+   "symbol": "Er",
+   "atomicWeight": 167.26,
+   "covalentRadius": 1.89,
+   "vdwRadius": 2.32,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 12,
+   "mostCommonIsotope": 166,
+   "mostCommonIsotopeMass": 165.9302931
+  },
+  {
+   "z": 69,
+   "symbol": "Tm",
+   "atomicWeight": 168.934,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.3,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 13,
+   "mostCommonIsotope": 169,
+   "mostCommonIsotopeMass": 168.9342133
+  },
+  {
+   "z": 70,
+   "symbol": "Yb",
+   "atomicWeight": 173.04,
+   "covalentRadius": 1.87,
+   "vdwRadius": 2.28,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 14,
+   "mostCommonIsotope": 174,
+   "mostCommonIsotopeMass": 173.9388621
+  },
+  {
+   "z": 71,
+   "symbol": "Lu",
+   "atomicWeight": 174.967,
+   "covalentRadius": 1.87,
+   "vdwRadius": 2.27,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 15,
+   "mostCommonIsotope": 175,
+   "mostCommonIsotopeMass": 174.9407718
+  },
+  {
+   "z": 72,
+   "symbol": "Hf",
+   "atomicWeight": 178.49,
+   "covalentRadius": 1.75,
+   "vdwRadius": 2.25,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 180,
+   "mostCommonIsotopeMass": 179.94655
+  },
+  {
+   "z": 73,
+   "symbol": "Ta",
+   "atomicWeight": 180.948,
+   "covalentRadius": 1.7,
+   "vdwRadius": 2.2,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 181,
+   "mostCommonIsotopeMass": 180.9479958
+  },
+  {
+   "z": 74,
+   "symbol": "W",
+   "atomicWeight": 183.84,
+   "covalentRadius": 1.62,
+   "vdwRadius": 2.1,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 184,
+   "mostCommonIsotopeMass": 183.9509312
+  },
+  {
+   "z": 75,
+   "symbol": "Re",
+   "atomicWeight": 186.207,
+   "covalentRadius": 1.51,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 187,
+   "mostCommonIsotopeMass": 186.9557531
+  },
+  {
+   "z": 76,
+   "symbol": "Os",
+   "atomicWeight": 190.23,
+   "covalentRadius": 1.44,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 192,
+   "mostCommonIsotopeMass": 191.9614807
+  },
+  {
+   "z": 77,
+   "symbol": "Ir",
+   "atomicWeight": 192.217,
+   "covalentRadius": 1.41,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 9,
+   "mostCommonIsotope": 193,
+   "mostCommonIsotopeMass": 192.9629264
+  },
+  {
+   "z": 78,
+   "symbol": "Pt",
+   "atomicWeight": 195.078,
+   "covalentRadius": 1.36,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 10,
+   "mostCommonIsotope": 195,
+   "mostCommonIsotopeMass": 194.9647911
+  },
+  {
+   "z": 79,
+   "symbol": "Au",
+   "atomicWeight": 196.967,
+   "covalentRadius": 1.36,
+   "vdwRadius": 2.1,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 11,
+   "mostCommonIsotope": 197,
+   "mostCommonIsotopeMass": 196.9665687
+  },
+  {
+   "z": 80,
+   "symbol": "Hg",
+   "atomicWeight": 200.59,
+   "covalentRadius": 1.32,
+   "vdwRadius": 2.05,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 202,
+   "mostCommonIsotopeMass": 201.970643
+  },
+  {
+   "z": 81,
+   "symbol": "Tl",
+   "atomicWeight": 204.383,
+   "covalentRadius": 1.45,
+   "vdwRadius": 2.2,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 205,
+   "mostCommonIsotopeMass": 204.9744275
+  },
+  {
+   "z": 82,
+   "symbol": "Pb",
+   "atomicWeight": 207.2,
+   "covalentRadius": 1.46,
+   "vdwRadius": 2.3,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 208,
+   "mostCommonIsotopeMass": 207.9766521
+  },
+  {
+   "z": 83,
+   "symbol": "Bi",
+   "atomicWeight": 208.98,
+   "covalentRadius": 1.48,
+   "vdwRadius": 2.3,
+   "defaultValence": 3,
+   "valenceList": [
+    3,
+    5
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 209,
+   "mostCommonIsotopeMass": 208.9803987
+  },
+  {
+   "z": 84,
+   "symbol": "Po",
+   "atomicWeight": 209.0,
+   "covalentRadius": 1.4,
+   "vdwRadius": 2.0,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    4,
+    6
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 209,
+   "mostCommonIsotopeMass": 208.9824304
+  },
+  {
+   "z": 85,
+   "symbol": "At",
+   "atomicWeight": 210.0,
+   "covalentRadius": 1.5,
+   "vdwRadius": 2.0,
+   "defaultValence": 1,
+   "valenceList": [
+    1,
+    3,
+    5
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 210,
+   "mostCommonIsotopeMass": 209.987148
+  },
+  {
+   "z": 86,
+   "symbol": "Rn",
+   "atomicWeight": 222.0,
+   "covalentRadius": 1.5,
+   "vdwRadius": 2.0,
+   "defaultValence": 0,
+   "valenceList": [
+    0
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 222,
+   "mostCommonIsotopeMass": 222.0175706
+  },
+  {
+   "z": 87,
+   "symbol": "Fr",
+   "atomicWeight": 223.0,
+   "covalentRadius": 2.6,
+   "vdwRadius": 2.0,
+   "defaultValence": 1,
+   "valenceList": [
+    1
+   ],
+   "outerElectrons": 1,
+   "mostCommonIsotope": 223,
+   "mostCommonIsotopeMass": 223.0197359
+  },
+  {
+   "z": 88,
+   "symbol": "Ra",
+   "atomicWeight": 226.0,
+   "covalentRadius": 2.2,
+   "vdwRadius": 2.0,
+   "defaultValence": 2,
+   "valenceList": [
+    2,
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 226,
+   "mostCommonIsotopeMass": 226.0254026
+  },
+  {
+   "z": 89,
+   "symbol": "Ac",
+   "atomicWeight": 227.0,
+   "covalentRadius": 2.15,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 227,
+   "mostCommonIsotopeMass": 227.0277521
+  },
+  {
+   "z": 90,
+   "symbol": "Th",
+   "atomicWeight": 232.038,
+   "covalentRadius": 2.06,
+   "vdwRadius": 2.4,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 232,
+   "mostCommonIsotopeMass": 232.0380553
+  },
+  {
+   "z": 91,
+   "symbol": "Pa",
+   "atomicWeight": 231.036,
+   "covalentRadius": 2.0,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 3,
+   "mostCommonIsotope": 231,
+   "mostCommonIsotopeMass": 231.035884
+  },
+  {
+   "z": 92,
+   "symbol": "U",
+   "atomicWeight": 238.029,
+   "covalentRadius": 1.96,
+   "vdwRadius": 2.3,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 4,
+   "mostCommonIsotope": 238,
+   "mostCommonIsotopeMass": 238.0507882
+  },
+  {
+   "z": 93,
+   "symbol": "Np",
+   "atomicWeight": 237.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 5,
+   "mostCommonIsotope": 236,
+   "mostCommonIsotopeMass": 236.04657
+  },
+  {
+   "z": 94,
+   "symbol": "Pu",
+   "atomicWeight": 244.0,
+   "covalentRadius": 1.87,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 6,
+   "mostCommonIsotope": 238,
+   "mostCommonIsotopeMass": 238.0495599
+  },
+  {
+   "z": 95,
+   "symbol": "Am",
+   "atomicWeight": 243.0,
+   "covalentRadius": 1.8,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 7,
+   "mostCommonIsotope": 241,
+   "mostCommonIsotopeMass": 241.0568291
+  },
+  {
+   "z": 96,
+   "symbol": "Cm",
+   "atomicWeight": 247.0,
+   "covalentRadius": 1.69,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 8,
+   "mostCommonIsotope": 243,
+   "mostCommonIsotopeMass": 243.0613891
+  },
+  {
+   "z": 97,
+   "symbol": "Bk",
+   "atomicWeight": 247.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 9,
+   "mostCommonIsotope": 247,
+   "mostCommonIsotopeMass": 247.070307
+  },
+  {
+   "z": 98,
+   "symbol": "Cf",
+   "atomicWeight": 251.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 10,
+   "mostCommonIsotope": 249,
+   "mostCommonIsotopeMass": 249.0748535
+  },
+  {
+   "z": 99,
+   "symbol": "Es",
+   "atomicWeight": 252.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 11,
+   "mostCommonIsotope": 252,
+   "mostCommonIsotopeMass": 252.08298
+  },
+  {
+   "z": 100,
+   "symbol": "Fm",
+   "atomicWeight": 257.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 12,
+   "mostCommonIsotope": 257,
+   "mostCommonIsotopeMass": 257.095105
+  },
+  {
+   "z": 101,
+   "symbol": "Md",
+   "atomicWeight": 258.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 13,
+   "mostCommonIsotope": 258,
+   "mostCommonIsotopeMass": 258.098431
+  },
+  {
+   "z": 102,
+   "symbol": "No",
+   "atomicWeight": 259.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 14,
+   "mostCommonIsotope": 259,
+   "mostCommonIsotopeMass": 259.10103
+  },
+  {
+   "z": 103,
+   "symbol": "Lr",
+   "atomicWeight": 262.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 15,
+   "mostCommonIsotope": 262,
+   "mostCommonIsotopeMass": 262.10963
+  },
+  {
+   "z": 104,
+   "symbol": "Rf",
+   "atomicWeight": 267.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 267,
+   "mostCommonIsotopeMass": 267.12153
+  },
+  {
+   "z": 105,
+   "symbol": "Db",
+   "atomicWeight": 268.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 268,
+   "mostCommonIsotopeMass": 268.12545
+  },
+  {
+   "z": 106,
+   "symbol": "Sg",
+   "atomicWeight": 269.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 271,
+   "mostCommonIsotopeMass": 271.13347
+  },
+  {
+   "z": 107,
+   "symbol": "Bh",
+   "atomicWeight": 270.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 270,
+   "mostCommonIsotopeMass": 270.13362
+  },
+  {
+   "z": 108,
+   "symbol": "Hs",
+   "atomicWeight": 269.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 269,
+   "mostCommonIsotopeMass": 269.13406
+  },
+  {
+   "z": 109,
+   "symbol": "Mt",
+   "atomicWeight": 278.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 278,
+   "mostCommonIsotopeMass": 278.15481
+  },
+  {
+   "z": 110,
+   "symbol": "Ds",
+   "atomicWeight": 281.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 281,
+   "mostCommonIsotopeMass": 281.16206
+  },
+  {
+   "z": 111,
+   "symbol": "Rg",
+   "atomicWeight": 281.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 281,
+   "mostCommonIsotopeMass": 281.16537
+  },
+  {
+   "z": 112,
+   "symbol": "Cn",
+   "atomicWeight": 285.0,
+   "covalentRadius": 1.9,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 285,
+   "mostCommonIsotopeMass": 285.17411
+  },
+  {
+   "z": 113,
+   "symbol": "Nh",
+   "atomicWeight": 284.0,
+   "covalentRadius": 1.36,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 284,
+   "mostCommonIsotopeMass": 284.17873
+  },
+  {
+   "z": 114,
+   "symbol": "Fl",
+   "atomicWeight": 289.0,
+   "covalentRadius": 1.43,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 289,
+   "mostCommonIsotopeMass": 289.19042
+  },
+  {
+   "z": 115,
+   "symbol": "Mc",
+   "atomicWeight": 288.0,
+   "covalentRadius": 1.62,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 288,
+   "mostCommonIsotopeMass": 288.19274
+  },
+  {
+   "z": 116,
+   "symbol": "Lv",
+   "atomicWeight": 293.0,
+   "covalentRadius": 1.75,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 293,
+   "mostCommonIsotopeMass": 293.20449
+  },
+  {
+   "z": 117,
+   "symbol": "Ts",
+   "atomicWeight": 292.0,
+   "covalentRadius": 1.65,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 292,
+   "mostCommonIsotopeMass": 292.20746
+  },
+  {
+   "z": 118,
+   "symbol": "Og",
+   "atomicWeight": 294.0,
+   "covalentRadius": 1.57,
+   "vdwRadius": 2.0,
+   "defaultValence": -1,
+   "valenceList": [
+    -1
+   ],
+   "outerElectrons": 2,
+   "mostCommonIsotope": 294,
+   "mostCommonIsotopeMass": 294.21392
+  }
+ ]
+}

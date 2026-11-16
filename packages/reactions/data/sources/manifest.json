@@ -1,0 +1,645 @@
+{
+  "description": "Record of every external page retrieved for the reference data in src/data/*.generated.ts: its URL, the time of retrieval, the size and SHA-256 of the response, and where its snapshot or excerpt is kept under this folder. Written by the scripts in packages/reactions/tools; do not edit by hand.",
+  "sources": [
+    {
+      "id": "codata-key-values",
+      "url": "https://www.codata.info/resources/databases/key1.html",
+      "file": "codata/key1.html",
+      "retrievedAt": "2026-11-13T16:02:29.093Z",
+      "httpStatus": 200,
+      "contentType": "text/html",
+      "lastModified": "Tue, 25 Jun 2013 05:00:00 GMT",
+      "bytes": 61598,
+      "sha256": "88049de2c7700bf44d233dacee019ac70c9b46ad280596270ebb3d5d0235d460",
+      "note": "CODATA Key Values for Thermodynamics (Cox, Wagman and Medvedev, 1989)"
+    },
+    {
+      "id": "iupac-acp-2004-vol1-pdf",
+      "url": "https://acp.copernicus.org/articles/4/1461/2004/acp-4-1461-2004.pdf",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:07:26.973Z",
+      "httpStatus": 200,
+      "contentType": "application/pdf",
+      "lastModified": "Fri, 31 Jul 2020 14:13:19 GMT",
+      "bytes": 1005718,
+      "sha256": "599924f67a87e9ac95f1f2459b94d796e5fac8b71a67c4ecf6bd806d2058e104",
+      "note": "Atkinson et al., Atmos. Chem. Phys. 4, 1461-1738 (2004), doi:10.5194/acp-4-1461-2004; CC BY-NC-SA 2.5. Full PDF not redistributed here; see the excerpts derived from it."
+    },
+    {
+      "id": "iupac-acp-2006-vol2-pdf",
+      "url": "https://acp.copernicus.org/articles/6/3625/2006/acp-6-3625-2006.pdf",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:09:24.301Z",
+      "httpStatus": 200,
+      "contentType": "application/pdf",
+      "lastModified": "Fri, 31 Jul 2020 14:15:27 GMT",
+      "bytes": 1911055,
+      "sha256": "8674af274cbfd173173d38fb640bd3597535e62c11011ccc4c859c486872b034",
+      "note": "Atkinson et al., Atmos. Chem. Phys. 6, 3625-4055 (2006), doi:10.5194/acp-6-3625-2006; CC BY-NC-SA 2.5. Full PDF not redistributed here; see the excerpts derived from it."
+    },
+    {
+      "id": "webbook-C74828",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C74828&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:11:31.352Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 47166,
+      "sha256": "62e80b578d6685d32dc0adf65337aa42b2031cf56f551af6f09a938481b90eb4",
+      "note": "Methane: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C74828.excerpt.html",
+        "bytes": 17448,
+        "sha256": "00416e1826e289eb1118ef530fbaa76f975e5e8c21815befddad63b55a758249",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7647145",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7647145&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:13:07.586Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 32120,
+      "sha256": "351080edf010f600e331e2cbc3f8ce1f574bd1c2ee0a94ab1ae81fa66fb911ef",
+      "note": "Sodium chloride: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7647145.excerpt.html",
+        "bytes": 7178,
+        "sha256": "41508bdb3ef8b9efcd2e5e8f570a62621886060720e2a86582c6582be54af3e9",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C74840",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C74840&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:13:36.435Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 48954,
+      "sha256": "aee76fc67dc93deabc129c89cc57807629c6901b126bf9d7cb1e3c9123ed9f08",
+      "note": "Ethane: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C74840.excerpt.html",
+        "bytes": 10294,
+        "sha256": "489da2af29edf6b8e724f4856a3fbc6801d31ee48707e3a30ce11be489e7b729",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C74986",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C74986&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:13:42.817Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 43312,
+      "sha256": "bea92b7185eef11845dadc9b1aed22697e4032e0ac7021a73dee8394c116cb90",
+      "note": "Propane: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C74986.excerpt.html",
+        "bytes": 8887,
+        "sha256": "7dbd79101018790da6de82f35610b0ef7146e7d0dd32ac58e8182f00c56e8057",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C74851",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C74851&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:13:49.222Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 45606,
+      "sha256": "05ae4517b440de0961da953c5156f20abd5a18601703d539dc485210ecebda1b",
+      "note": "Ethylene: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C74851.excerpt.html",
+        "bytes": 9161,
+        "sha256": "66983792af20a0e2563ed58d0e6ff02991582dba9bcdcc558f187357ec55eae8",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C74862",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C74862&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:13:55.643Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 33491,
+      "sha256": "d0b4034dce603b6cd3bfa1aa08996c65ca66e915aea28cfab46defee413fdf30",
+      "note": "Acetylene: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C74862.excerpt.html",
+        "bytes": 8759,
+        "sha256": "8aa071bb38dfce128e95a852f8e100b7be7df796f9f8b00fa624c5d7665ee278",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C67561",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C67561&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:01.994Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 91226,
+      "sha256": "efd5d68098358a14b0f7c31312a2398aa51e6a98a7fecb2290db4fd7cf59ad15",
+      "note": "Methanol: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C67561.excerpt.html",
+        "bytes": 18787,
+        "sha256": "0587ccc79e12347bfb5df3248828437ae81db9b8c9d1be925dbf0d480f12b105",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C64175",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C64175&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:08.487Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 94069,
+      "sha256": "f02df90b66ad4000730c1a7a59b7acf457a54baa243c08ffd582ef16fb72ff9e",
+      "note": "Ethanol: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C64175.excerpt.html",
+        "bytes": 10175,
+        "sha256": "d03f7a4c118f669737e1d1b198dad5c0611fa5bc37eab287892efd4d3542c01b",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C71432",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:14.920Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 112537,
+      "sha256": "9f237ce2dff0b95c564a15ff1f30a914a412c52c72b3e0c12bf41ecd191b40c0",
+      "note": "Benzene: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C71432.excerpt.html",
+        "bytes": 18204,
+        "sha256": "2a921ef2169da87492bc21d7010972be553faf097b220cff898cfa8c8deeeb70",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10102439",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102439&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:21.402Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24809,
+      "sha256": "64d346fc650e0cfa45f23c1595b4b92701de75e5349d05ed7e21134caeb39bea",
+      "note": "Nitric oxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10102439.excerpt.html",
+        "bytes": 4488,
+        "sha256": "f885160ee348b41f28189d737af1d880f691d48974d0fd7ea13c7bfd2c5762bf",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10102440",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10102440&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:27.842Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24532,
+      "sha256": "7214e5b8208c179548f1dad6c99678cb9d3af4fc08e46b8953244097eede21f6",
+      "note": "Nitrogen dioxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10102440.excerpt.html",
+        "bytes": 4514,
+        "sha256": "441a82111ac14bb473fb2adc169d934b1dc701ab68730942e114031009cc714e",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10544726",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10544726&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:34.289Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 29852,
+      "sha256": "b79775c72bfe4bd7053be28a1192704f4393fe4e499a03cbb4529e803b667f54",
+      "note": "Dinitrogen tetroxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10544726.excerpt.html",
+        "bytes": 7204,
+        "sha256": "0dd1ba824158b5b4bbaf8fa2d3613c0a6b8d1f2a1872a45953318c7439f38e2c",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10024972",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10024972&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:40.687Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24968,
+      "sha256": "25c02f68ef4a09bff67d2211b0b6f552033c299ecb94d26b3854579c214cefc2",
+      "note": "Nitrous oxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10024972.excerpt.html",
+        "bytes": 4509,
+        "sha256": "270f9ecfcb20baf3870039985ddbc588d3969fff2b189b208c356cc45d05d0e5",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10028156",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10028156&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:47.170Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24210,
+      "sha256": "047b6aa9fb706e63acdb220ff4b52d618bf3129b502e066306473d24899896b1",
+      "note": "Ozone: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10028156.excerpt.html",
+        "bytes": 4493,
+        "sha256": "d6a394e5a591db895a93a72a0b3218746d99f1bc2467443e6a20d61dd0b01fab",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7446119",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7446119&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:53.469Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24088,
+      "sha256": "888bf984cf199609b22f93db0f7d80d0fabcf2e2811f5c9ccf0fe355ffea8320",
+      "note": "Sulfur trioxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7446119.excerpt.html",
+        "bytes": 4514,
+        "sha256": "2263fbce01af613b2d903040fe9c545d510d3451014cf3867b7a7b12e8cbaeb5",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7722841",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7722841&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:14:59.787Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 23420,
+      "sha256": "c71a867e28513bbde6267c0e8c6acaad8a6709ad7438766d8bf103e0fb4948e9",
+      "note": "Hydrogen peroxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7722841.excerpt.html",
+        "bytes": 4525,
+        "sha256": "f2219b2a790d70a9053e6265a36ecd37f67c9051d98b9842dbf743be0512301b",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7697372",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7697372&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:06.535Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24112,
+      "sha256": "77f30331e3451626264f6588841f9dd5d661ae065fa3b5e9c3c10f65d23fb514",
+      "note": "Nitric acid: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7697372.excerpt.html",
+        "bytes": 4500,
+        "sha256": "e63adaa7063b3cfa8fa8241cd41480ae81403dd4519143f08029e6693ce1973b",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7447407",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7447407&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:13.032Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 32359,
+      "sha256": "68c2fc48f6e61b2099fd3387f82df01ae0e4537671070aeaee59ad04bb81f451",
+      "note": "Potassium chloride: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7447407.excerpt.html",
+        "bytes": 7156,
+        "sha256": "22c4ea2c0dd63deebaab98d6a2380d0144daa9147bbae3066f26f22222b77509",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C471341",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C471341&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:19.373Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 18194,
+      "sha256": "600883431154ba1da4675ffc4cbcb73d30009e5e247b015da1457e34a4b55629",
+      "note": "Calcium carbonate: gas phase and condensed phase thermochemistry data",
+      "used": false,
+      "reason": "Calcium carbonate (precipitated): the page lists no enthalpy of formation or entropy, so CaCO3 is not in the table."
+    },
+    {
+      "id": "webbook-C1305620",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1305620&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:25.750Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 25263,
+      "sha256": "83f2c335879442deb1f8075c7f6b2f081171f3b32e6c31872ad3a1aaabc5901c",
+      "note": "Calcium hydroxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C1305620.excerpt.html",
+        "bytes": 6145,
+        "sha256": "d569f4bbab8310776f8200135ff1b96f99d62fbe660e1da358c0f257f64f29e9",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C1310732",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1310732&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:32.095Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 32031,
+      "sha256": "fb8edbbbeed807cf1864a3e5d24594eec05181b1b72ec11e660ffc0a4252a883",
+      "note": "Sodium hydroxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C1310732.excerpt.html",
+        "bytes": 7173,
+        "sha256": "145fa0ef3ffead368e7db3a2ad19774f2e052e5aec021fb7caa890a817188afe",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C1309371",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1309371&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:38.565Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 17320,
+      "sha256": "7fd852a6315efee1fc60358f174aaaf003b1af676384882e955c9492c9b2a216",
+      "note": "Iron(III) oxide: gas phase and condensed phase thermochemistry data",
+      "used": false,
+      "reason": "Iron(III) oxide: the page lists no enthalpy of formation or entropy, so Fe2O3 is not in the table."
+    },
+    {
+      "id": "webbook-C7439896",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7439896&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:45.109Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 31807,
+      "sha256": "ed14ef56a557632348ab1c6a398b5b9495a8b5bea171c9bca5d470e0bbbcfbed",
+      "note": "Iron: gas phase and condensed phase thermochemistry data",
+      "used": false,
+      "reason": "Iron: the page lists gas and liquid entries only, no entropy for the solid reference state, so Fe(s) is not in the table."
+    },
+    {
+      "id": "webbook-C1317380",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1317380&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:51.573Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 27431,
+      "sha256": "06386ef5137647a9b5ab48fd7dba40674274d0bba611c9cdfde1c066de3a2864",
+      "note": "Copper(II) oxide: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C1317380.excerpt.html",
+        "bytes": 6112,
+        "sha256": "1d3b1f0f0262ff74d4ff6354ecc5abffa30233c85eef1482c5bfafe5b6a2ed0d",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C7664939",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7664939&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:15:58.035Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24536,
+      "sha256": "4753f02bc1f1baceed08b13fd69b131920db7a8362a9c7c7d196cf1ac61d1ebc",
+      "note": "Sulfuric acid: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C7664939.excerpt.html",
+        "bytes": 4524,
+        "sha256": "2f7d8bfcadac3b934c2faa4d145c9eeb96d3c7766374403a8a8a65d92c521d92",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C12125029",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C12125029&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:16:04.913Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 24056,
+      "sha256": "977948a36e5a818d285480cfd8025cedcb82af219697a85d539bc1f9c64bbd83",
+      "note": "Ammonium chloride: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C12125029.excerpt.html",
+        "bytes": 4528,
+        "sha256": "6ef4c013cb2b23f240ee2b7f019f384016572014277f0477547c060e0857a0f5",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C10043524",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C10043524&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:16:11.512Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 29465,
+      "sha256": "56a726833a7214c5927fb5064e77c16c560c8c7adbb57b47acde3b1851745034",
+      "note": "Calcium chloride: gas phase and condensed phase thermochemistry data",
+      "excerpt": {
+        "file": "webbook/C10043524.excerpt.html",
+        "bytes": 7165,
+        "sha256": "ca1e9c2561c1427b2db9bdf504a6245a62d1173220bbe5a37b54fadc573df83f",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-C13397267",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C13397267&Units=SI&Mask=3",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:18:11.481Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 12845,
+      "sha256": "453cd8b81446b8b9b06faec564ef710ea92fc6efaac168f2883a529d2d7bda24",
+      "note": "Calcium carbonate (calcite): gas phase and condensed phase thermochemistry data",
+      "used": false,
+      "reason": "Tried as the calcite identifier; the WebBook answers \"Registry Number Not Found\"."
+    },
+    {
+      "id": "webbook-C64175-HFL",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C64175&Units=SI&Type=HFL",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:18:18.143Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 29870,
+      "sha256": "4dbaa30a093a49987f6252c3d64f7f90d73e5941c97a9a9e51bb5c6b98cc9d86",
+      "note": "Ethanol: individual data points behind the averaged enthalpy of formation of the liquid",
+      "excerpt": {
+        "file": "webbook/C64175-HFL.excerpt.html",
+        "bytes": 10662,
+        "sha256": "6dc96c2e11be62ff3f4a102d9e6b1ebfb6a5c194b382c889884ab335432f8110",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-front-page",
+      "url": "https://webbook.nist.gov/chemistry/",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:18:24.626Z",
+      "httpStatus": 200,
+      "contentType": "text/html",
+      "lastModified": "Thu, 17 Sep 2026 19:27:50 GMT",
+      "bytes": 43117,
+      "sha256": "ab898152ac9e9fdc487e45015ab821d30cb2b56f521895d10bbd1d3cf47f63b4",
+      "note": "NIST Chemistry WebBook front page: database identification, DOI and citation guidance",
+      "excerpt": {
+        "file": "webbook/front-page.excerpt.html",
+        "bytes": 1269,
+        "sha256": "38413ae6d5767f43446a325620daec8da6bf3f790569ec380afc8ede7c7e7325",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "webbook-citation-guide",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?Contrib=",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:19:00.100Z",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 18038,
+      "sha256": "de77d6a501b6648dfbab75d31b646d1a311866e22abb8b12fce61a391b858616",
+      "note": "NIST Chemistry WebBook citation guide",
+      "excerpt": {
+        "file": "webbook/citation-guide.excerpt.html",
+        "bytes": 3321,
+        "sha256": "7924e127465f5dbbe941b2755f6e0a1cbda427505cfc4134a48c6a2531c4387c",
+        "writtenBy": "packages/reactions/tools/excerpt-webbook.mjs"
+      }
+    },
+    {
+      "id": "iupac-acp-2004-vol1-article-page",
+      "url": "https://acp.copernicus.org/articles/4/1461/2004/",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:27:35.507Z",
+      "httpStatus": 200,
+      "contentType": "text/html",
+      "lastModified": null,
+      "bytes": 133738,
+      "sha256": "de054afa4402ace5156f0ae8b60ae192bf203de89efe800ed85b910dadc1bcd5",
+      "note": "Article page of Atkinson et al. (2004): bibliographic metadata and licence statement"
+    },
+    {
+      "id": "iupac-acp-2006-vol2-article-page",
+      "url": "https://acp.copernicus.org/articles/6/3625/2006/",
+      "kept": false,
+      "retrievedAt": "2026-11-13T16:27:39.713Z",
+      "httpStatus": 200,
+      "contentType": "text/html",
+      "lastModified": null,
+      "bytes": 139125,
+      "sha256": "00139bde906b7494c28939e0d57129e6b5e769ef9086c27ca9f8d49e46ad6de3",
+      "note": "Article page of Atkinson et al. (2006): bibliographic metadata and licence statement"
+    },
+    {
+      "id": "iupac-acp-2004-vol1-excerpts",
+      "derivedFrom": [
+        "iupac-acp-2004-vol1-pdf",
+        "iupac-acp-2004-vol1-article-page"
+      ],
+      "file": "iupac/acp-4-1461-2004.excerpts.txt",
+      "bytes": 7644,
+      "sha256": "2fc6d33dae295cef0efa6a286cd0cd3acf087e0d083847918b83b35bf15faf0a",
+      "writtenBy": "packages/reactions/tools/extract-pdf-excerpts.mjs",
+      "extractor": "pdftotext 4.00",
+      "licence": "© Author(s) 2004. This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.",
+      "dataSheets": [
+        "I.A3.54",
+        "I.A3.58",
+        "I.A1.2",
+        "I.A2.20",
+        "I.A3.57",
+        "I.A3.53"
+      ]
+    },
+    {
+      "id": "iupac-acp-2006-vol2-excerpts",
+      "derivedFrom": [
+        "iupac-acp-2006-vol2-pdf",
+        "iupac-acp-2006-vol2-article-page"
+      ],
+      "file": "iupac/acp-6-3625-2006.excerpts.txt",
+      "bytes": 5892,
+      "sha256": "388557090679f2a79ea9b78635617e2c13b375e072a20fb507f4196924d4782e",
+      "writtenBy": "packages/reactions/tools/extract-pdf-excerpts.mjs",
+      "extractor": "pdftotext 4.00",
+      "licence": "© Author(s) 2006. This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 2.5 License.",
+      "dataSheets": [
+        "II.A6.146",
+        "II.A6.136"
+      ]
+    }
+  ]
+}

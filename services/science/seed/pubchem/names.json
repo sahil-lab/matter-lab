@@ -1,0 +1,102 @@
+{
+  "description": "Names of common, well-known substances used to build the MATTER LAB starter catalogue. This file contains names only: every identifier, structure and number in the catalogue is retrieved from PubChem by matterlab_science.seeding.pubchem_fetch and stored, with the retrieval date, in snapshot.json next to this file.",
+  "compounds": [
+    "water", "hydrogen peroxide", "ammonia", "methane", "carbon dioxide", "carbon monoxide",
+    "hydrogen", "oxygen", "nitrogen", "ozone", "hydrogen chloride", "hydrogen fluoride",
+    "hydrogen sulfide", "sulfur dioxide", "sulfur trioxide",
+    "nitric oxide", "nitrogen dioxide", "nitrous oxide", "sulfuric acid", "nitric acid",
+    "phosphoric acid", "hydrogen cyanide", "carbonic acid", "hydrazine",
+    "chlorine", "fluorine", "bromine", "iodine", "phosphine", "silane", "carbon disulfide",
+    "sodium chloride", "sodium hydroxide", "potassium hydroxide", "calcium carbonate",
+    "sodium bicarbonate", "ammonium nitrate", "ammonium chloride", "potassium permanganate",
+    "boric acid", "sulfur hexafluoride", "phosgene", "xenon difluoride",
+
+    "ethane", "propane", "butane", "isobutane", "pentane", "hexane", "heptane", "octane",
+    "isooctane", "cyclopropane", "cyclopentane", "cyclohexane", "ethylene",
+    "propylene", "1,3-butadiene", "isoprene", "acetylene", "benzene",
+    "toluene", "p-xylene", "styrene", "naphthalene",
+    "anthracene", "pyrene", "biphenyl", "cyclohexene", "adamantane",
+    "cubane", "limonene", "alpha-pinene", "azulene",
+
+    "methanol", "ethanol", "1-propanol", "isopropanol", "1-butanol", "tert-butanol",
+    "ethylene glycol", "propylene glycol", "glycerol", "phenol", "benzyl alcohol",
+    "diethyl ether", "dimethyl ether", "tetrahydrofuran", "1,4-dioxane", "anisole",
+    "ethylene oxide", "hydroquinone", "menthol", "sorbitol",
+
+    "formaldehyde", "acetaldehyde", "benzaldehyde", "acetone", "2-butanone",
+    "cyclohexanone", "formic acid", "acetic acid",
+    "benzoic acid", "oxalic acid",
+    "citric acid", "lactic acid", "pyruvic acid", "tartaric acid",
+    "salicylic acid", "ethyl acetate", "acetic anhydride",
+    "acetamide", "formamide", "N,N-dimethylformamide", "urea", "vanillin", "cinnamaldehyde",
+    "acrylic acid",
+    "stearic acid", "oleic acid",
+    "terephthalic acid", "trifluoroacetic acid", "camphor",
+
+    "methylamine", "trimethylamine", "triethylamine", "aniline",
+    "pyridine", "pyrrole", "imidazole", "pyrimidine", "purine", "indole", "quinoline",
+    "piperidine", "morpholine", "acetonitrile", "nitromethane", "nitrobenzene", "nitroglycerin",
+    "2,4,6-trinitrotoluene", "melamine",
+
+    "glycine", "L-alanine", "L-valine", "L-leucine", "L-isoleucine", "L-proline",
+    "L-phenylalanine", "L-tryptophan", "L-methionine", "L-serine", "L-threonine", "L-cysteine",
+    "L-tyrosine", "L-asparagine", "L-glutamine", "L-aspartic acid", "L-glutamic acid", "L-lysine",
+    "L-arginine", "L-histidine",
+
+    "chloromethane", "dichloromethane", "chloroform", "carbon tetrachloride", "chlorobenzene",
+    "vinyl chloride", "1,1,1,2-tetrafluoroethane",
+    "iodomethane", "tetrachloroethylene",
+    "dichlorodifluoromethane",
+
+    "dimethyl sulfoxide", "dimethyl sulfide", "methanethiol", "thiophene", "furan",
+    "triphenylphosphine", "tetramethylsilane",
+    "p-toluenesulfonic acid", "phenylboronic acid",
+
+    "D-glucose", "D-fructose", "sucrose", "lactose", "D-ribose", "adenine", "guanine", "cytosine",
+    "thymine", "uracil", "adenosine", "adenosine triphosphate", "cholesterol", "testosterone",
+    "estradiol", "progesterone", "cortisol", "dopamine", "serotonin", "epinephrine",
+    "norepinephrine", "acetylcholine", "histamine", "gamma-aminobutyric acid", "melatonin",
+    "glutathione", "uric acid", "creatine", "retinol", "ascorbic acid",
+    "cholecalciferol", "alpha-tocopherol", "thiamine", "riboflavin", "niacin",
+    "biotin", "folic acid", "beta-carotene", "choline", "taurine",
+
+    "aspirin", "acetaminophen", "ibuprofen", "naproxen", "caffeine", "nicotine", "morphine",
+    "codeine", "benzylpenicillin", "amoxicillin", "ciprofloxacin", "metformin", "atorvastatin",
+    "omeprazole", "diazepam", "fluoxetine", "lidocaine", "diphenhydramine", "warfarin", "quinine",
+    "chloroquine", "artemisinin", "paclitaxel", "cisplatin", "methotrexate", "sildenafil",
+    "salbutamol", "propranolol", "tetracycline", "dexamethasone", "capsaicin", "theobromine",
+    "theophylline", "diclofenac", "ketamine", "propofol", "tamoxifen", "5-fluorouracil",
+    "levodopa", "saccharin", "aspartame", "sucralose",
+
+    "bisphenol A", "vinyl acetate", "indigo", "methylene blue", "phenolphthalein", "fluorescein",
+    "methyl orange", "crystal violet", "EDTA", "18-crown-6", "ferrocene", "buckminsterfullerene",
+    "monosodium glutamate", "sodium benzoate", "butylated hydroxytoluene", "eugenol", "geraniol",
+    "linalool", "thymol", "sodium dodecyl sulfate", "picric acid", "coumarin",
+    "curcumin", "resveratrol", "quercetin"
+  ],
+  "solvents": [
+    "water", "methanol", "ethanol", "1-propanol", "isopropanol", "1-butanol", "tert-butanol",
+    "acetone", "2-butanone", "acetonitrile", "dichloromethane", "chloroform",
+    "carbon tetrachloride", "1,2-dichloroethane", "chlorobenzene", "diethyl ether",
+    "tetrahydrofuran", "2-methyltetrahydrofuran", "1,4-dioxane", "1,2-dimethoxyethane",
+    "methyl tert-butyl ether", "ethyl acetate", "pentane", "hexane", "heptane", "cyclohexane",
+    "benzene", "toluene", "p-xylene", "N,N-dimethylformamide", "N,N-dimethylacetamide",
+    "N-methyl-2-pyrrolidone", "dimethyl sulfoxide", "pyridine", "triethylamine", "acetic acid",
+    "formic acid", "trifluoroacetic acid", "ethylene glycol", "glycerol", "nitromethane",
+    "carbon disulfide", "sulfolane", "propylene carbonate", "2,2,2-trifluoroethanol", "anisole",
+    "formamide", "ammonia"
+  ],
+  "catalysts": [
+    "palladium(II) acetate", "palladium(II) chloride",
+    "tetrakis(triphenylphosphine)palladium(0)", "bis(triphenylphosphine)palladium(II) dichloride",
+    "tris(dibenzylideneacetone)dipalladium(0)", "Wilkinson's catalyst", "platinum dioxide",
+    "osmium tetroxide", "ruthenium(III) chloride", "rhodium(III) chloride", "nickel(II) chloride",
+    "cobalt(II) chloride", "copper(I) iodide", "copper(II) acetate", "iron(III) chloride",
+    "aluminium chloride", "titanium tetrachloride", "titanium isopropoxide", "boron trifluoride",
+    "zinc chloride", "tin(IV) chloride", "vanadium pentoxide", "manganese dioxide",
+    "sulfuric acid", "p-toluenesulfonic acid", "trifluoromethanesulfonic acid",
+    "4-dimethylaminopyridine", "1,4-diazabicyclo[2.2.2]octane",
+    "1,8-diazabicyclo[5.4.0]undec-7-ene", "L-proline", "TEMPO", "triphenylphosphine",
+    "tetrabutylammonium bromide", "zirconocene dichloride"
+  ]
+}

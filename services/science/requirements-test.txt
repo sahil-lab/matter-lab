@@ -1,0 +1,7 @@
+# Test-only dependencies. They are installed in the image because the test suite runs inside the
+# service container against the real PostgreSQL database.
+#   httpx2      HTTP client used by Starlette's TestClient
+#   jsonschema  validates real responses against the published OpenAPI schema
+pytest==9.2.0
+httpx2==2.16.0
+jsonschema==4.26.0
