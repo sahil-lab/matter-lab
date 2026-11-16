@@ -124,7 +124,10 @@ describe('typed laboratory persistence', () => {
   });
 
   it('roundtrips a JSON draft without importing result claims and partitions opted-in cache', () => {
-    const value: SceneDraft = { ...draft(), runtimeCheckpoint: checkpoint(), learningState: { schemaVersion: 1, kind: 'MATTERLAB_LEARNING_STATE', attempts: [] } };
+    const value: SceneDraft = {
+      ...draft(), runtimeCheckpoint: checkpoint(), learningState: { schemaVersion: 1, kind: 'MATTERLAB_LEARNING_STATE', attempts: [] },
+      editorState: { schemaVersion: 1, sceneId, activeStationId: stationId, selectedIds: [], lockedIds: [], groups: [], mode: 'select', snapM: 0.01, angleStepDeg: 15, initialTransforms: {} },
+    };
     const archive = JSON.stringify({ format: 'matterlab-lab-notebook', schemaVersion: 1, ...value, runs: [{ fraudulent: 'ignored' }] });
     expect(importSceneDraft(archive)).toEqual(value);
     const values = new Map<string, string>();
@@ -134,6 +137,7 @@ describe('typed laboratory persistence', () => {
     ownerA.write(localDraft(value, 1));
     expect(ownerA.read(sceneId)?.scene).toEqual(value.scene);
     expect(ownerA.read(sceneId)?.learningState).toEqual(value.learningState);
+    expect(ownerA.read(sceneId)?.editorState).toEqual(value.editorState);
     expect(ownerB.read(sceneId)).toBeNull();
     expect([...values.values()].every((text) => !text.includes('Authorization') && !text.includes('Bearer'))).toBe(true);
   });

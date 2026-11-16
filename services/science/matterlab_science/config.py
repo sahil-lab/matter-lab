@@ -68,6 +68,7 @@ class Settings:
     lab_validator_path: Path = _REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"
     lab_catalog_dir: Path = _REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog"
     lab_learning_schema_path: Path = _REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog" / "learning-state.schema.json"
+    lab_editor_schema_path: Path = _REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog" / "editor-state.schema.json"
     lab_node_binary: str = "node"
     lab_max_request_bytes: int = 8 * 1024 * 1024
     lab_max_output_bytes: int = 16 * 1024 * 1024
@@ -190,6 +191,7 @@ def load_settings() -> Settings:
         lab_validator_path=Path(_env("MATTERLAB_LAB_VALIDATOR_PATH", str(_REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"))),
         lab_catalog_dir=Path(_env("MATTERLAB_LAB_CATALOG_DIR", str(_REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog"))),
         lab_learning_schema_path=Path(_env("MATTERLAB_LAB_LEARNING_SCHEMA_PATH", str(_REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog" / "learning-state.schema.json"))),
+        lab_editor_schema_path=Path(_env("MATTERLAB_LAB_EDITOR_SCHEMA_PATH", str(_REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog" / "editor-state.schema.json"))),
         lab_node_binary=_env("MATTERLAB_LAB_NODE_BINARY", "node"),
         lab_max_request_bytes=_env_int("MATTERLAB_LAB_MAX_REQUEST_BYTES", 8 * 1024 * 1024, 1024),
         lab_max_output_bytes=_env_int("MATTERLAB_LAB_MAX_OUTPUT_BYTES", 16 * 1024 * 1024, 1024),

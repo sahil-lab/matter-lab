@@ -21,7 +21,7 @@ from matterlab_science.lab.exports import SHEETS, export_document, export_workbo
 from matterlab_science.lab.problems import LabProblem
 from matterlab_science.lab.runner import RunnerFailure, bundle_fingerprint, execute_bundle, terminal_result
 from matterlab_science.lab.validation import (
-    UNITS_POLICY, canonical_bytes, decode_json, duplicated_scene, run_input_hash,     validate_checkpoint, validate_contract, validate_learning_state, validate_scene,
+    UNITS_POLICY, canonical_bytes, decode_json, duplicated_scene, run_input_hash,         validate_checkpoint, validate_contract, validate_editor_state, validate_learning_state, validate_scene,
 )
 from matterlab_science.main import create_app
 
@@ -191,3 +191,15 @@ def test_learning_sidecar_uses_agent08_parser_and_does_not_accept_scores() -> No
         validate_learning_state({**state, "score": 100}, load_settings())
     assert error.value.code == "CONTRACT_VALIDATION_FAILED"
     assert decode_json(canonical_bytes(state)) == state
+
+
+def test_editor_sidecar_is_scene_bound_and_does_not_accept_domain_inventory() -> None:
+    state = {"schemaVersion": 1, "sceneId": identifier(1), "activeStationId": identifier(2),
+             "selectedIds": [identifier(4)], "lockedIds": [], "groups": [], "mode": "select",
+             "snapM": 0.01, "angleStepDeg": 15, "initialTransforms": {}}
+    validate_editor_state(state, identifier(1), load_settings())
+    with pytest.raises(LabProblem) as error:
+        validate_editor_state(state, identifier(40), load_settings())
+    assert error.value.code == "EDITOR_SCENE_MISMATCH"
+    with pytest.raises(LabProblem):
+        validate_editor_state({**state, "containerStates": {}}, identifier(1), load_settings())

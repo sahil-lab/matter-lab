@@ -24,6 +24,7 @@ class SceneCreate(StrictBody):
     scene: dict[str, Any] = Field(json_schema_extra=shared_ref("ExperimentScene"))
     runtimeCheckpoint: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("RuntimeCheckpoint"), {"type": "null"}]})
     learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
+    editorState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("EditorState"), {"type": "null"}]})
 
 
 class ScenePatch(StrictBody):
@@ -31,6 +32,7 @@ class ScenePatch(StrictBody):
     scene: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("ExperimentScene"), {"type": "null"}]})
     runtimeCheckpoint: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("RuntimeCheckpoint"), {"type": "null"}]})
     learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
+    editorState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("EditorState"), {"type": "null"}]})
 
 
 class SceneResource(BaseModel):
@@ -40,6 +42,7 @@ class SceneResource(BaseModel):
     createdAt: datetime
     updatedAt: datetime
     learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
+    editorState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("EditorState"), {"type": "null"}]})
 
 
 class SceneSummary(BaseModel):
@@ -79,6 +82,7 @@ class RunResource(BaseModel):
     artifacts: list[dict[str, Any]]
     learningState: dict[str, Any] | None = Field(default=None, description="Frozen CLIENT/DRAFT metadata, not a verified score or scientific result.",
                                                json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
+    editorState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("EditorState"), {"type": "null"}]})
 
 
 class RunSummary(BaseModel):

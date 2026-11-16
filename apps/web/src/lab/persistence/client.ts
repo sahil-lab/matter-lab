@@ -2,6 +2,7 @@ import { parseApparatusDefinition, parseExperimentScene, parseLabContract, parse
 import type { NodeRunRequest, Observation, RuntimeCheckpoint } from '@matterlab/contracts';
 import { ScienceClient, ServiceError } from '../../services/science-client';
 import { parseLearningState } from '../challenges/persistence';
+import { parseEditorState } from '../editor/serialization';
 import type { Download, Page } from '../../services/science-client';
 import type { EquipmentPage, LabCapabilities, ReagentPage, RunEvent, RunResource, SceneDraft, SceneResource, SceneSummary, TemplateResource } from './types';
 
@@ -26,11 +27,13 @@ function text(value: unknown): string {
 
 export function parseSceneResource(value: unknown): SceneResource {
   const body = object(value);
+  const scene = parseExperimentScene(body.scene);
   return {
-    scene: parseExperimentScene(body.scene),
+    scene,
     runtimeCheckpoint: body.runtimeCheckpoint === null ? null : parseLabContract('RuntimeCheckpoint', body.runtimeCheckpoint),
     title: text(body.title), createdAt: text(body.createdAt), updatedAt: text(body.updatedAt),
     ...(body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) }),
+    ...(body.editorState === undefined ? {} : { editorState: body.editorState === null ? null : parseEditorState(body.editorState, scene.id) }),
   };
 }
 
@@ -48,7 +51,8 @@ function parseRunResource(value: unknown): RunResource {
     throw new ServiceError(0, 'INVALID_RESPONSE', 'Invalid run metadata.');
   }
   const learning = body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) };
-  return { ...body, ...learning, inputSnapshot: input, result, runtimeCheckpoint } as unknown as RunResource;
+  const editor = body.editorState === undefined ? {} : { editorState: body.editorState === null ? null : parseEditorState(body.editorState, text(body.sceneId)) };
+  return { ...body, ...learning, ...editor, inputSnapshot: input, result, runtimeCheckpoint } as unknown as RunResource;
 }
 
 function write(body: unknown, key?: string, revision?: number): RequestInit {
@@ -202,6 +206,7 @@ export function importSceneDraft(json: string): SceneDraft {
     return {
       title: text(body.title), scene, runtimeCheckpoint: checkpoint,
       ...(body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) }),
+      ...(body.editorState === undefined ? {} : { editorState: body.editorState === null ? null : parseEditorState(body.editorState, scene.id) }),
     };
   }
   return { title: 'Imported laboratory draft', scene: parseLabJson('ExperimentScene', json), runtimeCheckpoint: null };

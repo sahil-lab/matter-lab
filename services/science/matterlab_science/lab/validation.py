@@ -82,10 +82,10 @@ def validate_contract(value: Any, definition: str, schema_path: Path, validator_
     canonical_bytes(value)
     try:
         document = _schema(str(schema_path), schema_path.stat().st_mtime_ns)
-        if definition != "LearningState" and definition not in document["$defs"]:
+        if definition not in ("LearningState", "EditorState") and definition not in document["$defs"]:
             raise KeyError(definition)
         validator = Draft202012Validator(
-            document if definition == "LearningState" else
+            document if definition in ("LearningState", "EditorState") else
             {"$schema": "https://json-schema.org/draft/2020-12/schema", "$defs": document["$defs"], "$ref": f"#/$defs/{definition}"},
             format_checker=FormatChecker(),
         )
@@ -133,6 +133,17 @@ def validate_learning_state(value: dict[str, Any] | None, settings: Any) -> None
     if len(canonical_bytes(value)) > 4 * 1024 * 1024:
         raise LabProblem(413, "LEARNING_STATE_TOO_LARGE", "Learning metadata exceeds 4 MiB; no evidence was silently truncated.")
     validate_contract(value, "LearningState", settings.lab_learning_schema_path, settings.lab_validator_path,
+                      settings.lab_node_binary, settings.lab_validation_timeout_seconds)
+
+
+def validate_editor_state(value: dict[str, Any] | None, scene_id: str, settings: Any) -> None:
+    if value is None:
+        return
+    if len(canonical_bytes(value)) > 262_144:
+        raise LabProblem(413, "EDITOR_STATE_TOO_LARGE", "Editor metadata exceeds 256 KiB.")
+    if value.get("sceneId") != scene_id:
+        raise LabProblem(422, "EDITOR_SCENE_MISMATCH", "Editor metadata must belong to this scene.")
+    validate_contract(value, "EditorState", settings.lab_editor_schema_path, settings.lab_validator_path,
                       settings.lab_node_binary, settings.lab_validation_timeout_seconds)
 
 

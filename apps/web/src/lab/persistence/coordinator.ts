@@ -57,6 +57,7 @@ export class ScenePersistenceCoordinator {
     const snapshot: SceneDraft = {
       title: frozen.title, scene: frozen.scene, runtimeCheckpoint: frozen.runtimeCheckpoint,
       ...(frozen.learningState === undefined ? {} : { learningState: frozen.learningState }),
+      ...(frozen.editorState === undefined ? {} : { editorState: frozen.editorState }),
     };
     const operation = this.queued.catch(() => undefined).then(async () => {
       if (signal?.aborted) throw new ServiceError(0, 'REQUEST_ABORTED', 'The queued save was cancelled before it was sent.');

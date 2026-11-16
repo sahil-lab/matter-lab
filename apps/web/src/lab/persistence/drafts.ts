@@ -1,5 +1,6 @@
 import { parseExperimentScene, parseLabContract } from '@matterlab/contracts';
 import { parseLearningState } from '../challenges/persistence';
+import { parseEditorState } from '../editor/serialization';
 import type { DraftRecord, SceneDraft } from './types';
 
 export interface DraftCache {
@@ -20,6 +21,7 @@ function verified(value: unknown): DraftRecord {
     scene: parseExperimentScene(record.scene),
     runtimeCheckpoint: record.runtimeCheckpoint === null ? null : parseLabContract('RuntimeCheckpoint', record.runtimeCheckpoint),
     ...(record.learningState === undefined ? {} : { learningState: record.learningState === null ? null : parseLearningState(record.learningState) }),
+    ...(record.editorState === undefined ? {} : { editorState: record.editorState === null ? null : parseEditorState(record.editorState, record.scene.id) }),
   };
 }
 

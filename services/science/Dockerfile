@@ -9,6 +9,7 @@ COPY packages ./packages
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/web/src/lab/apparatus ./apps/web/src/lab/apparatus
 COPY apps/web/src/lab/challenges ./apps/web/src/lab/challenges
+COPY apps/web/src/lab/editor ./apps/web/src/lab/editor
 COPY services/science/node ./services/science/node
 RUN npm ci --ignore-scripts \
  && npm run build --workspace @matterlab/lab-science \
@@ -39,7 +40,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MATTERLAB_LAB_VALIDATOR_PATH=/opt/lab/node/validate.mjs \
     MATTERLAB_LAB_RUNNER_PATH=/opt/lab/runtime/cli.mjs \
     MATTERLAB_LAB_CATALOG_DIR=/opt/lab/runtime/catalog \
-    MATTERLAB_LAB_LEARNING_SCHEMA_PATH=/opt/lab/runtime/catalog/learning-state.schema.json
+    MATTERLAB_LAB_LEARNING_SCHEMA_PATH=/opt/lab/runtime/catalog/learning-state.schema.json \
+    MATTERLAB_LAB_EDITOR_SCHEMA_PATH=/opt/lab/runtime/catalog/editor-state.schema.json
 
 # libgomp1: OpenMP runtime needed by the tblite wheel (it is not bundled there).
 RUN apt-get update \

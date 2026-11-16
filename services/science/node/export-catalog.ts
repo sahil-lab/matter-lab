@@ -6,6 +6,7 @@ import { apparatusRegistry } from '../../../apps/web/src/lab/apparatus/registry.
 import { createTitrationSetup } from '../../../apps/web/src/lab/apparatus/seeds.ts';
 import { SCIENCE_METHOD_ID, SCIENCE_METHOD_VERSION, getScienceCatalog, prepareSolution } from '../../../packages/lab-science/src/index.ts';
 import { learningStateJsonSchema } from '../../../apps/web/src/lab/challenges/schema.ts';
+import { EDITOR_STATE_JSON_SCHEMA } from '../../../apps/web/src/lab/editor/schema.ts';
 
 const destination = resolve(process.argv[2] ?? 'packages/lab-runtime/dist/catalog');
 await mkdir(destination, { recursive: true });
@@ -31,6 +32,7 @@ const documents = {
   'reagent-definitions.json': { ...common, reagents: catalogue.reagents, analyticalComponents: catalogue.analyticalComponents, indicators: catalogue.indicators },
   'source-references.json': { ...common, sources: catalogue.sources },
   'learning-state.schema.json': learningStateJsonSchema,
+  'editor-state.schema.json': EDITOR_STATE_JSON_SCHEMA,
   'starter-scene.json': {
     schemaVersion: 1, contractVersion: LAB_CONTRACT_VERSION, methodVersion: SCIENCE_METHOD_VERSION,
     title: 'Titration station and blank bench', scene: setup.scene, suggestedSteps,

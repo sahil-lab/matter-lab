@@ -4,12 +4,14 @@ import type {
 import type { Page } from '../../services/science-client';
 import type { ReagentDefinition } from '@matterlab/lab-science';
 import type { LearningState } from '../challenges/types';
+import type { EditorSerializedState } from '../editor/serialization';
 
 export interface SceneDraft {
   readonly title: string;
   readonly scene: ExperimentScene;
   readonly runtimeCheckpoint: RuntimeCheckpoint | null;
   readonly learningState?: LearningState | null;
+  readonly editorState?: EditorSerializedState | null;
 }
 
 export interface SceneResource extends SceneDraft {
@@ -58,6 +60,7 @@ export interface RunResource {
   readonly runnerSha256: string | null;
   readonly artifacts: readonly JsonObject[];
   readonly learningState?: LearningState | null;
+  readonly editorState?: EditorSerializedState | null;
 }
 
 export interface RunEvent {

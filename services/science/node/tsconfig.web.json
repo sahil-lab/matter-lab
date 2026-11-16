@@ -4,6 +4,7 @@
     "allowImportingTsExtensions": true,
     "paths": {
       "@matterlab/contracts": ["../../../packages/contracts/src/index.ts"],
+      "@matterlab/contracts/lab": ["../../../packages/contracts/lab/index.ts"],
       "@matterlab/lab-science": ["../../../packages/lab-science/src/index.ts"]
     }
   }

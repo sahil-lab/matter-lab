@@ -5,6 +5,7 @@ Existing `/v1` endpoints, data and error responses remain unchanged. New endpoin
 `/api/v1/lab`. Migration `0006_laboratory_persistence.sql` adds private scenes/templates,
 immutable runs and append-only ledgers without rewriting migrations `0001`–`0005`.
 Forward migration `0007` adds nullable learning draft metadata; it does not rewrite `0006`.
+Forward migration `0008` adds Agent04's nullable editor-only metadata; neither prior migration changes.
 
 ## Authority and reproducibility
 
@@ -41,6 +42,13 @@ It is limited to 4 MiB, preserved atomically under the scene revision and in JSO
 and frozen separately at run enqueue. It is **CLIENT/DRAFT** data, not trusted scores or server
 observations, and is deliberately excluded from the scientific input hash. Duplicate/template
 instantiation clears it. A PATCH that omits it preserves it.
+
+Optional `editorState` uses Agent04's pure `parseEditorState` and exact JSON Schema (256 KiB).
+It stores scene-bound selection, locks, groups, precision and original transforms separately,
+never by injecting save-only data into `scene.viewport` or rewriting a runtime checkpoint.
+Call `editor.prepareSave()`, persist its `editor` as `editorState`, then call
+`editor.acknowledgeSave(theSameTicket, resource.scene.revision)`. Do not overwrite newer edits.
+Scene duplication and template instantiation clear this sidecar too.
 
 When a checkpoint exists, run enqueue freezes:
 
@@ -123,6 +131,7 @@ and Agent06's real getters/preparation function. It produces:
 - `packages/lab-runtime/dist/catalog/source-references.json`
 - `packages/lab-runtime/dist/catalog/starter-scene.json`
 - `packages/lab-runtime/dist/catalog/learning-state.schema.json` (generated from Agent08, not a second schema)
+- `packages/lab-runtime/dist/catalog/editor-state.schema.json` (generated from Agent04)
 
 The starter retains the parent's **unfilled** titration station plus independent blank bench.
 Its suggested virtual HCl/NaOH FILL commands use `prepareSolution`; there are no precomputed pH

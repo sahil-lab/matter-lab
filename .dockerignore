@@ -21,6 +21,8 @@ apps/web/src/lab/*
 !apps/web/src/lab/apparatus/**
 !apps/web/src/lab/challenges/
 !apps/web/src/lab/challenges/**
+!apps/web/src/lab/editor/
+!apps/web/src/lab/editor/**
 
 !services/
 services/*
