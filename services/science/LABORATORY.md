@@ -137,6 +137,7 @@ The starter retains the parent's **unfilled** titration station plus independent
 Its suggested virtual HCl/NaOH FILL commands use `prepareSolution`; there are no precomputed pH
 observations, manual species mappings or invented scientific results. Dispatch these commands
 through the runtime; do not assign inventories directly.
+`LabApiClient.starterScene()` returns `saved:false` and revision zero, never a remote-save claim.
 
 ### Configuration
 
@@ -239,7 +240,7 @@ SSE uses authenticated `fetch`, not tokens in EventSource URLs.
 
 ```powershell
 $env:PYTHONPATH = (Resolve-Path 'services\science').Path
-python -m pytest services\science\tests\test_lab_contracts.py services\science\tests\test_lab_api.py -q
+python -m pytest services\science\tests\test_lab_contracts.py services\science\tests\test_lab_api.py services\science\tests\test_lab_replay.py -q
 npx vitest run --config services\science\node\vitest.config.ts
 npx tsc -p services\science\node\tsconfig.web.json --noEmit
 ```
@@ -249,3 +250,9 @@ PostgreSQL and disposable uniquely named test databases**. It explicitly skips i
 database is unreachable; a skip is not an integration pass. The existing migration suite also
 checks the new table set. On available infrastructure, additionally run `tests/test_migrations.py`
 against a clean DB and the upgraded v1 fixture; never point destructive test setup at user data.
+
+`test_lab_replay.py` runs the actual Python subprocess adapter against Agent07's bundled CLI,
+which uses Agent06 chemistry and the parent registry. It checks the supplied 250-tick / 25 mL
+equivalence case, conservation, duplicate receipt suppression, independent blank station,
+source coverage, input-hash agreement, and honest unsupported-method output. These tests need
+Node but **do not substitute a database**; PostgreSQL lifecycle/migration tests are separate.

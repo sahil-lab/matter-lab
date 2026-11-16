@@ -85,6 +85,13 @@ def retain_pinned_catalog(previous: dict[str, Any], current: dict[str, Any]) -> 
     return result
 
 
+def run_catalog_snapshot(previous: dict[str, Any], directory: Path) -> dict[str, Any]:
+    # Future FILL/PLACE steps can introduce references absent from the empty initial scene.
+    release = {"schemaVersion": 1, "catalogStatus": "CURATED", "warnings": [],
+               **{kind: read_catalog(directory, kind) for kind in ("equipment", "reagents", "sources")}}
+    return retain_pinned_catalog(previous, release)
+
+
 def require_installed_calibrations(snapshot: dict[str, Any], directory: Path) -> None:
     pinned = snapshot.get("equipment", [])
     if not pinned:

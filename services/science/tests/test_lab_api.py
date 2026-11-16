@@ -6,6 +6,7 @@ import copy
 import hashlib
 import json
 import shutil
+import time
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +23,7 @@ from matterlab_science.db import Database, Jsonb
 from matterlab_science.main import create_app
 from matterlab_science.migrations import discover, migrate
 from matterlab_science.provenance import ensure_service_source, ensure_user_source
+from matterlab_science.lab.runner import LabRunManager
 
 from .lab_helpers import OWNER_A, OWNER_B, checkpoint_fixture, identifier, scene_fixture
 
@@ -240,3 +242,37 @@ def test_learning_metadata_is_private_revisioned_and_cleared_on_duplicate(lab_en
     assert queued["learningState"] == learning and "learningState" not in queued["inputSnapshot"]
     rejected = client.patch(path, json={"learningState": {**learning, "verifiedScore": 100}}, headers={**AUTH_A, "If-Match": '"2"'})
     assert rejected.status_code == 422
+
+
+def test_real_postgres_worker_persists_shared_solver_output(lab_env: tuple[TestClient, Any]) -> None:
+    from .test_lab_replay import titration_request
+
+    client, ctx = lab_env
+    payload, _, receiver_id, _ = titration_request()
+    payload["initialScene"]["id"] = str(uuid4())
+    saved = client.post("/api/v1/lab/scenes", json={"title": "Real worker / PostgreSQL", "scene": payload["initialScene"]},
+                        headers={**AUTH_A, "Idempotency-Key": str(uuid4())})
+    assert saved.status_code == 201, saved.text
+    scene_id = saved.json()["scene"]["id"]
+    submitted = client.post(f"/api/v1/lab/scenes/{scene_id}/runs", json={"expectedRevision": 1, "steps": payload["steps"]},
+                            headers={**AUTH_A, "Idempotency-Key": str(uuid4())})
+    assert submitted.status_code == 202, submitted.text
+    run_id = submitted.json()["runId"]
+    manager = LabRunManager(ctx.db, ctx.settings)
+    manager.start()
+    try:
+        deadline = time.monotonic() + 130
+        while True:
+            current = client.get(f"/api/v1/lab/runs/{run_id}", headers=AUTH_A).json()
+            if current["status"] not in ("QUEUED", "RUNNING"):
+                break
+            assert time.monotonic() < deadline, "Real PostgreSQL-backed Node job exceeded its bounded integration deadline."
+            time.sleep(0.15)
+        assert current["status"] == "SUCCEEDED", current
+        ph = [item for item in current["result"]["observations"] if item["type"] == "PH" and item.get("apparatusId") == receiver_id][-1]
+        assert ph["quantity"]["value"] == pytest.approx(7, abs=1e-8)
+        page = client.get(f"/api/v1/lab/runs/{run_id}/observations", headers=AUTH_A).json()
+        assert page["total"] == len(current["result"]["observations"])
+        assert client.post(f"/api/v1/lab/runs/{run_id}/cancel", headers=AUTH_A).json()["status"] == "SUCCEEDED"
+    finally:
+        manager.stop()

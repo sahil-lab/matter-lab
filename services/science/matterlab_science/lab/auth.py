@@ -7,7 +7,7 @@ import hmac
 import json
 import re
 from dataclasses import dataclass
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends, Request
@@ -72,6 +72,17 @@ def require_scope(scope: str):
         return principal
 
     return check
+
+
+def require_action_actors(value: Any, owner_id: UUID) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key == "actorId" and item not in (None, str(owner_id)):
+                raise LabProblem(403, "ACTOR_MISMATCH", "All action actorIds, including editor batch children, must match the authenticated owner.")
+            require_action_actors(item, owner_id)
+    elif isinstance(value, list):
+        for item in value:
+            require_action_actors(item, owner_id)
 
 
 Reader = Annotated[Principal, Depends(require_scope("lab:read"))]

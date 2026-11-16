@@ -5,7 +5,8 @@
     "paths": {
       "@matterlab/contracts": ["../../../packages/contracts/src/index.ts"],
       "@matterlab/contracts/lab": ["../../../packages/contracts/lab/index.ts"],
-      "@matterlab/lab-science": ["../../../packages/lab-science/src/index.ts"]
+      "@matterlab/lab-science": ["../../../packages/lab-science/src/index.ts"],
+      "@matterlab/lab-runtime": ["../../../packages/lab-runtime/src/index.ts"]
     }
   }
 }

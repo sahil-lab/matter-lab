@@ -232,11 +232,12 @@ class LabRunManager:
                 result = terminal_result(row, "CANCELLED", "Cancelled by the owner; late worker output was discarded.")
                 failure_code = None
                 checkpoint = None
-            for ordinal, observation in enumerate(result["observations"]):
-                conn.execute("INSERT INTO lab_observation(run_id,ordinal,observation) VALUES(%s,%s,%s)", (row["id"], ordinal, Jsonb(observation)))
-            if checkpoint is not None:
-                for event in checkpoint["events"]:
-                    conn.execute("INSERT INTO lab_action_event(run_id,sequence,data) VALUES(%s,%s,%s)", (row["id"], event["sequence"], Jsonb(event)))
+            with conn.cursor() as cursor:
+                cursor.executemany("INSERT INTO lab_observation(run_id,ordinal,observation) VALUES(%s,%s,%s)",
+                                   [(row["id"], ordinal, Jsonb(observation)) for ordinal, observation in enumerate(result["observations"])])
+                if checkpoint is not None:
+                    cursor.executemany("INSERT INTO lab_action_event(run_id,sequence,data) VALUES(%s,%s,%s)",
+                                       [(row["id"], event["sequence"], Jsonb(event)) for event in checkpoint["events"]])
             store.append_event(conn, row["id"], "status", {"status": result["status"], "runId": str(row["id"]), "failureCode": failure_code, "observationCount": len(result["observations"])})
             conn.execute(
                 "UPDATE lab_run SET status=%s,result=%s,checkpoint=%s,failure_code=%s,completed_at=now(),heartbeat_at=now() WHERE id=%s",

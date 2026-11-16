@@ -71,6 +71,17 @@ export class LabApiClient {
     return this.service.json(BASE + '/capabilities', { signal });
   }
 
+  async starterScene(signal?: AbortSignal): Promise<SceneDraft & { readonly suggestedSteps: NodeRunRequest['steps']; readonly saved: false }> {
+    const body = object(await this.service.json(BASE + '/seed-scene', { signal }));
+    if (body.saved !== false || !Array.isArray(body.suggestedSteps)) {
+      throw new ServiceError(0, 'INVALID_RESPONSE', 'A starter setup must be explicitly unpersisted.');
+    }
+    return {
+      title: text(body.title), scene: parseExperimentScene(body.scene), runtimeCheckpoint: null, saved: false,
+      suggestedSteps: body.suggestedSteps.map((step) => parseLabContract('ReplayStep', step)),
+    };
+  }
+
   async createScene(draft: SceneDraft, key: string = crypto.randomUUID(), signal?: AbortSignal): Promise<SceneResource> {
     parseExperimentScene(draft.scene);
     if (draft.runtimeCheckpoint) parseLabContract('RuntimeCheckpoint', draft.runtimeCheckpoint);

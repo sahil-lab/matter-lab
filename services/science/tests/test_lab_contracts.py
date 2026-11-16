@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from openpyxl import load_workbook
 
 from matterlab_science.config import load_settings
-from matterlab_science.lab.auth import configured_principals
+from matterlab_science.lab.auth import configured_principals, require_action_actors
 from matterlab_science.lab.exports import SHEETS, export_document, export_workbook
 from matterlab_science.lab.problems import LabProblem
 from matterlab_science.lab.runner import RunnerFailure, bundle_fingerprint, execute_bundle, terminal_result
@@ -203,3 +203,22 @@ def test_editor_sidecar_is_scene_bound_and_does_not_accept_domain_inventory() ->
     assert error.value.code == "EDITOR_SCENE_MISMATCH"
     with pytest.raises(LabProblem):
         validate_editor_state({**state, "containerStates": {}}, identifier(1), load_settings())
+
+
+def test_editor_batch_cannot_spoof_another_actors_identity() -> None:
+    batch = [{"kind": "ACTION", "action": {"actorId": str(OWNER_A), "type": "CUSTOM",
+                                         "payload": {"pluginId": "matterlab:editor-v1", "actionType": "BATCH",
+                                                     "data": {"actions": [{"actorId": identifier(999)}]}}}}]
+    with pytest.raises(LabProblem) as error:
+        require_action_actors(batch, OWNER_A)
+    assert error.value.status == 403 and error.value.code == "ACTOR_MISMATCH"
+
+
+def test_large_payload_still_uses_full_shared_structural_validation() -> None:
+    scene = scene_fixture()
+    scene["viewport"] = {"notes": ["x" * 4000] * 20}
+    scene["invented"] = True
+    assert len(canonical_bytes(scene)) > 64 * 1024
+    with pytest.raises(LabProblem) as error:
+        validate_scene(scene, load_settings().lab_schema_path)
+    assert error.value.code == "CONTRACT_VALIDATION_FAILED"

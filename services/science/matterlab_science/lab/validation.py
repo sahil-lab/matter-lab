@@ -16,7 +16,7 @@ from typing import Any
 from uuid import uuid4
 
 import rfc8785
-from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema import Draft202012Validator, FormatChecker, SchemaError
 
 from ..config import _REPO_ROOT, load_settings
 from .problems import LabProblem
@@ -79,7 +79,7 @@ def _schema(path: str, stamp: int) -> dict[str, Any]:
 
 
 def validate_contract(value: Any, definition: str, schema_path: Path, validator_path: Path | None = None, node_binary: str = "node", timeout_seconds: float | None = None) -> None:
-    canonical_bytes(value)
+    encoded = canonical_bytes(value)
     try:
         document = _schema(str(schema_path), schema_path.stat().st_mtime_ns)
         if definition not in ("LearningState", "EditorState") and definition not in document["$defs"]:
@@ -89,15 +89,18 @@ def validate_contract(value: Any, definition: str, schema_path: Path, validator_
             {"$schema": "https://json-schema.org/draft/2020-12/schema", "$defs": document["$defs"], "$ref": f"#/$defs/{definition}"},
             format_checker=FormatChecker(),
         )
-    except (OSError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, KeyError, SchemaError) as exc:
         raise LabProblem(503, "CONTRACT_UNAVAILABLE", "The shared laboratory contract schema is unavailable or incompatible.") from exc
-    errors = []
-    for error in validator.iter_errors(value):
-        errors.append({"path": "/".join(str(part) for part in error.absolute_path), "rule": error.validator, "message": error.message[:500]})
-        if len(errors) == 20:
-            break
-    if errors:
-        raise LabProblem(422, "CONTRACT_VALIDATION_FAILED", f"The request does not match the shared {definition} contract.", errors)
+    # The shared Node parser validates BOTH structure and semantics for every payload. Repeating
+    # generic oneOf traversal on a large observation ledger can block the API for minutes.
+    if len(encoded) <= 64 * 1024:
+        errors = []
+        for error in validator.iter_errors(value):
+            errors.append({"path": "/".join(str(part) for part in error.absolute_path), "rule": error.validator, "message": error.message[:500]})
+            if len(errors) == 20:
+                break
+        if errors:
+            raise LabProblem(422, "CONTRACT_VALIDATION_FAILED", f"The request does not match the shared {definition} contract.", errors)
     validator_path = validator_path or _REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"
     executable = shutil.which(node_binary)
     if executable is None or not validator_path.is_file():

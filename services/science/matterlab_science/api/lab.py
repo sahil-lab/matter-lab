@@ -16,7 +16,7 @@ from starlette.concurrency import run_in_threadpool
 
 from ..db import Jsonb
 from ..lab import catalog, store
-from ..lab.auth import Exporter, Reader, Runner, Writer
+from ..lab.auth import Exporter, Reader, Runner, Writer, require_action_actors
 from ..lab.models import DuplicateRequest, RunCreate, RunResource, RunSummary, SceneCreate, ScenePatch, SceneResource, SceneSummary, TemplateCreate, TemplateResource
 from ..lab.problems import LabProblem, ProblemDetails
 from ..lab.validation import (
@@ -109,6 +109,7 @@ def seed_scene(ctx: Ctx, principal: Reader) -> dict[str, Any]:
         if seed["schemaVersion"] != 1 or seed["contractVersion"] != ctx.settings.lab_contract_version:
             raise ValueError("incompatible seed")
         scene = duplicated_scene(seed["scene"])
+        scene["revision"] = 0
         identifiers = dict(zip(scene_identifiers(seed["scene"]), scene_identifiers(scene), strict=True))
         for step in seed["suggestedSteps"]:
             if step["kind"] == "ACTION":
@@ -231,8 +232,7 @@ def create_run(scene_id: UUID, body: RunCreate, ctx: Ctx, principal: Runner, key
         if limits is not None:
             payload["limits"] = limits
         validate_contract(payload, "NodeRunRequest", ctx.settings.lab_schema_path, ctx.settings.lab_validator_path, ctx.settings.lab_node_binary, ctx.settings.lab_validation_timeout_seconds)
-        if any(step["kind"] == "ACTION" and step["action"].get("actorId") not in (None, str(principal.owner_id)) for step in steps):
-            raise LabProblem(403, "ACTOR_MISMATCH", "Action actorId, when supplied, must match the authenticated owner.")
+        require_action_actors(steps, principal.owner_id)
         catalog.require_installed_calibrations(saved["catalog_snapshot"], ctx.settings.lab_catalog_dir)
         if len(canonical_bytes(payload)) > ctx.settings.lab_max_request_bytes:
             raise LabProblem(413, "RUN_INPUT_TOO_LARGE", "Combined saved history and new steps exceed the run input limit.")
@@ -245,7 +245,7 @@ def create_run(scene_id: UUID, body: RunCreate, ctx: Ctx, principal: Runner, key
             "VALUES(%s,%s,%s,%s,'QUEUED',%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING *",
             (run_id, scene_id, principal.owner_id, saved["revision"], Jsonb(payload), input_hash, versions["contractVersion"], versions["runtimeVersion"],
              initial["simulationConfig"]["methodId"], versions["methodVersion"], runner_hash,
-             Jsonb(catalog.retain_pinned_catalog(saved["catalog_snapshot"], catalog.snapshot_for_scene(initial, ctx.settings.lab_catalog_dir))), Jsonb(UNITS_POLICY), ctx.service_source_id,
+             Jsonb(catalog.run_catalog_snapshot(saved["catalog_snapshot"], ctx.settings.lab_catalog_dir)), Jsonb(UNITS_POLICY), ctx.service_source_id,
              Jsonb(saved["learning_state"]) if saved["learning_state"] is not None else None,
              Jsonb(saved["editor_state"]) if saved["editor_state"] is not None else None),
         ).fetchone()
