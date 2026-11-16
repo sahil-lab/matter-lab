@@ -184,9 +184,12 @@ export function captureProblems(trial: TrialEvidence, definition: ChallengeDefin
   const candidate = endpointCandidates(trial, definition).find((record) => record.id === observationId);
   if (!candidate) issues.push('Only the latest supported receiver solve at the current accepted delivered volume can be captured.');
   const sourceId = trial.bindings[definition.sourceRole];
-  const lastValve = appliedActions(trial).filter((event) => event.action.type === 'SET_VALVE' && event.action.targetInstanceId === sourceId).at(-1);
+  const actions = appliedActions(trial);
+  const lastValve = actions.filter((event) => event.action.type === 'SET_VALVE' && event.action.targetInstanceId === sourceId).at(-1);
+  const lastTransfer = actions.filter((event) => event.action.type === 'TRANSFER' && event.action.payload.sourceInstanceId === sourceId).at(-1);
   if (trial.frame.apparatusStates[sourceId ?? '']?.valveOpeningFraction !== 0 || !lastValve ||
-    lastValve.action.type !== 'SET_VALVE' || lastValve.action.payload.openingFraction !== 0) issues.push('Close the stopcock through an accepted runtime action before capturing.');
+    lastValve.action.type !== 'SET_VALVE' || lastValve.action.payload.openingFraction !== 0 ||
+    (lastTransfer && lastValve.sequence < lastTransfer.sequence)) issues.push('Close the stopcock through an accepted runtime action after delivery and before capturing.');
   return [...new Set(issues)];
 }
 
@@ -194,7 +197,10 @@ export function capturedTrialIsEligible(trial: TrialEvidence, definition: Challe
   const endpoint = trial.endpoint;
   if (trial.status !== 'captured' || !endpoint || endpoint.capturedAtSequence !== trial.cursorSequence) return false;
   const record: ObservationRecord | undefined = trial.observations.find((entry) => entry.id === endpoint.observationId);
-  return Boolean(record && record.observation.evidence === endpoint.evidence &&
+  const basisSupported = endpoint.basis === 'instrument-reading' ? record?.observation.type === 'PH'
+    : record?.observation.type === 'INDICATOR' && trial.reference.status === 'SUPPORTED' &&
+      trial.reference.indicatorEndpoint?.indicatorId === record.observation.indicatorId;
+  return Boolean(record && basisSupported && record.observation.evidence === endpoint.evidence &&
     record.observation.titration?.deliveredVolumeL === endpoint.deliveredVolume.value &&
     captureProblems(trial, definition, endpoint.observationId).length === 0);
 }

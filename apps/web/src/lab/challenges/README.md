@@ -28,6 +28,40 @@ Public controller methods: `getSnapshot`, `subscribe`, `setMode`, `setInstructio
 Dispose the controller when the runtime is replaced, not whenever a panel is hidden.
 Instructions can be skipped. Only predicates decide completion.
 
+### Shell components and editor callbacks
+
+`index.ts` exports the public browser API. Put
+`<LabGuidedTutorial controller={controller} onHighlight={...} onActionRequest={...} />` in
+Agent01's `LabShell.tutorial` slot. It renders only for Guided mode when not dismissed.
+The shell's `onRequestTutorial` can call `controller.dismissGuide(false)`.
+`LabEntry.onEnter('guided')` can call `controller.setMode('guided')`; `'explore'` maps to `'free'`.
+
+Put `<LabLearningPanel controller={controller} ... />` in a shell inspector/timeline slot.
+Its optional callbacks are `onHighlight`, `onActionRequest`, `onExportNotebook`,
+`onExportTemplate`, and an injected `createId` for new template IDs.
+
+- `onHighlight({instanceIds,controlId?,caption,focus,reducedMotion})` maps to
+  `editor.setTutorialHighlight(instanceIds)`. Explicit focus may use `editor.select` /
+  `focusSelection`, respecting the supplied reduced-motion flag. Use `data-control-id` to
+  focus a real inspector control when present; no nonexistent interactor ID is invented.
+- `onActionRequest({kind,instanceIds,role?,goalId?,controlId?})` opens real accessible editor
+  controls (`place|connect|prepare|read|operate`) or requests a runtime station `reset`.
+  The callback's completion does **not** award progress. Multiple current-run apparatus
+  matching a role require explicit bindings rather than picking an arbitrary catalog entry.
+- `onExportNotebook(document)` receives a complete `MATTERLAB_TRIAL_NOTEBOOK` JSON-compatible
+  document, including the validated learningState, source records, row summaries and plot
+  samples. The host performs download/backend storage; this component does not use localStorage.
+- `onExportTemplate(assembly)` receives a validated canonical `ExperimentAssembly` containing
+  this station's empty apparatus layout, never inventory, observations or scores.
+
+The notebook includes native keyboard controls, an accessible plot table, notes, structured
+conclusions and read-only ledger replay. `TrialNotebook`, `EvidenceReplay`, `TrialPlot`,
+`LearningModeChooser`, `trialPlotPoints`, `trialReplayFrames`, `compareTrialPair`,
+`buildTrialNotebook`, and `createGuidedTemplate` are also exported for custom shell slots.
+Ledger replay is **not** a claim that a 3D station has been resimulated; runtime checkpoint
+reexecution remains Agent07/09's concern. Comparison across stations may be displayed when
+references match but never satisfies same-run/station repeated-trial scoring.
+
 ## Durable format / Agent09
 
 Import **`persistence.ts` directly** on Node; it has no React, browser, worker, or GPU dependency.
@@ -98,6 +132,9 @@ requirements. Free Experiment has no forced objective or score and retains unsup
 
 ## Validation status
 
-Initial pure-format milestone: five focused persistence tests, web TypeScript check, and native
-Node import passed. Runtime-backed scoring, components, and integrated journeys are validated
-in the subsequent implementation; this milestone does not claim an end-to-end UI journey.
+Current bounded handoff: 16 focused tests pass (strict persistence, receipt/graph guards,
+SSR accessibility, native keyboard controls and replay-key behavior, reduced-motion hints).
+Web TypeScript checking, an in-memory Vite build of the public browser entry, and a native Node
+parser import pass. No browser/GPU server was started. Real-runtime endpoint/overshoot/repeat
+tests and the composed empty-scene guided journey remain separate integration gates;
+SSR checks do not claim that a full keyboard/browser or 3D journey was executed.

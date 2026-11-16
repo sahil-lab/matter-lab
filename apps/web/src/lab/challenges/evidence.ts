@@ -13,6 +13,7 @@ export function isAppliedEvent(event: LabRuntimeEvent, trial: TrialEvidence): ev
     event.action.actionId === event.receipt.actionId && event.sequence === event.receipt.sequence &&
     event.sequence > trial.startedAtSequence && event.sequence <= trial.cursorSequence &&
     event.receipt.runtimeRevision <= trial.frame.revision &&
+    event.action.atSimulationS <= (trial.frame.stationStates[trial.scope.stationId]?.simulationTimeS ?? -1) &&
     (event.action.expectedEpoch === undefined || event.action.expectedEpoch === trial.scope.epoch) &&
     trial.frame.scene.apparatus.some((instance) => instance.id === event.action.targetInstanceId && instance.stationId === trial.scope.stationId);
 }
@@ -131,8 +132,11 @@ export function sensorEvidence(trial: TrialEvidence, definition: ChallengeDefini
 }
 
 export function endpointCandidates(trial: TrialEvidence, definition: ChallengeDefinition): readonly ObservationRecord[] {
-  const valid = supportedObservations(trial, definition).filter((record) =>
-    (record.observation.type === 'PH' || record.observation.type === 'INDICATOR') && acceptedDelivery(trial, definition, record, true));
-  const latest = Math.max(-1, ...valid.map((record) => record.sequence));
-  return valid.filter((record) => record.sequence === latest);
+  const currentReceiver = trial.observations.filter((record) => sameScope(record, trial.scope) &&
+    record.sequence <= trial.cursorSequence && record.observation.apparatusId === trial.bindings[definition.receiverRole] &&
+    (record.observation.type === 'PH' || record.observation.type === 'INDICATOR'));
+  const latest = Math.max(-1, ...currentReceiver.map((record) => record.sequence));
+  return supportedObservations(trial, definition).filter((record) =>
+    record.sequence === latest && (record.observation.type === 'PH' || record.observation.type === 'INDICATOR') &&
+    acceptedDelivery(trial, definition, record, true));
 }
