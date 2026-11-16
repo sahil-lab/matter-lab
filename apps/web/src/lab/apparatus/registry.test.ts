@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseApparatusDefinition, serializeExperimentScene, deserializeExperimentScene } from '@matterlab/contracts';
+import { getIndicatorDefinitions } from '@matterlab/lab-science';
 import { createVesselCalibration, profileVolumeL } from './calibration';
 import { APPARATUS_DEFINITIONS, ApparatusRegistry, apparatusRegistry } from './registry';
 import { createTitrationSetup } from './seeds';
@@ -55,6 +56,12 @@ describe('apparatus registration and assemblies', () => {
     expect(setup.scene.stations).toHaveLength(2);
     expect(setup.scene.apparatus.filter((instance) => instance.stationId === setup.ids.blankStationId)).toHaveLength(1);
     expect(setup.scene.containerStates).toEqual({});
+    const supportedIndicators = new Set(['none', ...getIndicatorDefinitions().map((indicator) => indicator.id)]);
+    for (const instance of setup.scene.apparatus) {
+      if (instance.capabilities.includes('CONTAINER')) expect(supportedIndicators.has(String(instance.config.indicatorId))).toBe(true);
+    }
+    expect(setup.scene.apparatus.find((instance) => instance.id === setup.ids.buretteId)?.config.indicatorId).toBe('none');
+    expect(setup.scene.apparatus.find((instance) => instance.id === setup.ids.flaskId)?.config.indicatorId).toBe('phenolphthalein');
     for (const connection of setup.scene.connections) {
       const from = setup.scene.apparatus.find((instance) => instance.id === connection.from.instanceId)!;
       const to = setup.scene.apparatus.find((instance) => instance.id === connection.to.instanceId)!;

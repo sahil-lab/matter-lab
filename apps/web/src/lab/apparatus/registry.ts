@@ -20,6 +20,7 @@ const identity = [0, 0, 0, 1] as const;
 const transforms = { translation: ['X', 'Y', 'Z'], rotation: ['Y'] } as const;
 const emptyConfig = { type: 'object', properties: {}, required: [], additionalProperties: false } as const;
 const measuredAssets: Readonly<Record<string, { balanced: { triangles: number } }>> = assetMetrics;
+const indicatorField = { type: 'string', enum: ['none', 'phenolphthalein', 'methyl-orange', 'bromothymol-blue'], default: 'none' } as const;
 
 function socket(
   id: string,
@@ -116,6 +117,8 @@ function vessel(
   return base(id, kind, label, 'Glassware', dimensionsM, ['CONTAINER', 'FLOW_SOURCE', 'FLOW_RECEIVER', 'MOUNTABLE'], {
     capacityL: calibration.capacityL,
     vesselCalibration: calibration,
+    configSchema: { type: 'object', properties: { indicatorId: indicatorField }, required: [], additionalProperties: false },
+    defaultConfig: { indicatorId: 'none' },
     tags: ['upright-vessel', 'original-procedural-geometry'],
     sockets: [
       socket('inlet', 'FLUID', mouth, 'IN', 'liquid', ['liquid'], ['FLOW_SOURCE'], { maxConnections: 8, alignmentToleranceM: 0.06 }),
@@ -124,7 +127,11 @@ function vessel(
       socket('sensor', 'SENSOR', [0, dimensionsM[1] * 0.4, 0], 'IN', 'liquid-sensor', ['ph-sensor', 'temperature-sensor', 'conductivity-sensor'], ['MEASUREMENT'], { maxConnections: 4, alignmentToleranceM: 0.15 }),
       socket('stir-control', 'CONTROL', [0, 0, 0], 'IN', 'vessel-control', ['stirrer-control'], ['STIRRING'], { alignmentToleranceM: 0.05 }),
     ],
-    controls: [fillControl(calibration.capacityL), transferControl(calibration.capacityL)],
+    controls: [
+      fillControl(calibration.capacityL),
+      transferControl(calibration.capacityL),
+      { id: 'indicator', label: 'Trace indicator model', actionType: 'CUSTOM', fields: { indicatorId: indicatorField } },
+    ],
     ...extra,
   });
 }

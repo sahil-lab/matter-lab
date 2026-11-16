@@ -20,6 +20,12 @@ titration station and a separate blank workbench; it creates no pH, indicator re
 observations or chemical inventory. Preparation uses Agent 06's real preparation function
 and Agent 07's recorded `FILL` actions.
 
+Containers declare the optional `indicatorId` configuration (`none` or an Agent-06-supported
+indicator key). The seed selects the trace phenolphthalein model only for the receiving flask;
+the burette and reagent bottle remain unindicated. Config edits use the runtime's registered
+`matterlab:container-config-v1 / SET_CONFIG` command, not local inventory mutations. Indicator
+models can themselves be unsupported outside their documented pH ranges.
+
 The seed contains stand-to-clamp, clamp-to-burette, stirrer-to-flask, stir control and
 burette-to-flask connections. The probe starts on the bench, not falsely immersed or connected.
 All IDs are generated once and survive serialization. Tests can inject a deterministic UUID factory.

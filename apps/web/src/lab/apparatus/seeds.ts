@@ -1,5 +1,5 @@
 import { parseExperimentScene } from '@matterlab/contracts';
-import type { ApparatusInstance, Connection, ExperimentScene, UUID, Vec3M } from '@matterlab/contracts';
+import type { ApparatusInstance, Connection, ExperimentScene, JsonObject, UUID, Vec3M } from '@matterlab/contracts';
 import { apparatusRegistry } from './registry.ts';
 
 export interface TitrationSetupIds {
@@ -28,13 +28,13 @@ export function createTitrationSetup(
     stirrerId: createId(), probeId: createId(), bottleId: createId(),
   };
   const apparatus: ApparatusInstance[] = [];
-  const add = (id: UUID, definitionId: string, positionM: Vec3M, stationId = ids.stationId) => {
+  const add = (id: UUID, definitionId: string, positionM: Vec3M, stationId = ids.stationId, configuration: JsonObject = {}) => {
     const definition = apparatusRegistry.getDefinition(definitionId);
     if (!definition) throw new Error(`Required apparatus ${definitionId} is not registered.`);
     apparatus.push({
       id, kind: definition.kind, definitionId, stationId, revision: 0,
       transform: { positionM, quaternion: [0, 0, 0, 1] },
-      config: definition.defaultConfig, capabilities: definition.capabilities,
+      config: { ...definition.defaultConfig, ...configuration }, capabilities: definition.capabilities,
     });
   };
   add(ids.benchId, 'bench-standard', [0, 0, 0]);
@@ -43,7 +43,7 @@ export function createTitrationSetup(
   add(ids.clampId, 'burette-clamp', [-0.45, 1.51, 0]);
   add(ids.buretteId, 'burette-50ml', [-0.13, 1.18, 0]);
   add(ids.stirrerId, 'magnetic-stirrer', [-0.13, 0.9, 0]);
-  add(ids.flaskId, 'conical-flask-250ml', [-0.13, 0.96, 0]);
+  add(ids.flaskId, 'conical-flask-250ml', [-0.13, 0.96, 0], ids.stationId, { indicatorId: 'phenolphthalein' });
   add(ids.probeId, 'ph-probe', [0.055, 0.9, 0.2]);
   add(ids.bottleId, 'reagent-bottle-250ml', [0.32, 0.9, 0]);
   const connections: Connection[] = [];
