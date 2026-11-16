@@ -201,9 +201,9 @@ def test_run_idempotency_immutable_input_cancel_sse_and_owner_scoped_export(lab_
     assert client.get(f'/api/v1/lab/scenes/{other["scene"]["id"]}/export?runId={result["runId"]}', headers=AUTH_A).status_code == 404
 
 
-def test_forward_migration_preserves_existing_v1_rows_and_checksums(live_postgres: None, base_settings: Settings, database_factory: Callable[[], str]) -> None:
+def test_forward_migration_preserves_existing_v1_rows_and_checksums(live_postgres: None, base_settings: Settings, database_factory: Callable[[], str], tmp_path: Path) -> None:
     settings = base_settings.with_database(database_factory())
-    directory = Path.cwd() / f".lab-migration-fixture-{uuid4().hex}"
+    directory = tmp_path / "legacy-migrations"
     directory.mkdir()
     try:
         baseline = [migration for migration in discover(settings.migrations_dir) if migration.version <= "0005"]

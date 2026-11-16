@@ -1,0 +1,22 @@
+.laboratory-loading {
+  min-height: 100vh; display: grid; align-content: center; justify-content: center;
+  background: #080d18; color: #e3f1ff; padding: 32px; gap: 18px;
+}
+.laboratory-loading > * { max-width: 640px; }
+.instrument-laboratory { min-height: 100vh; width: 100%; }
+.laboratory-toolbar, .laboratory-tabs, .laboratory-quick { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.laboratory-quick { margin-top: 10px; }
+.laboratory-field, .lab-preparation label, .laboratory-view-options label { display: flex; flex-direction: column; gap: 5px; margin-block: 8px; font-size: 12px; }
+.lab-preparation form { display: grid; gap: 7px; }
+.lab-preparation small { color: #a0b5bf; line-height: 1.5; }
+.laboratory-field input, .lab-preparation input, .lab-preparation select, .laboratory-view-options select {
+  color: inherit; background: #122536; border: 1px solid #486170; border-radius: 5px; padding: 6px; min-width: 0;
+}
+.laboratory-metrics { display: grid; gap: 5px; font-size: 12px; margin-top: 9px; font-variant-numeric: tabular-nums; }
+.laboratory-metrics output { color: #8fe1d3; font-family: var(--mlab-mono, monospace); font-size: 15px; }
+.laboratory-timeline { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(320px, 1.3fr); gap: 14px; align-items: start; }
+.laboratory-view-options { color: #dae8f1; font-size: 12px; background: #102433ed; border: 1px solid #395366; border-radius: 8px; padding: 8px 12px; margin: 12px; }
+.laboratory-view-options summary { cursor: pointer; }
+.laboratory-runtime-error { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; max-width: min(560px, 90vw); }
+.laboratory-tabs { padding: 10px 12px; }
+@media (max-width: 1100px) { .laboratory-timeline { grid-template-columns: 1fr; } }

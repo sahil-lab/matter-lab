@@ -1,7 +1,7 @@
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '@fontsource-variable/space-grotesk';
-import { StrictMode } from 'react';
+import { StrictMode, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { restorePreferences, restoreSession } from './state/persistence';
@@ -10,6 +10,7 @@ import './styles/app.css';
 import './styles/lab.css';
 
 const hasQualityPreference = restorePreferences();
+const Laboratory = lazy(() => import('./lab/Laboratory').then((module) => ({ default: module.Laboratory })));
 restoreSession();
 // A restored session is the baseline, not an unsaved change.
 lab.set((s) => ({ savedRevision: s.revision }));
@@ -20,6 +21,6 @@ if (import.meta.env.DEV || import.meta.env.VITE_TEST_API === '1') {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App hasQualityPreference={hasQualityPreference} />
+    <App hasQualityPreference={hasQualityPreference} laboratory={Laboratory} />
   </StrictMode>,
 );

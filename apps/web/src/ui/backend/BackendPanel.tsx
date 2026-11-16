@@ -47,7 +47,7 @@ export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientCha
   const request = useRef<AbortController | null>(null);
   const callback = useRef(onClientChange);
   callback.current = onClientChange;
-  useEffect(() => () => { request.current?.abort(); callback.current?.(null); }, []);
+  useEffect(() => () => { request.current?.abort(); }, []);
 
   function invalidate() {
     request.current?.abort();

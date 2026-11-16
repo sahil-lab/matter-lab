@@ -83,14 +83,16 @@ describe('canonical observation presentation', () => {
       indicatorState: { indicatorId: 'ui-test-indicator', baseFraction: .37, colorSrgb: [.2, .4, .8], colorEvidence: 'ILLUSTRATIVE', sourceIds: PH.sourceIds },
     };
     const props = { scope: SCOPE, ph: record(1) };
-    const html = renderToStaticMarkup(createElement(TitrationHUD, { ...props, indicator: record(2, indicator) }));
+    const html = renderToStaticMarkup(createElement(TitrationHUD, { ...props, indicator: record(2, indicator, { sequence: 1 }) }));
     expect(html).toContain('background:rgb(20% 40% 80%)');
     expect(html).toContain('Solver-provided color / illustrative');
     for (const unavailable of [
-      record(2, { ...indicator, indicatorState: undefined }),
-      record(2, { ...indicator, timeS: 0 }),
-      record(2, indicator, { stationId: OTHER }),
-      record(2, indicator, { epoch: 1 }),
+      record(2, { ...indicator, indicatorState: undefined }, { sequence: 1 }),
+      record(2, { ...indicator, timeS: 0 }, { sequence: 1 }),
+      record(2, indicator, { sequence: 1, stationId: OTHER }),
+      record(2, indicator, { sequence: 1, epoch: 1 }),
+      record(2, indicator),
+      record(2, { ...indicator, methodId: 'an-earlier-method' }, { sequence: 1 }),
     ]) {
       const missing = renderToStaticMarkup(createElement(TitrationHUD, { ...props, indicator: unavailable }));
       expect(missing).not.toContain('background:rgb(20% 40% 80%)');

@@ -52,7 +52,8 @@ export const LAB_UNITS = Object.freeze({
 export const LAB_LIMITS = Object.freeze({
   maxJsonBytes: 8 * 1024 * 1024,
   maxJsonDepth: 32,
-  maxJsonNodes: 200_000,
+  // A replay response contains both its result observations and the complete auditable checkpoint.
+  maxJsonNodes: 1_000_000,
   maxStringLength: 4096,
   maxObjectProperties: 2048,
   maxStations: 32,

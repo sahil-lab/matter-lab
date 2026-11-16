@@ -18,7 +18,7 @@ from uuid import uuid4
 import rfc8785
 from jsonschema import Draft202012Validator, FormatChecker, SchemaError
 
-from ..config import _REPO_ROOT, load_settings
+from ..config import load_settings
 from .problems import LabProblem
 
 _SEMANTIC_SLOTS = threading.BoundedSemaphore(2)
@@ -101,7 +101,7 @@ def validate_contract(value: Any, definition: str, schema_path: Path, validator_
                 break
         if errors:
             raise LabProblem(422, "CONTRACT_VALIDATION_FAILED", f"The request does not match the shared {definition} contract.", errors)
-    validator_path = validator_path or _REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"
+    validator_path = validator_path or load_settings().lab_validator_path
     executable = shutil.which(node_binary)
     if executable is None or not validator_path.is_file():
         raise LabProblem(503, "CONTRACT_VALIDATOR_UNAVAILABLE", "Build and install the shared TypeScript semantic validator before saving laboratory data.")

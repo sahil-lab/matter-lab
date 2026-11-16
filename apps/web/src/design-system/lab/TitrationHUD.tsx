@@ -45,7 +45,8 @@ export function TitrationHUD({ scope, ph, remaining, sourceInstanceId, status = 
     (observation?.apparatusId === undefined || transfer.receiverInstanceId === observation.apparatusId) ? transfer.deliveredVolumeL : null;
   const blocked = availability === 'unsupported' || availability === 'error' || availability === 'loading' || availability === 'empty' || !supported;
   const indicatorObservation = indicator && observationInScope(indicator, scope) && indicator.observation.type === 'INDICATOR' &&
-    indicator.observation.timeS === observation?.timeS && canDisplayObservation(indicator.observation, availability) ? indicator.observation : null;
+    indicator.sequence === phRecord?.sequence && indicator.observation.timeS === observation?.timeS &&
+    indicator.observation.methodId === observation?.methodId && canDisplayObservation(indicator.observation, availability) ? indicator.observation : null;
   const indicatorState = indicatorObservation?.indicatorState;
   const colorValid = !blocked && indicatorState?.colorSrgb.every((channel) => Number.isFinite(channel) && channel >= 0 && channel <= 1);
   const color = colorValid && indicatorState ? `rgb(${indicatorState.colorSrgb.map((channel) => `${channel * 100}%`).join(' ')})` : undefined;
