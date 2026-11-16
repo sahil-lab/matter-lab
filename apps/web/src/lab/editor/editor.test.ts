@@ -17,7 +17,7 @@ import { createLabEditorController } from './LabEditorController';
 import { ApparatusSpatialIndex, matrixOf } from './geometry';
 import { checkPlacement } from './placement';
 import { resolveSocket, socketCandidate, validateSocketConnection } from './sockets';
-import { deserializeEditorState, serializeEditorState } from './serialization';
+import { deserializeEditorState, serializeEditorState, parseEditorState, validateEditorState, EDITOR_STATE_JSON_SCHEMA } from './serialization';
 import { EditorPointerCapture } from './capture';
 import { handleEditorShortcut } from './shortcuts';
 import { installEditorPointerControls } from './pointerControls';
@@ -376,6 +376,25 @@ describe('canonical titration editor action flow (recording adapter, not science
     expect(editor.getSnapshot().lockedIds).toContain(ids.buretteId);
     expect(editor.getRuntimeSnapshot().scene).toBe(scene);
     expect(editor.restore({ ...saved, containerStates: {} })).toBe(false);
+    editor.dispose();
+  });
+
+  it('validates the Node-safe sidecar by scene ID without loading scene UI or accepting invalid transforms/domain fields', () => {
+    const { editor, scene, ids } = editorFixture(true);
+    editor.select([ids.bottleId]);
+    const state = editor.serialize();
+    expect(parseEditorState(state, scene.id)).toEqual(state);
+    expect(validateEditorState(state, scene.id).ok).toBe(true);
+    expect(EDITOR_STATE_JSON_SCHEMA.properties.initialTransforms.additionalProperties).toEqual({ $ref: '#/$defs/Transform' });
+    expect(validateEditorState({ ...state, containerStates: {} }, scene.id).ok).toBe(false);
+    expect(validateEditorState({ ...state, sceneId: idFactory(5000)() }, scene.id).ok).toBe(false);
+    expect(validateEditorState({ ...state, initialTransforms: { [ids.bottleId]: {
+      positionM: [0, Number.NaN, 0], quaternion: [0, 0, 0, 1],
+    } } }, scene.id).ok).toBe(false);
+    expect(validateEditorState({ ...state, initialTransforms: { [ids.bottleId]: {
+      positionM: [0, 0.9, 0], quaternion: [0, 0, 0, 0.5],
+    } } }, scene.id).ok).toBe(false);
+    expect(Object.isFrozen(parseEditorState(state, scene.id).initialTransforms[ids.bottleId].positionM)).toBe(true);
     editor.dispose();
   });
 

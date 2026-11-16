@@ -178,10 +178,24 @@ cross-station/overlapping groups, prunes removed instance IDs, and validates
 transforms through canonical apparatus contracts. Undo stacks and active
 gestures are deliberately not serialized.
 
+Agent09 can import **`editor/serialization.ts` directly in native Node**, not the
+React `editor/index.ts` barrel. It exports
+`parseEditorState(value, sceneOrSceneId)`,
+`validateEditorState(value, sceneOrSceneId): ValidationResult<EditorSerializedState>`,
+`EditorSerializedState` and `EDITOR_STATE_JSON_SCHEMA`
+(`urn:matterlab:editor-state:1`, JSON Schema 2020-12). Scene-ID validation is pure
+structural/identity validation; passing the complete canonical scene also
+checks station/group references and prunes removed selection IDs. The schema
+reuses canonical Transform/Vec3M/Quaternion definitions, with normalized
+quaternion checks supplied by the parser.
+
 `prepareSave()` returns `{id, scene, editor, ifMatch, runtimeRevision,
 editorRevision}`. **ifMatch is the last acknowledged durable scene revision,
-not the local runtime revision.** The persistence owner may save `editor` in
-its editor-metadata field or canonical viewport extension. On success call
+not the local runtime revision.** Save `ticket.editor` in Agent09's separate
+nullable **`editorState` sidecar** under the same optimistic durable revision.
+Do not inject editor metadata into `checkpoint.snapshot.scene.viewport` only
+at save time: that would change the scene/checkpoint/hash relationship.
+On success call
 `acknowledgeSave(theSameTicket, serverRevision)`. An out-of-order/stale response
 is rejected, and edits made while saving remain dirty.
 `markSaveConflict()` reports a conflict without retrying or overwriting.
@@ -205,7 +219,7 @@ static accessible control rendering and a reported 128-object CPU broad-phase
 timing sample. The recording adapter is **not** a scientific runtime; those
 fixtures and server-rendered HTML are **not** mouse/keyboard browser acceptance.
 
-Local verification: **21/21 tests**, full web TypeScript check, and a non-emitting
+Local verification before the persistence follow-up: **21/21 tests**, full web TypeScript check, and a non-emitting
 Vite library build of `editor/index.ts` (one JS chunk and one CSS asset) passed.
 The 128-object/500-query sample on Windows, Node 24.14.1 reported **0.0266 ms
 mean / 0.0538 ms p95** for CPU broad-phase picking only. Shared-machine load,

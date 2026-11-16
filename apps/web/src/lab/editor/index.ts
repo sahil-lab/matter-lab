@@ -8,7 +8,7 @@ export { EditorPointerCapture } from './capture';
 export { installEditorPointerControls } from './pointerControls';
 export type { EditorPointerOptions, ApparatusPick } from './pointerControls';
 export { handleEditorShortcut, isEditingText, EDITOR_SHORTCUTS } from './shortcuts';
-export { serializeEditorState, deserializeEditorState, parseEditorState } from './serialization';
+export { serializeEditorState, deserializeEditorState, parseEditorState, validateEditorState, EDITOR_STATE_JSON_SCHEMA } from './serialization';
 export { ApparatusSpatialIndex, worldBounds } from './geometry';
 export { checkPlacement, placementFromRay, transformOnSurface } from './placement';
 export { resolveSocket, validateSocketConnection, socketCandidate, mechanicalDescendants } from './sockets';
