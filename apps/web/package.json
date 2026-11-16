@@ -23,6 +23,7 @@
     "@matterlab/contracts": "*",
     "@matterlab/core": "*",
     "@matterlab/forcefield": "*",
+    "@matterlab/lab-science": "*",
     "@matterlab/quantum": "*",
     "@matterlab/reactions": "*",
     "@rdkit/rdkit": "^2026.9.2",
