@@ -1,7 +1,24 @@
 # The science image is built with the repository root as its build context so that it can copy
 # the SQL migrations (db/migrations) and the generated reference data (tools/data/generated).
-# Everything else is kept out of the context.
+# The Node build stage uses the canonical contracts/runtime/science and pure apparatus registry.
 *
+
+!package.json
+!package-lock.json
+!tsconfig.base.json
+!packages/
+!packages/**
+!apps/
+apps/*
+!apps/web/
+apps/web/*
+!apps/web/package.json
+!apps/web/src/
+apps/web/src/*
+!apps/web/src/lab/
+apps/web/src/lab/*
+!apps/web/src/lab/apparatus/
+!apps/web/src/lab/apparatus/**
 
 !services/
 services/*
@@ -22,3 +39,7 @@ services/science/.venv/
 **/*.pyc
 **/.pytest_cache/
 **/*.xlsx
+**/node_modules/
+**/dist/
+**/.env
+**/.env.*

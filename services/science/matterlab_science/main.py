@@ -15,6 +15,9 @@ from . import SERVICE_NAME, __version__
 from .config import Settings, load_settings
 from .context import startup
 from .errors import error_payload, error_responses, install_error_handlers
+from .lab.middleware import LabBoundaryMiddleware
+from .lab.openapi import install_lab_openapi
+from .lab.problems import is_lab, problem_response
 
 log = logging.getLogger("matterlab.app")
 
@@ -25,7 +28,9 @@ keeps reference data with provenance in PostgreSQL, and imports/exports Excel.
 
 Conventions
 
-* Every response is JSON. Errors always have the shape `{"error": {"code", "message", "details"}}`.
+* Existing `/v1` errors retain `{"error": {"code", "message", "details"}}`.
+* Additive `/api/v1/lab` routes use authenticated bearer scopes and RFC 9457 Problem Details.
+  Lab coordinates are meters, volume liters, amount moles, temperature kelvin and time seconds.
 * Coordinates are in angstrom. Energies name their unit in the field name or in a `units` object.
 * Timestamps are ISO 8601 in UTC.
 * Results are labelled by how they were obtained (`evidence`) and by the engine and version that
@@ -45,6 +50,7 @@ TAGS = [
     {"name": "experiments", "description": "Saved experiments that can be reopened and reproduced."},
     {"name": "discoveries", "description": "Discovery candidates, the catalogues searched for them, and their evidence trail."},
     {"name": "excel", "description": "Workbook export and import. PostgreSQL is authoritative; Excel is an interchange format."},
+    {"name": "laboratory", "description": "Owner-scoped, revisioned scenes, immutable shared-runtime runs, curated catalogues and scoped JSON/Excel notebooks."},
 ]
 
 
@@ -77,22 +83,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return await call_next(request)
         except Exception as exc:
             log.exception("unhandled error on %s %s", request.method, request.url.path)
+            if is_lab(request):
+                return problem_response(request, 500, "INTERNAL_ERROR", "The laboratory request failed; no successful write is confirmed.")
             return JSONResponse(
                 status_code=500,
                 content=error_payload("internal_error", "The service hit an unexpected error. It has been logged.", {"type": type(exc).__name__}),
             )
 
+    app.add_middleware(LabBoundaryMiddleware, max_bytes=settings.lab_max_request_bytes)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
-        expose_headers=["Content-Disposition", "X-MatterLab-Schema-Version", "X-MatterLab-Exported-At", "Retry-After"],
+        expose_headers=["Content-Disposition", "X-MatterLab-Schema-Version", "X-MatterLab-Exported-At", "Retry-After", "ETag", "X-Request-ID", "Location", "Idempotency-Replayed"],
         max_age=600,
     )
     install_error_handlers(app)
 
-    from .api import chem, compounds, discoveries, excel, experiments, jobs, reactions, reference, system
+    from .api import chem, compounds, discoveries, excel, experiments, jobs, lab, reactions, reference, system
 
     for router in (system.router, chem.router, jobs.info_router):
         app.include_router(router)
@@ -101,4 +110,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.include_router(router, responses=error_responses(503))
     app.include_router(excel.info_router)
     app.include_router(excel.router, responses=error_responses(503))
+    app.include_router(lab.router)
+    install_lab_openapi(app, settings.lab_schema_path)
     return app

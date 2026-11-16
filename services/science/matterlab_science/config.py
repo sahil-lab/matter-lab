@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, replace
+import math
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +31,7 @@ def _first_existing(*candidates: Path) -> Path:
 
 @dataclass(frozen=True)
 class Settings:
-    database_conninfo: str
+    database_conninfo: str = field(repr=False)
     cors_origins: tuple[str, ...]
     migrations_dir: Path
     generated_data_dir: Path
@@ -61,6 +62,22 @@ class Settings:
     host: str
     port: int
     log_level: str
+    lab_auth_tokens_json: str = field(default="[]", repr=False)
+    lab_schema_path: Path = _REPO_ROOT / "packages" / "contracts" / "schemas" / "lab-v1.schema.json"
+    lab_runner_path: Path = _REPO_ROOT / "packages" / "lab-runtime" / "dist" / "cli.mjs"
+    lab_validator_path: Path = _REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"
+    lab_catalog_dir: Path = _REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog"
+    lab_node_binary: str = "node"
+    lab_max_request_bytes: int = 8 * 1024 * 1024
+    lab_max_output_bytes: int = 16 * 1024 * 1024
+    lab_run_timeout_seconds: float = 60.0
+    lab_validation_timeout_seconds: float = 5.0
+    lab_max_active_runs_per_owner: int = 4
+    lab_max_runs_per_owner: int = 1000
+    lab_max_scenes_per_owner: int = 200
+    lab_contract_version: str = "1.1.0"
+    lab_runtime_version: str = "1.0.0"
+    lab_method_version: str = "1.0.0"
 
     def with_database(self, dbname: str) -> "Settings":
         """Same settings pointed at another database on the same server (used by the test suite)."""
@@ -108,8 +125,8 @@ def _env_int(name: str, default: int, minimum: int) -> int:
 
 def _env_float(name: str, default: float, minimum: float) -> float:
     value = float(_env(name, str(default)))
-    if value < minimum:
-        raise ValueError(f"{name} must be >= {minimum}, got {value}")
+    if not math.isfinite(value) or value < minimum:
+        raise ValueError(f"{name} must be finite and >= {minimum}, got {value}")
     return value
 
 
@@ -166,4 +183,20 @@ def load_settings() -> Settings:
         host=_env("MATTERLAB_HOST", "0.0.0.0"),
         port=_env_int("MATTERLAB_PORT", 8787, 1),
         log_level=_env("MATTERLAB_LOG_LEVEL", "INFO").upper(),
+        lab_auth_tokens_json=_env("MATTERLAB_LAB_AUTH_TOKENS_JSON", "[]"),
+        lab_schema_path=Path(_env("MATTERLAB_LAB_SCHEMA_PATH", str(_REPO_ROOT / "packages" / "contracts" / "schemas" / "lab-v1.schema.json"))),
+        lab_runner_path=Path(_env("MATTERLAB_LAB_RUNNER_PATH", str(_REPO_ROOT / "packages" / "lab-runtime" / "dist" / "cli.mjs"))),
+        lab_validator_path=Path(_env("MATTERLAB_LAB_VALIDATOR_PATH", str(_REPO_ROOT / "services" / "science" / "node" / "dist" / "validate.mjs"))),
+        lab_catalog_dir=Path(_env("MATTERLAB_LAB_CATALOG_DIR", str(_REPO_ROOT / "packages" / "lab-runtime" / "dist" / "catalog"))),
+        lab_node_binary=_env("MATTERLAB_LAB_NODE_BINARY", "node"),
+        lab_max_request_bytes=_env_int("MATTERLAB_LAB_MAX_REQUEST_BYTES", 8 * 1024 * 1024, 1024),
+        lab_max_output_bytes=_env_int("MATTERLAB_LAB_MAX_OUTPUT_BYTES", 16 * 1024 * 1024, 1024),
+        lab_run_timeout_seconds=_env_float("MATTERLAB_LAB_RUN_TIMEOUT_SECONDS", 60.0, 1.0),
+        lab_validation_timeout_seconds=_env_float("MATTERLAB_LAB_VALIDATION_TIMEOUT_SECONDS", 5.0, 1.0),
+        lab_max_active_runs_per_owner=_env_int("MATTERLAB_LAB_MAX_ACTIVE_RUNS", 4, 1),
+        lab_max_runs_per_owner=_env_int("MATTERLAB_LAB_MAX_RUNS", 1000, 1),
+        lab_max_scenes_per_owner=_env_int("MATTERLAB_LAB_MAX_SCENES", 200, 1),
+        lab_contract_version=_env("MATTERLAB_LAB_CONTRACT_VERSION", "1.1.0"),
+        lab_runtime_version=_env("MATTERLAB_LAB_RUNTIME_VERSION", "1.0.0"),
+        lab_method_version=_env("MATTERLAB_LAB_METHOD_VERSION", "1.0.0"),
     )

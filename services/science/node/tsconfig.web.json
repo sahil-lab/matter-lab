@@ -1,0 +1,10 @@
+{
+  "extends": "../../../apps/web/tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@matterlab/contracts": ["../../../packages/contracts/src/index.ts"],
+      "@matterlab/lab-science": ["../../../packages/lab-science/src/index.ts"]
+    }
+  }
+}

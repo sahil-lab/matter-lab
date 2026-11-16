@@ -9,3 +9,6 @@ python-multipart==0.0.33
 numpy==2.5.4
 scipy==1.18.1
 rdkit==2026.9.2
+# Shared TypeScript contract validation and the same RFC8785 input hash as the Node runner.
+jsonschema==4.26.0
+rfc8785==0.1.4

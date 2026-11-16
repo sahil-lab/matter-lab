@@ -43,6 +43,7 @@ python-dateutil==4.0.0
 python-multipart==0.0.33
 rdkit==2026.9.2
 referencing==0.37.0
+rfc8785==0.1.4
 rpds-py==2026.9.1
 scipy==1.18.1
 setuptools==84.2.1

@@ -12,6 +12,8 @@ reason.
 - API reference with real request/response examples: [`docs/api/science-api.md`](../../docs/api/science-api.md)
 - OpenAPI schema: [`docs/api/openapi.json`](../../docs/api/openapi.json); interactive docs at `http://127.0.0.1:8787/docs`
 - Base URL of the development stack: `http://127.0.0.1:8787` (also `http://localhost:8787`)
+- Additive laboratory API, authentication, shared Node replay, scoped exports and UI integration:
+  [`LABORATORY.md`](LABORATORY.md). Existing `/v1` contracts remain unchanged.
 
 ## Commands
 
@@ -44,8 +46,6 @@ docker compose -p matterlab run --rm science pytest
 # Stop. The named volume matterlab_pgdata (the database) is kept.
 docker compose -p matterlab down
 
-# Remove the database as well (destroys all stored data of this stack)
-docker compose -p matterlab down -v
 ```
 
 Other CLI commands (`docker compose -p matterlab run --rm science python -m matterlab_science <command>`):

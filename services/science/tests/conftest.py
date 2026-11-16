@@ -44,9 +44,10 @@ def database_factory(base_settings: Settings) -> Iterator[Callable[[], str]]:
         return name
 
     yield create
-    with psycopg.connect(admin, autocommit=True) as conn:
-        for name in created:
-            conn.execute(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
+    if created:
+        with psycopg.connect(admin, autocommit=True, connect_timeout=5) as conn:
+            for name in created:
+                conn.execute(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
 
 
 @pytest.fixture(scope="session")

@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .db import DatabaseUnavailable
+from .lab.problems import LabProblem, is_lab, problem_response
 
 log = logging.getLogger("matterlab.api")
 
@@ -79,12 +80,18 @@ _HTTP_CODES = {
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(LabProblem)
+    async def _lab_error(request: Request, exc: LabProblem) -> JSONResponse:
+        return problem_response(request, exc.status, exc.code, exc.detail, exc.details)
+
     @app.exception_handler(ApiError)
-    async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
+    async def _api_error(request: Request, exc: ApiError) -> JSONResponse:
+        if is_lab(request):
+            return problem_response(request, exc.status_code, exc.code.upper(), exc.message)
         return JSONResponse(status_code=exc.status_code, content=error_payload(exc.code, exc.message, exc.details))
 
     @app.exception_handler(RequestValidationError)
-    async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+    async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
         problems = []
         for err in exc.errors():
             problems.append(
@@ -95,16 +102,20 @@ def install_error_handlers(app: FastAPI) -> None:
                 }
             )
         summary = "; ".join(f"{'.'.join(p['location'])}: {p['message']}" for p in problems[:5])
+        if is_lab(request):
+            return problem_response(request, 422, "VALIDATION_ERROR", "Laboratory request validation failed.", problems)
         return JSONResponse(
             status_code=422,
             content=error_payload("validation_error", f"Request validation failed: {summary}" if summary else "Request validation failed.", problems),
         )
 
     @app.exception_handler(StarletteHTTPException)
-    async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         code = _HTTP_CODES.get(exc.status_code, "http_error")
         message = exc.detail if isinstance(exc.detail, str) else code.replace("_", " ")
         details = None if isinstance(exc.detail, str) else exc.detail
+        if is_lab(request):
+            return problem_response(request, exc.status_code, code.upper(), message)
         return JSONResponse(status_code=exc.status_code, content=error_payload(code, message, details), headers=exc.headers)
 
     async def _database_unavailable(request: Request, exc: Exception) -> JSONResponse:
@@ -114,6 +125,8 @@ def install_error_handlers(app: FastAPI) -> None:
         sqlstate = getattr(exc, "sqlstate", None)
         unreachable = sqlstate is None or sqlstate.startswith(("08", "57P")) or sqlstate == "3D000"
         log.error("database %s on %s %s: %s", "unavailable" if unreachable else "error", request.method, request.url.path, reason)
+        if is_lab(request):
+            return problem_response(request, 503, "DATABASE_UNAVAILABLE", "PostgreSQL could not complete the request. No remote save was confirmed.")
         return JSONResponse(
             status_code=503,
             content=error_payload(
@@ -134,6 +147,8 @@ def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(Exception)
     async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
         log.exception("unhandled error on %s %s", request.method, request.url.path)
+        if is_lab(request):
+            return problem_response(request, 500, "INTERNAL_ERROR", "The laboratory request failed; no successful write is confirmed.")
         return JSONResponse(
             status_code=500,
             content=error_payload("internal_error", "The service hit an unexpected error. It has been logged.", {"type": type(exc).__name__}),

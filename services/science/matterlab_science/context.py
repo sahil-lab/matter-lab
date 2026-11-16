@@ -15,6 +15,7 @@ from .provenance import ensure_service_source, ensure_user_source, upsert_data_s
 if TYPE_CHECKING:
     from .catalogue.search import CatalogueIndex
     from .jobs.manager import JobManager
+    from .lab.runner import LabRunManager
 
 log = logging.getLogger("matterlab.app")
 
@@ -32,8 +33,11 @@ class AppContext:
     user_source_id: int
     service_source_id: int
     engine_source_ids: dict[str, int]
+    lab_runs: "LabRunManager | None" = None
 
     def shutdown(self) -> None:
+        if self.lab_runs is not None:
+            self.lab_runs.stop()
         self.jobs.stop()
         self.db.close()
 
@@ -65,6 +69,7 @@ def startup(settings: Settings) -> AppContext:
     from .chem import rdlog
     from .jobs.manager import JobManager
     from .migrations import migrate, status
+    from .lab.runner import LabRunManager
     from .seeding.run import seed_all
 
     rdlog.install()
@@ -82,13 +87,21 @@ def startup(settings: Settings) -> AppContext:
 
     db = Database(settings.database_conninfo, max_size=settings.db_pool_max_size, timeout_seconds=settings.db_pool_timeout_seconds)
     db.open(settings.db_connect_timeout_seconds)
+    jobs = None
+    lab_runs = None
     try:
         engines = EngineRegistry.detect(settings)
         user_id, service_id, engine_ids = _register_sources(db, engines)
         jobs = JobManager(db, settings, engines, service_source_id=service_id, engine_source_ids=engine_ids)
+        lab_runs = LabRunManager(db, settings)
         if settings.jobs_enabled:
             jobs.start()
+            lab_runs.start()
     except Exception:
+        if lab_runs is not None:
+            lab_runs.stop()
+        if jobs is not None:
+            jobs.stop()
         db.close()
         raise
     return AppContext(
@@ -101,4 +114,5 @@ def startup(settings: Settings) -> AppContext:
         user_source_id=user_id,
         service_source_id=service_id,
         engine_source_ids=engine_ids,
+        lab_runs=lab_runs,
     )

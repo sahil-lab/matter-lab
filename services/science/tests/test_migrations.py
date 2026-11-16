@@ -30,6 +30,13 @@ EXPECTED_TABLES = {
     "discovery_catalog_searches",
     "discovery_evidence",
     "data_imports",
+    "lab_scene",
+    "lab_template",
+    "lab_run",
+    "lab_run_event",
+    "lab_action_event",
+    "lab_observation",
+    "lab_idempotency",
 }
 
 # Tables holding scientific or user records: each must point at its source.
