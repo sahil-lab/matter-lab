@@ -52,6 +52,7 @@ export function pick(data: PickData, ray: PickRay, options: PickOptions = {}): P
 
   const p = data.atomPositions;
   for (let i = 0; i < data.atomCount; i++) {
+    if (data.atomRadii[i]! <= 0) continue;
     const cx = p[3 * i]! - ox;
     const cy = p[3 * i + 1]! - oy;
     const cz = p[3 * i + 2]! - oz;
@@ -75,6 +76,7 @@ export function pick(data: PickData, ray: PickRay, options: PickOptions = {}): P
     const a = data.bondStart;
     const b = data.bondEnd;
     for (let i = 0; i < data.bondCount; i++) {
+      if (data.bondRadii[i]! <= 0) continue;
       const ax = a[3 * i]!;
       const ay = a[3 * i + 1]!;
       const az = a[3 * i + 2]!;

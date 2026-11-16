@@ -168,7 +168,12 @@ export function ViewBar() {
         ))}
       </select>
       <div className="ml-sep" />
-      <IconButton tip={LABEL_TIPS[labelMode]} active={labelMode !== 'none'} onClick={() => lab.set({ labelMode: LABEL_CYCLE[labelMode] })} data-testid="labels">
+      <IconButton
+        tip={renderMode === 'skeletal' && labelMode !== 'all' ? 'Skeletal labels: heteroatoms and isotopes; show all visible atoms' : LABEL_TIPS[labelMode]}
+        active={labelMode !== 'none' || renderMode === 'skeletal'}
+        onClick={() => lab.set({ labelMode: renderMode === 'skeletal' ? (labelMode === 'all' ? 'none' : 'all') : LABEL_CYCLE[labelMode] })}
+        data-testid="labels"
+      >
         <Tag />
       </IconButton>
       <IconButton

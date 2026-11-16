@@ -1,5 +1,5 @@
-import { getElement } from '@matterlab/core';
-import type { BondOrder, ElementCategory } from '@matterlab/core';
+import { getElement, neighborsOf } from '@matterlab/core';
+import type { Atom, BondOrder, ElementCategory, Scene } from '@matterlab/core';
 import type { RenderMode } from '../state/store';
 
 /** How one representation draws atoms and bonds. All lengths are in angstrom. */
@@ -18,13 +18,17 @@ export interface ModeStyle {
   readonly tripleOffset: number;
   /** 0: sticks carry their atom's colour. 1: sticks are a neutral steel. */
   readonly bondTint: number;
+  readonly carbonRadiusScale: number;
+  /** Ordinary carbon-bound hydrogen fades out in a skeletal view; its data is never removed. */
+  readonly carbonHydrogenScale: number;
 }
 
 export const MODE_STYLES: Readonly<Record<RenderMode, ModeStyle>> = {
-  'ball-stick': { vdwScale: 0.26, atomRadius: 0, bondRadius: 0.105, multiRadius: 0.068, doubleOffset: 0.115, tripleOffset: 0.19, bondTint: 0.52 },
-  'space-fill': { vdwScale: 1, atomRadius: 0, bondRadius: 0, multiRadius: 0, doubleOffset: 0, tripleOffset: 0, bondTint: 0 },
-  sticks: { vdwScale: 0, atomRadius: 0.22, bondRadius: 0.19, multiRadius: 0.08, doubleOffset: 0.12, tripleOffset: 0.14, bondTint: 0 },
-  wire: { vdwScale: 0, atomRadius: 0.055, bondRadius: 0.032, multiRadius: 0.024, doubleOffset: 0.075, tripleOffset: 0.12, bondTint: 0 },
+  'ball-stick': { vdwScale: 0.26, atomRadius: 0, bondRadius: 0.105, multiRadius: 0.068, doubleOffset: 0.115, tripleOffset: 0.19, bondTint: 0.52, carbonRadiusScale: 1, carbonHydrogenScale: 1 },
+  'space-fill': { vdwScale: 1, atomRadius: 0, bondRadius: 0, multiRadius: 0, doubleOffset: 0, tripleOffset: 0, bondTint: 0, carbonRadiusScale: 1, carbonHydrogenScale: 1 },
+  sticks: { vdwScale: 0, atomRadius: 0.22, bondRadius: 0.19, multiRadius: 0.08, doubleOffset: 0.12, tripleOffset: 0.14, bondTint: 0, carbonRadiusScale: 1, carbonHydrogenScale: 1 },
+  wire: { vdwScale: 0, atomRadius: 0.055, bondRadius: 0.032, multiRadius: 0.024, doubleOffset: 0.075, tripleOffset: 0.12, bondTint: 0, carbonRadiusScale: 1, carbonHydrogenScale: 1 },
+  skeletal: { vdwScale: 0, atomRadius: 0.14, bondRadius: 0.055, multiRadius: 0.045, doubleOffset: 0.075, tripleOffset: 0.11, bondTint: 0.18, carbonRadiusScale: 0.3, carbonHydrogenScale: 0 },
 };
 
 export const RENDER_MODE_LABELS: Readonly<Record<RenderMode, { label: string; description: string }>> = {
@@ -32,6 +36,7 @@ export const RENDER_MODE_LABELS: Readonly<Record<RenderMode, { label: string; de
   'space-fill': { label: 'Space-filling', description: 'Atoms at their full van der Waals radius.' },
   sticks: { label: 'Sticks', description: 'Bonds only, coloured by element.' },
   wire: { label: 'Wireframe', description: 'Thin lines; best for very large structures.' },
+  skeletal: { label: 'Skeletal', description: 'A 3D line-angle view. Ordinary carbon-bound hydrogens are hidden, not deleted; isotopes and heteroatoms remain visible.' },
 };
 
 export function lerpStyle(a: ModeStyle, b: ModeStyle, t: number): ModeStyle {
@@ -44,11 +49,23 @@ export function lerpStyle(a: ModeStyle, b: ModeStyle, t: number): ModeStyle {
     doubleOffset: mix(a.doubleOffset, b.doubleOffset),
     tripleOffset: mix(a.tripleOffset, b.tripleOffset),
     bondTint: mix(a.bondTint, b.bondTint),
+    carbonRadiusScale: mix(a.carbonRadiusScale, b.carbonRadiusScale),
+    carbonHydrogenScale: mix(a.carbonHydrogenScale, b.carbonHydrogenScale),
   };
 }
 
 export function atomRadiusFor(style: ModeStyle, z: number): number {
-  return style.vdwScale * getElement(z).vdwRadius + style.atomRadius;
+  return (style.vdwScale * getElement(z).vdwRadius + style.atomRadius) * (z === 6 ? style.carbonRadiusScale : 1);
+}
+
+export function atomVisibility(style: ModeStyle, scene: Scene, atom: Atom): number {
+  if (style.carbonHydrogenScale === 1 || atom.protons !== 1 || atom.electrons !== 1 || atom.neutrons !== null) return 1;
+  const bonded = neighborsOf(scene, atom.id);
+  if (bonded.length !== 1) return 1;
+  const neighbor = bonded[0]!;
+  return scene.atoms.get(neighbor.atomId)?.protons === 6 && scene.bonds.get(neighbor.bondId)?.order === 1
+    ? style.carbonHydrogenScale
+    : 1;
 }
 
 export interface Stick {

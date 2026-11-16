@@ -9,7 +9,7 @@ export type ToolId = 'select' | 'build' | 'erase' | 'measure';
  * structures on the same 3D stage while the Architect's document waits untouched.
  */
 export type Workspace = 'architect' | 'reactions' | 'vault';
-export type RenderMode = 'ball-stick' | 'space-fill' | 'sticks' | 'wire';
+export type RenderMode = 'ball-stick' | 'space-fill' | 'sticks' | 'wire' | 'skeletal';
 export type QualityId = 'efficient' | 'balanced' | 'quality';
 export type Projection = 'perspective' | 'orthographic';
 export type LabelMode = 'none' | 'hetero' | 'all';

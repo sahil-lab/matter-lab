@@ -53,7 +53,7 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Substructure and similarity search | Partial | Over the 63 structures built into the application. The catalogue of the science service is not reachable from the interface |
 | Geometry optimisation, comparison with the starting geometry, replay of the optimiser's path | Implemented | Universal Force Field, in a background thread, cancellable (`optimize.spec.ts`) |
 | Ball and stick, space-filling, sticks, wireframe | Implemented | Changes of representation are eased |
-| Skeletal representation | Partial | The sticks view stands in for it. Hydrogens on carbon are not hidden and there is no line-angle drawing |
+| Skeletal representation | Implemented | A 3D line-angle view hides ordinary carbon-bound hydrogens without deleting them. Heteroatoms, isotopes and their labels remain visible; view settings survive project round trips. Hidden geometry is not pickable (`SceneView.test.ts`, `editor.spec.ts`) |
 | Molecular surfaces | Implemented | Van der Waals and solvent-accessible (1.4 Å probe), with area and volume |
 | Electron density, orbital isosurfaces, electrostatic potential | Implemented | See Part 6 |
 | GPU instancing, direct buffer updates, no per-atom React rendering | Implemented | |

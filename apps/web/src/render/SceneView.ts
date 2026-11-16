@@ -19,6 +19,7 @@ import {
   MODE_STYLES,
   NEUTRAL_BOND_COLOR,
   atomRadiusFor,
+  atomVisibility,
   bondPickRadius,
   elementColorLinear,
   elementMetalness,
@@ -271,7 +272,13 @@ export class SceneView {
       const { before, after } = change;
       if (before.protons !== after.protons || before.neutrons !== after.neutrons || before.electrons !== after.electrons) identityChanged = true;
     }
-    this.refreshAtoms(changed, identityChanged ? 'rebuild' : 'move');
+    if (identityChanged && this.style.carbonHydrogenScale < 1) {
+      const affected = new Set(changed);
+      for (const id of changed) for (const neighbor of neighborsOf(scene, id)) affected.add(neighbor.atomId);
+      this.refreshAtoms(affected, 'rebuild');
+    } else {
+      this.refreshAtoms(changed, identityChanged ? 'rebuild' : 'move');
+    }
   }
 
   setStyle(style: ModeStyle): void {
@@ -444,7 +451,7 @@ export class SceneView {
   private writeAtom(i: number, id: AtomId): void {
     const atom = this.scene.atoms.get(id)!;
     const p = this.transient?.get(id) ?? atom.position;
-    const r = atomRadiusFor(this.style, atom.protons);
+    const r = atomRadiusFor(this.style, atom.protons) * atomVisibility(this.style, this.scene, atom);
     this.atomPositions[3 * i] = p[0];
     this.atomPositions[3 * i + 1] = p[1];
     this.atomPositions[3 * i + 2] = p[2];
@@ -512,7 +519,11 @@ export class SceneView {
     this.bondEnd[3 * b] = bx; this.bondEnd[3 * b + 1] = by; this.bondEnd[3 * b + 2] = bz;
 
     const sticks = sticksFor(this.style, bond.order);
-    this.bondRadii[b] = bondPickRadius(sticks);
+    const visibility = Math.min(
+      atomVisibility(this.style, this.scene, this.scene.atoms.get(bond.a)!),
+      atomVisibility(this.style, this.scene, this.scene.atoms.get(bond.b)!),
+    );
+    this.bondRadii[b] = bondPickRadius(sticks) * visibility;
 
     // Trim the pickable segment to where the bond emerges from each atom sphere.
     {
@@ -533,7 +544,7 @@ export class SceneView {
 
     let dx = bx - ax, dy = by - ay, dz = bz - az;
     const length = Math.hypot(dx, dy, dz);
-    if (length < 1e-6) {
+    if (length < 1e-6 || visibility === 0) {
       for (let k = instanceCountFor(sticks); k > 0; k--) writeNothing(matrices, 16 * slot++);
       return;
     }
@@ -563,9 +574,9 @@ export class SceneView {
         const mx = ax + dx * length * split + ox;
         const my = ay + dy * length * split + oy;
         const mz = az + dz * length * split + oz;
-        writeStick(matrices, 16 * slot, ax + ox, ay + oy, az + oz, mx, my, mz, stick.radius);
+        writeStick(matrices, 16 * slot, ax + ox, ay + oy, az + oz, mx, my, mz, stick.radius * visibility);
         setColor(slot++, ca);
-        writeStick(matrices, 16 * slot, mx, my, mz, bx + ox, by + oy, bz + oz, stick.radius);
+        writeStick(matrices, 16 * slot, mx, my, mz, bx + ox, by + oy, bz + oz, stick.radius * visibility);
         setColor(slot++, cb);
         continue;
       }
@@ -581,7 +592,7 @@ export class SceneView {
           16 * slot,
           ax + dx * s0 + ox, ay + dy * s0 + oy, az + dz * s0 + oz,
           ax + dx * s1 + ox, ay + dy * s1 + oy, az + dz * s1 + oz,
-          stick.radius,
+          stick.radius * visibility,
         );
         setColor(slot++, (s0 + s1) / 2 < length * split ? ca : cb);
       }
@@ -615,7 +626,7 @@ export class SceneView {
     let count = 0;
     for (const [id, color] of rims) {
       const i = this.atomIndex.get(id);
-      if (i === undefined) continue;
+      if (i === undefined || this.atomRadii[i]! <= 0) continue;
       const hovered = id === h.hoveredAtom && color !== HALO_HOVER;
       writeSphere(
         matrices,
@@ -645,7 +656,7 @@ export class SceneView {
     if (this.style.bondRadius > 0) {
       for (const [id, color] of bondRims) {
         const b = this.bondIndex.get(id);
-        if (b === undefined) continue;
+        if (b === undefined || this.bondRadii[b]! <= 0) continue;
         writeStick(
           matrices,
           16 * count,

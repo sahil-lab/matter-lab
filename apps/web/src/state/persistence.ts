@@ -44,7 +44,7 @@ export function buildProjectFile(): ProjectFile {
   };
 }
 
-const RENDER_MODES: readonly RenderMode[] = ['ball-stick', 'space-fill', 'sticks', 'wire'];
+const RENDER_MODES: readonly RenderMode[] = ['ball-stick', 'space-fill', 'sticks', 'wire', 'skeletal'];
 const LABEL_MODES: readonly LabelMode[] = ['none', 'hetero', 'all'];
 
 function isPose(value: unknown): value is CameraPose {

@@ -105,7 +105,10 @@ export function SceneLayer({ quality }: { quality: QualitySettings }) {
 
   // Atom labels follow the instanced atoms.
   useEffect(() => {
-    const rebuild = () => labels.rebuild(lab.get().scene, view, lab.get().labelMode);
+    const rebuild = () => {
+      const state = lab.get();
+      labels.rebuild(state.scene, view, state.renderMode === 'skeletal' && state.labelMode === 'none' ? 'hetero' : state.labelMode);
+    };
     view.onChange = (kind) => (kind === 'rebuild' ? rebuild() : labels.reposition(view));
     rebuild();
     const stop = lab.subscribe(

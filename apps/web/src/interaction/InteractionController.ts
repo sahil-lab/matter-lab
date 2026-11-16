@@ -499,6 +499,7 @@ export class InteractionController {
     const projected = new Vector3();
     const inside: AtomId[] = [];
     for (let i = 0; i < data.atomCount; i++) {
+      if (data.atomRadii[i]! <= 0) continue;
       projected.set(data.atomPositions[3 * i]!, data.atomPositions[3 * i + 1]!, data.atomPositions[3 * i + 2]!).project(camera);
       if (projected.z < -1 || projected.z > 1) continue;
       if (projected.x >= minX && projected.x <= maxX && projected.y >= minY && projected.y <= maxY) inside.push(data.atomIds[i]!);

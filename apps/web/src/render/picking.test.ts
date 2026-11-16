@@ -71,6 +71,12 @@ describe('picking', () => {
     const data: PickData = { ...diatomic(1, 0.1, 1.5), bondStart: new Float32Array([0.75, 0, 0]), bondEnd: new Float32Array([0.75, 0, 0]) };
     expect(pick(data, down(0.75))).toMatchObject({ kind: 'atom' });
   });
+
+  it('does not make hidden atoms or bonds clickable through the minimum target size', () => {
+    const data = diatomic(0, 0);
+    expect(pick(data, down(0), { minRadiusAt: () => 0.5 })).toBeNull();
+    expect(pick(data, down(0.75), { minRadiusAt: () => 0.5 })).toBeNull();
+  });
 });
 
 describe('plane intersection', () => {

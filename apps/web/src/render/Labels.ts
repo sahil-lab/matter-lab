@@ -191,6 +191,7 @@ export class LabelLayer {
     const cells = this.geometry.getAttribute('aCell').array as Float32Array;
     let n = 0;
     for (const atom of scene.atoms.values()) {
+      if (view.radius(atom.id) <= 0) continue;
       const plain = atom.protons === 1 || atom.protons === 6;
       if (mode === 'hetero' && plain && atom.neutrons === null && atomCharge(atom) === 0) continue;
       this.ids[n] = atom.id;

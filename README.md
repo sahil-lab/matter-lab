@@ -29,7 +29,7 @@ browser. [docs/examples/README.md](docs/examples/README.md) lists things to try.
 
 | Part | State |
 | --- | --- |
-| Molecular Architect: build, edit, measure, undo, import and export, four representations, surfaces | works, tested |
+| Molecular Architect: build, edit, measure, undo, import and export, five representations including skeletal, surfaces | works, tested |
 | Atomic Forge: all 118 elements, isotopes from 3,383 evaluated nuclides, charges, a view of the nucleus | works, tested |
 | Validation and identifiers: rule-based checks and RDKit (WebAssembly); search of the built-in library; PubChem look-up; 3D models from SMILES | works, tested |
 | Geometry optimisation with the Universal Force Field, with comparison, replay and explanation | works, tested |

@@ -455,6 +455,50 @@ test.describe('view', () => {
     expect((await lab.summary()).undo, 'moving the camera edits nothing').toBe(0);
   });
 
+  test('skeletal mode hides C-H geometry, keeps heteroatoms, and round-trips the view without editing the molecule', async ({ page }) => {
+    await lab.openExample('ethanol');
+    const atoms = await lab.atoms();
+    const bonds = await lab.bonds();
+    const hidden = atoms.filter((atom) => atom.z === 1 && bonds.some((bond) => {
+      const other = bond.a === atom.id ? bond.b : bond.b === atom.id ? bond.a : null;
+      return other !== null && atoms.find((candidate) => candidate.id === other)?.z === 6;
+    }));
+    expect(hidden).toHaveLength(5);
+    let visibleId: number | null = null;
+    for (const atom of hidden) {
+      const hit = await lab.hitTest(...await lab.atomPoint(atom.id));
+      if (hit?.kind === 'atom' && hit.id === atom.id) {
+        visibleId = atom.id;
+        break;
+      }
+    }
+    if (visibleId === null) throw new Error('The ethanol fixture has no exposed carbon-bound hydrogen from this view.');
+    const skeletal = page.getByRole('button', { name: 'Skeletal', exact: true });
+    if (await skeletal.isVisible()) await skeletal.click();
+    else await page.getByRole('combobox', { name: 'Representation' }).selectOption('skeletal');
+    await lab.settle(650);
+    expect(await lab.eval('return lab.lab.get().renderMode;')).toBe('skeletal');
+    for (const atom of hidden) {
+      const point = await lab.atomPoint(atom.id);
+      expect(await lab.hitTest(...point)).not.toEqual(expect.objectContaining({ kind: 'atom', id: atom.id }));
+    }
+    const oxygen = atoms.find((atom) => atom.z === 8)!;
+    expect(await lab.hitTest(...await lab.atomPoint(oxygen.id))).toMatchObject({ kind: 'atom', id: oxygen.id });
+    expect(await lab.atoms()).toEqual(atoms);
+    expect(await lab.bonds()).toEqual(bonds);
+    await lab.eval(`
+      const file = lab.persistence.buildProjectFile();
+      lab.lab.set({ renderMode: 'ball-stick' });
+      lab.persistence.openProjectFile(file);
+    `);
+    await lab.settle(650);
+    expect(await lab.eval('return lab.lab.get().renderMode;')).toBe('skeletal');
+    await lab.eval("lab.lab.set({ renderMode: 'ball-stick' });");
+    await lab.settle(650);
+    expect(await lab.hitTest(...await lab.atomPoint(visibleId))).toMatchObject({ kind: 'atom', id: visibleId });
+    expect((await lab.summary()).undo).toBe(0);
+  });
+
   test('all three quality presets render', async () => {
     for (const quality of ['efficient', 'quality', 'balanced']) {
       await lab.eval(`lab.lab.set({ quality: '${quality}' });`);
