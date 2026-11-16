@@ -1,0 +1,20 @@
+{
+  "name": "@matterlab/lab-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Authoritative deterministic laboratory inventory, graph, replay and execution runtime.",
+  "exports": { ".": "./src/index.ts" },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts --configLoader native",
+    "build": "vite build --config vite.config.ts --configLoader native"
+  },
+  "dependencies": {
+    "@matterlab/contracts": "*",
+    "@matterlab/lab-science": "*"
+  },
+  "devDependencies": { "vite": "^8.3.8" }
+}

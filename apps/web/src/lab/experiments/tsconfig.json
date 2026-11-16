@@ -1,0 +1,18 @@
+{
+  "extends": "../../../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@matterlab/contracts": ["../../../../../packages/contracts/src/index.ts"],
+      "@matterlab/lab-runtime": ["../../../../../packages/lab-runtime/src/index.ts"],
+      "@matterlab/lab-science": ["../../../../../packages/lab-science/src/index.ts"]
+    }
+  },
+  "include": ["*.ts"],
+  "exclude": ["*.test.ts"]
+}
