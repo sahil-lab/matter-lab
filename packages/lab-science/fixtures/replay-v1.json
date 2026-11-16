@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "methodId": "aqueous-acid-base-ideal-v1",
+  "methodVersion": "1.0.0",
+  "description": "Deterministic analytical inventory snapshots, not a stored or interpolated titration curve. Each input is solved independently.",
+  "cases": [
+    {
+      "id": "water-298K",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 7, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "hcl-initial-25mL",
+      "input": {
+        "contents": { "volumeL": 0.025, "species": [{ "speciesId": "ion:chloride", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 1, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "hcl-naoh-pre-equivalence-12.5mL",
+      "input": {
+        "contents": { "volumeL": 0.0375, "species": [{ "speciesId": "ion:chloride", "moles": 0.0025 }, { "speciesId": "ion:sodium", "moles": 0.00125 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 1.47712125472, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "hcl-naoh-equivalence-25mL",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "ion:chloride", "moles": 0.0025 }, { "speciesId": "ion:sodium", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"],
+        "indicatorIds": ["phenolphthalein", "bromothymol-blue"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 7, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "hcl-naoh-post-equivalence-37.5mL",
+      "input": {
+        "contents": { "volumeL": 0.0625, "species": [{ "speciesId": "ion:chloride", "moles": 0.0025 }, { "speciesId": "ion:sodium", "moles": 0.00375 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 12.3010299957, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "hcl-twofold-dilution",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "ion:chloride", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 1.30102999566, "absolutePHTolerance": 0.00000001 }
+    },
+    {
+      "id": "acetic-acid-initial",
+      "input": {
+        "contents": { "volumeL": 0.025, "species": [{ "speciesId": "family:acetate", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 2.8753, "absolutePHTolerance": 0.0001 }
+    },
+    {
+      "id": "acetic-acid-half-equivalence",
+      "input": {
+        "contents": { "volumeL": 0.0375, "species": [{ "speciesId": "family:acetate", "moles": 0.0025 }, { "speciesId": "ion:sodium", "moles": 0.00125 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 4.7447274949, "absolutePHTolerance": 0.001 }
+    },
+    {
+      "id": "acetic-acid-equivalence",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "family:acetate", "moles": 0.0025 }, { "speciesId": "ion:sodium", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 8.72, "absolutePHTolerance": 0.005 }
+    },
+    {
+      "id": "ammonia-half-equivalence",
+      "input": {
+        "contents": { "volumeL": 0.0375, "species": [{ "speciesId": "family:ammonia", "moles": 0.0025 }, { "speciesId": "ion:chloride", "moles": 0.00125 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 9.2552725051, "absolutePHTolerance": 0.001 }
+    },
+    {
+      "id": "ammonia-equivalence",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "family:ammonia", "moles": 0.0025 }, { "speciesId": "ion:chloride", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "SUCCEEDED", "pH": 5.28, "absolutePHTolerance": 0.005 }
+    },
+    {
+      "id": "phosphate-unsupported",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "family:phosphate", "moles": 0.0025 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "UNSUPPORTED", "code": "UNSUPPORTED_SPECIES" }
+    },
+    {
+      "id": "mixed-weak-families-unsupported",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [{ "speciesId": "family:acetate", "moles": 0.00125 }, { "speciesId": "family:ammonia", "moles": 0.00125 }], "temperatureK": 298.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "UNSUPPORTED", "code": "UNSUPPORTED_SPECIES" }
+    },
+    {
+      "id": "temperature-unsupported",
+      "input": {
+        "contents": { "volumeL": 0.05, "species": [], "temperatureK": 310.15, "mixing": "WELL_MIXED", "modelId": "aqueous-acid-base-ideal-v1" },
+        "methodId": "aqueous-acid-base-ideal-v1",
+        "assumptions": ["IDEAL_ACTIVITIES", "ADDITIVE_VOLUMES", "CLOSED_AQUEOUS_SYSTEM"]
+      },
+      "expected": { "status": "UNSUPPORTED", "code": "UNSUPPORTED_CONDITIONS" }
+    }
+  ]
+}

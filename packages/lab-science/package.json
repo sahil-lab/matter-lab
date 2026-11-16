@@ -1,0 +1,25 @@
+{
+  "name": "@matterlab/lab-science",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "description": "Deterministic, bounded aqueous acid/base equilibria shared by laboratory workers and Node replay.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "build": "vite build --config vite.config.ts && node tools/export-catalog.mjs",
+    "validate:science": "node tools/validate.mjs"
+  },
+  "dependencies": {
+    "@matterlab/contracts": "*"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
+  }
+}
