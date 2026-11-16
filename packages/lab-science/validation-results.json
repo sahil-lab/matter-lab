@@ -1,0 +1,346 @@
+{
+  "generatedAt": "2026-11-16T12:45:52.883Z",
+  "method": {
+    "id": "aqueous-acid-base-ideal-v1",
+    "version": "1.0.0",
+    "evidence": "MODEL_CALCULATED",
+    "assumptions": [
+      "IDEAL_ACTIVITIES",
+      "ADDITIVE_VOLUMES",
+      "CLOSED_AQUEOUS_SYSTEM"
+    ],
+    "limitations": [
+      "Ideal aqueous concentration model: all activity coefficients are one; pH is -log10([H3O+]/(1 mol/L)), not a calibrated electrode prediction.",
+      "Only 298.15 K is validated. Kw, Ka and Kb are not extrapolated to other temperatures.",
+      "At most one weak monoprotic analytical family (acetate OR ammonia) is supported, with sodium/chloride spectator ions.",
+      "No polyprotic acids, mixed weak families, arbitrary reactions, precipitation, complexation, gas exchange, evaporation, heat balance or kinetics.",
+      "Water is an implicit solvent/proton reservoir. Hydrogen/oxygen of the solvent are not a conserved solute inventory.",
+      "The 0.100 mol/L component ceiling and 0.100001 mol/L ionic-strength ceiling (including water ions) are educational eligibility bounds, not guarantees of experimental accuracy.",
+      "No validated physical measurement uncertainty is available. Numerical residuals and root brackets are not experimental uncertainty."
+    ],
+    "limits": {
+      "temperatureK": 298.15,
+      "minimumVolumeL": 1e-9,
+      "maximumVolumeL": 100,
+      "maximumComponentConcentrationMolL": 0.1,
+      "maximumTotalAnalyticalConcentrationMolL": 0.2,
+      "maximumIonicStrengthMolL": 0.100001,
+      "activityWarningIonicStrengthMolL": 0.01,
+      "maximumInventoryEntries": 128,
+      "maximumJsonBytes": 262144
+    },
+    "constants": {
+      "convention": "Concentration-form constants: gamma=1 and standard concentration 1 mol/L. Thermodynamic equilibrium constants are dimensionless.",
+      "waterIonProduct": {
+        "value": 1e-14,
+        "unit": "(mol/L)^2",
+        "temperatureK": 298.15
+      },
+      "aceticAcidKa": {
+        "value": 0.000018,
+        "unit": "mol/L",
+        "temperatureK": 298.15
+      },
+      "ammoniaKb": {
+        "value": 0.000018,
+        "unit": "mol/L",
+        "temperatureK": 298.15
+      },
+      "ammoniumKa": {
+        "value": 5.555555555555555e-10,
+        "unit": "mol/L",
+        "temperatureK": 298.15
+      }
+    }
+  },
+  "validation": {
+    "fixtureFile": "fixtures/replay-v1.json",
+    "fixtureCount": 14,
+    "supportedNumericCases": 11,
+    "explicitUnsupportedCases": 3,
+    "allChecksPassed": true,
+    "cases": [
+      {
+        "id": "water-298K",
+        "status": "SUCCEEDED",
+        "pH": 6.999999999999744,
+        "referencePH": 7,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": -2.5579538487363607e-13,
+        "chargeResidualMolL": 1.17803754117352e-19,
+        "reconstructedChargeResidualMolL": 1.17803754117352e-19,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 1e-7,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "hcl-initial-25mL",
+        "status": "SUCCEEDED",
+        "pH": 0.9999999999995737,
+        "referencePH": 1,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": -4.263256414560601e-13,
+        "chargeResidualMolL": -1.8285290474223638e-15,
+        "reconstructedChargeResidualMolL": -1.8285290474223638e-15,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.10000000000009908,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "hcl-naoh-pre-equivalence-12.5mL",
+        "status": "SUCCEEDED",
+        "pH": 1.477121254715513,
+        "referencePH": 1.47712125472,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": -4.487077376325033e-12,
+        "chargeResidualMolL": 1.8481352404400288e-14,
+        "reconstructedChargeResidualMolL": 1.8481352404400288e-14,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.0666666666669759,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "hcl-naoh-equivalence-25mL",
+        "status": "SUCCEEDED",
+        "pH": 6.999999999999744,
+        "referencePH": 7,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": -2.5579538487363607e-13,
+        "chargeResidualMolL": 1.17803754117352e-19,
+        "reconstructedChargeResidualMolL": 1.17803754117352e-19,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.0500001,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "hcl-naoh-post-equivalence-37.5mL",
+        "status": "SUCCEEDED",
+        "pH": 12.301029995674668,
+        "referencePH": 12.3010299957,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": -2.5332624886686972e-11,
+        "chargeResidualMolL": 7.858949853076414e-15,
+        "reconstructedChargeResidualMolL": 7.858949853076414e-15,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.060000000000496066,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "hcl-twofold-dilution",
+        "status": "SUCCEEDED",
+        "pH": 1.3010299956623328,
+        "referencePH": 1.30102999566,
+        "allowedDifferencePH": 1e-8,
+        "differencePH": 2.332800619342379e-12,
+        "chargeResidualMolL": -1.0214312833474279e-14,
+        "reconstructedChargeResidualMolL": -1.0214312833474279e-14,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.05000000000019489,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "acetic-acid-initial",
+        "status": "SUCCEEDED",
+        "pH": 2.8752770603191777,
+        "referencePH": 2.8753,
+        "allowedDifferencePH": 0.0001,
+        "differencePH": -0.000022939680822453568,
+        "chargeResidualMolL": 5.41517563347397e-16,
+        "reconstructedChargeResidualMolL": 5.41517563347397e-16,
+        "maximumMassResidualMolL": 4.336808689942018e-19,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.0013326709768550081,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "acetic-acid-half-equivalence",
+        "status": "SUCCEEDED",
+        "pH": 4.745196012763955,
+        "referencePH": 4.7447274949,
+        "allowedDifferencePH": 0.001,
+        "differencePH": 0.00046851786395496475,
+        "chargeResidualMolL": 2.557334295217983e-15,
+        "reconstructedChargeResidualMolL": 2.557334295217983e-15,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.03335131392536199,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "acetic-acid-equivalence",
+        "status": "SUCCEEDED",
+        "pH": 8.721904031581886,
+        "referencePH": 8.72,
+        "allowedDifferencePH": 0.005,
+        "differencePH": 0.001904031581885235,
+        "chargeResidualMolL": 8.87264530707042e-19,
+        "reconstructedChargeResidualMolL": 4.982668830681584e-18,
+        "maximumMassResidualMolL": 4.095404299974542e-18,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.050000001897125085,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "ammonia-half-equivalence",
+        "status": "SUCCEEDED",
+        "pH": 9.254803987236045,
+        "referencePH": 9.2552725051,
+        "allowedDifferencePH": 0.001,
+        "differencePH": -0.00046851786395585293,
+        "chargeResidualMolL": -2.557334295217983e-15,
+        "reconstructedChargeResidualMolL": -2.557334295217983e-15,
+        "maximumMassResidualMolL": 0,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.03335131392536199,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "ammonia-equivalence",
+        "status": "SUCCEEDED",
+        "pH": 5.278095968418114,
+        "referencePH": 5.28,
+        "allowedDifferencePH": 0.005,
+        "differencePH": -0.001904031581886123,
+        "chargeResidualMolL": -8.864174977597876e-19,
+        "reconstructedChargeResidualMolL": -4.982668830681584e-18,
+        "maximumMassResidualMolL": 4.0962513329217964e-18,
+        "waterProductResidualMol2L2": 0,
+        "ionicStrengthMolL": 0.050000001897125085,
+        "iterations": 46,
+        "numericalPHBracketWidth": 5.115907697472721e-13
+      },
+      {
+        "id": "phosphate-unsupported",
+        "status": "UNSUPPORTED",
+        "code": "UNSUPPORTED_SPECIES"
+      },
+      {
+        "id": "mixed-weak-families-unsupported",
+        "status": "UNSUPPORTED",
+        "code": "UNSUPPORTED_SPECIES"
+      },
+      {
+        "id": "temperature-unsupported",
+        "status": "UNSUPPORTED",
+        "code": "UNSUPPORTED_CONDITIONS"
+      }
+    ],
+    "endpoints": [
+      {
+        "indicatorId": "phenolphthalein",
+        "baseFractionCriterion": 0.5,
+        "theoreticalEquivalenceVolumeL": 0.025000000000000005,
+        "theoreticalEquivalencePH": 6.999999999999744,
+        "endpointTargetPH": 9.5,
+        "estimatedEndpointVolumeL": 0.025015816231689317,
+        "endpointOffsetFromEquivalenceL": 0.000015816231689311927,
+        "interpretation": "Modeled crossing of an explicitly chosen trace-indicator fraction. This is not stoichiometric equivalence, a measured color, or a persistent endpoint observation."
+      },
+      {
+        "indicatorId": "methyl-orange",
+        "baseFractionCriterion": 0.5,
+        "theoreticalEquivalenceVolumeL": 0.025000000000000005,
+        "theoreticalEquivalencePH": 6.999999999999744,
+        "endpointTargetPH": 3.3979400086720375,
+        "estimatedEndpointVolumeL": 0.024800796825138614,
+        "endpointOffsetFromEquivalenceL": -0.00019920317486139122,
+        "interpretation": "Modeled crossing of an explicitly chosen trace-indicator fraction. This is not stoichiometric equivalence, a measured color, or a persistent endpoint observation."
+      },
+      {
+        "indicatorId": "bromothymol-blue",
+        "baseFractionCriterion": 0.5,
+        "theoreticalEquivalenceVolumeL": 0.025000000000000005,
+        "theoreticalEquivalencePH": 6.999999999999744,
+        "endpointTargetPH": 7.2,
+        "estimatedEndpointVolumeL": 0.025000047696858024,
+        "endpointOffsetFromEquivalenceL": 4.769685801875312e-8,
+        "interpretation": "Modeled crossing of an explicitly chosen trace-indicator fraction. This is not stoichiometric equivalence, a measured color, or a persistent endpoint observation."
+      }
+    ]
+  },
+  "timing": {
+    "scope": "Small single-thread warm solver check, not a UI/FPS benchmark or performance guarantee on this shared host.",
+    "node": "v24.14.1",
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 165H",
+    "warmupCalls": 16,
+    "measuredCalls": 64,
+    "medianMs": 0.05500000000000682,
+    "p95Ms": 0.2442000000000064,
+    "maximumMs": 0.9211999999999989
+  },
+  "sources": [
+    {
+      "id": "openstax-chem2e-14-2",
+      "title": "Chemistry 2e, 14.2: pH and pOH",
+      "authors": "Paul Flowers, Klaus Theopold, Richard Langley, William R. Robinson; OpenStax",
+      "version": "Chemistry 2e; live web edition accessed 2026-11-16",
+      "url": "https://openstax.org/books/chemistry-2e/pages/14-2-ph-and-poh",
+      "accessedOn": "2026-11-16",
+      "sourceLicense": "CC BY-NC-SA 4.0 (current publisher preface)",
+      "licenseUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "use": "Individual reference fact Kw = 1.0e-14 at 25 deg C; temperature dependence and concentration pH convention. No source prose, tables or images reproduced."
+    },
+    {
+      "id": "openstax-chem2e-14-3",
+      "title": "Chemistry 2e, 14.3: Relative Strengths of Acids and Bases",
+      "authors": "Paul Flowers, Klaus Theopold, Richard Langley, William R. Robinson; OpenStax",
+      "version": "Chemistry 2e; live web edition accessed 2026-11-16",
+      "url": "https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases",
+      "accessedOn": "2026-11-16",
+      "sourceLicense": "CC BY-NC-SA 4.0 (current publisher preface)",
+      "licenseUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "use": "Individual facts acetic acid Ka = 1.8e-5 and ammonia Kb = 1.8e-5, aqueous 25 deg C educational values; conjugate Ka = Kw/Kb is calculated, not independently rounded."
+    },
+    {
+      "id": "openstax-chem2e-14-7",
+      "title": "Chemistry 2e, 14.7: Acid-Base Titrations",
+      "authors": "Paul Flowers, Klaus Theopold, Richard Langley, William R. Robinson; OpenStax",
+      "version": "Chemistry 2e; live web edition accessed 2026-11-16",
+      "url": "https://openstax.org/books/chemistry-2e/pages/14-7-acid-base-titrations",
+      "accessedOn": "2026-11-16",
+      "sourceLicense": "CC BY-NC-SA 4.0 (current publisher preface)",
+      "licenseUrl": "https://openstax.org/books/chemistry-2e/pages/preface",
+      "use": "Independent strong/weak titration checks (Examples 14.21/14.22); methyl orange effective Ka = 4.0e-4, red/yellow transition, and endpoint/equivalence distinction. No titration table copied or used by the solver."
+    },
+    {
+      "id": "libretexts-indicators-24301",
+      "title": "17.3: Acid-Base Indicators (LibreTexts page 24301)",
+      "authors": "LibreTexts contributors; OpenStax attribution on page",
+      "version": "Page 24301; live page accessed 2026-11-16",
+      "url": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_General_Chemistry_(Petrucci_et_al.)/17%3A_Additional_Aspects_of_Acid-Base_Equilibria/17.3%3A_Acid-Base_Indicators",
+      "accessedOn": "2026-11-16",
+      "sourceLicense": "CC BY-NC-SA 4.0 page license; underlying OpenStax contribution also attributed CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "use": "Individual phenolphthalein effective pKin = 9.5 (Figure 3 discussion), colorless/pink transition and methyl orange visible interval 3.1-4.4. Only bibliographic metadata and numerical facts retained."
+    },
+    {
+      "id": "harvard-bromothymol-blue-demo",
+      "title": "Bromothymol Blue to Yellow by Breath",
+      "authors": "Harvard Natural Sciences Lecture Demonstrations",
+      "version": "Undated educational page; indexed numerical excerpt checked 2026-11-16",
+      "url": "https://sciencedemonstrations.fas.harvard.edu/presentations/bromothymolblue",
+      "accessedOn": "2026-11-16",
+      "sourceLicense": "No open-content license verified; retain only individual numerical facts and citation, not source prose or artwork.",
+      "licenseUrl": "https://sciencedemonstrations.fas.harvard.edu/presentations/bromothymolblue",
+      "use": "Indexed university excerpt explicitly gives effective pKa 7.2 and yellow/blue boundaries 6.0/7.6; direct page retrieval returned HTTP 403. No temperature calibration or physical uncertainty is established for this approximate trace-display constant."
+    }
+  ]
+}
