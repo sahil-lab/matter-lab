@@ -117,3 +117,25 @@ signed installer nor a remote release.
   acceptance remains blocked, not passed. Hosted service CI has not yet run.
 
 This is an early harness milestone, not final laboratory release sign-off.
+
+## Canonical contract review
+
+Agent10 reviewed and approved the frozen `a00ddf6affb60f9921c3caaf6012eabc2e2d9dd7` contract
+commit; Agent09 explicitly signed off its persistence semantics. The review covered all DTOs,
+the shared structural schema builder, JSON/semantic validation, manual RFC8785 key emission and
+hashing, scientific failure variants, calibration and checkpoint/receipt boundaries. No competing
+contracts were written, and no unfinished branch was merged into this milestone.
+
+The important persistence correction is explicit: a saved current scene carries a checkpoint
+sidecar; replay starts from its **initial** scene and original steps, not from the already-mutated
+current inventory. Durable save revision and runtime revision remain separate. Server jobs
+recompute results and never trust browser checkpoint observations as authoritative output.
+
+The pure package deliberately uses `.ts` import suffixes so Node's schema-export path can run
+without another transpiler. The shared no-emit TypeScript configuration permits those suffixes
+for its consumers. Workspace links and the root npm lockfile are integrated by the parent in
+the coordinated installation; no install was performed through this worktree's junction.
+
+Schema validation does not replace the pending authoritative runtime's version, registry/socket,
+inventory, solver, cancellation and replay checks. This review approves the interface freeze,
+not a runtime implementation or final scientific/UI release.
