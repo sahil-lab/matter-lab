@@ -82,7 +82,7 @@ export type Observation = {
     readonly speciesId?: string;
     readonly indicatorId?: string;
     readonly titration?: CumulativeTransfer;
-  };
+  } & (Type extends 'INDICATOR' ? { readonly indicatorState?: IndicatorResult } : {});
 }[ObservationType];
 export interface ObservationRecord {
   readonly id: UUID;

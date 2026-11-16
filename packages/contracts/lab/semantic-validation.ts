@@ -146,6 +146,11 @@ function transfer(value: CumulativeTransfer, path: string, errors: ValidationIss
   if (value.sourceInstanceId === value.receiverInstanceId) issue(errors, path, 'Cumulative transfer requires distinct source and receiver.');
 }
 function observation(value: Observation, path: string, errors: ValidationIssue[]): void {
+  if (value.type === 'INDICATOR' && value.indicatorState &&
+      (value.indicatorId !== value.indicatorState.indicatorId || value.quantity.value !== value.indicatorState.baseFraction ||
+       JSON.stringify(value.sourceIds) !== JSON.stringify(value.indicatorState.sourceIds))) {
+    issue(errors, `${path}/indicatorState`, 'Indicator identity, base fraction and sources must match the copied scientific indicator result.');
+  }
   if (value.evidence === 'REFERENCE_MEASURED' && value.sourceIds.length === 0) {
     issue(errors, `${path}/sourceIds`, 'Measured reference observations require a cited source.');
   }

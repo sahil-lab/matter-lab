@@ -117,6 +117,10 @@ export interface ModelSupport {
   readonly reasons: readonly string[];
   readonly methodId: string;
 }
+export interface RuntimeSolverRequest {
+  readonly apparatusId: UUID;
+  readonly input: EquilibriumInput;
+}
 export interface ExperimentPlugin {
   readonly id: string;
   readonly version: string;
@@ -125,6 +129,7 @@ export interface ExperimentPlugin {
   readonly supportedActionTypes: readonly LabActionType[];
   getSupport(scene: ExperimentScene, stationId: UUID, definitions: ApparatusDefinitionReader): ModelSupport;
   getSolverInputs(snapshot: RuntimeSnapshot, stationId: UUID): readonly EquilibriumInput[];
+  getSolverRequests?(snapshot: RuntimeSnapshot, stationId: UUID): readonly RuntimeSolverRequest[];
 }
 export interface ApparatusCapabilityPlugin {
   readonly id: string;

@@ -3467,6 +3467,9 @@
                 "unit"
               ],
               "additionalProperties": false
+            },
+            "indicatorState": {
+              "$ref": "#/$defs/IndicatorResult"
             }
           },
           "required": [
@@ -5179,6 +5182,22 @@
         "methodVersion",
         "initialScene",
         "steps"
+      ],
+      "additionalProperties": false
+    },
+    "RuntimeSolverRequest": {
+      "type": "object",
+      "properties": {
+        "apparatusId": {
+          "$ref": "#/$defs/UUID"
+        },
+        "input": {
+          "$ref": "#/$defs/EquilibriumInput"
+        }
+      },
+      "required": [
+        "apparatusId",
+        "input"
       ],
       "additionalProperties": false
     },

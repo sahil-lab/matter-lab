@@ -1,5 +1,5 @@
 export const LAB_SCHEMA_VERSION = 1 as const;
-export const LAB_CONTRACT_VERSION = '1.0.0' as const;
+export const LAB_CONTRACT_VERSION = '1.1.0' as const;
 
 /** Entity IDs are canonical lowercase RFC 9562 UUIDs; catalog keys are separate strings. */
 export type UUID = string;

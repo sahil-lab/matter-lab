@@ -139,6 +139,32 @@ describe('solver and immutable run boundaries', () => {
     expect(validateLabContract('RuntimeCheckpoint', { ...checkpoint, completedStepCount: 1 }).ok).toBe(false);
     expect(validateLabContract('RuntimeSnapshot', { ...checkpoint.snapshot, stationStates: {} }).ok).toBe(false);
   });
+
+  it('round-trips original indicators and exact optional solver color payloads without cross-attribution', () => {
+    const original = {
+      type: 'INDICATOR', apparatusId: id(5), timeS: 1, quantity: { value: 0.25, unit: '1' },
+      evidence: 'MODEL_CALCULATED', methodId: 'test-indicator', sourceIds: ['test-source'], indicatorId: 'test-indicator',
+    };
+    const indicatorState = {
+      indicatorId: 'test-indicator', baseFraction: 0.25, colorSrgb: [0.1, 0.2, 0.3],
+      colorEvidence: 'ILLUSTRATIVE', sourceIds: ['test-source'],
+    };
+    expect(parseLabContract('Observation', original)).toEqual(original);
+    const enhanced = parseLabContract('Observation', { ...original, indicatorState });
+    expect(parseLabJson('Observation', serializeLabContract('Observation', enhanced))).toEqual(enhanced);
+    expect(validateLabContract('Observation', { ...original, indicatorState: { ...indicatorState, indicatorId: 'other' } }).ok).toBe(false);
+    expect(validateLabContract('Observation', { ...original, indicatorState: { ...indicatorState, baseFraction: 0.5 } }).ok).toBe(false);
+    expect(validateLabContract('Observation', { ...original, indicatorState: { ...indicatorState, sourceIds: ['other'] } }).ok).toBe(false);
+    expect(validateLabContract('Observation', { ...original, type: 'PH', quantity: { value: 7, unit: 'pH' }, indicatorState }).ok).toBe(false);
+  });
+
+  it('validates explicit vessel solver attribution without modifying pure chemistry inputs', () => {
+    const input = { contents: solution(0.025, 'ion:chloride', 0.0025), methodId: 'test-model', assumptions: ['TEST_ONLY'] };
+    const request = parseLabContract('RuntimeSolverRequest', { apparatusId: id(5), input });
+    expect(request.input).toEqual(input);
+    expect(validateLabContract('RuntimeSolverRequest', { apparatusId: 'unknown', input }).ok).toBe(false);
+    expect(validateLabContract('EquilibriumInput', { ...input, apparatusId: id(5) }).ok).toBe(false);
+  });
 });
 
 describe('portable canonical replay envelope', () => {

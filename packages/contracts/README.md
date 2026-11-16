@@ -1,4 +1,4 @@
-# Laboratory contracts v1
+# Laboratory contracts 1.1.0 (scene schema v1)
 
 Import **`@matterlab/contracts`** (root export). This additive package does not re-export, replace or change `@matterlab/core`: its molecular IDs, angstrom coordinates, lowercase evidence values and native scene format remain separate.
 
@@ -7,7 +7,7 @@ This milestone supplies DTOs, validation, serialization, hashing and interfaces,
 ## Wire policy
 
 - Entity IDs are canonical lowercase UUIDs, versions 1–8 with RFC variant bits. Catalog `definitionId`, `speciesId`, `modelId`, `methodId` and `sourceId` are nonempty keys, not necessarily UUIDs.
-- Scene/schema version is exactly `1`; contract version is `1.0.0`. UTC timestamp schemas require ISO 8601 with `Z`.
+- Scene/schema version is exactly `1`; contract version is `1.1.0`. UTC timestamp schemas require ISO 8601 with `Z`. Runtime restores must explicitly reject incompatible version pins, not silently upgrade old `1.0.0` checkpoints.
 - Coordinates/bounds/calibration heights use meters; volume L; amount mol; concentration mol/L; temperature K; time s; mass kg; flow L/s; stirring frequency Hz. `PH` observations use unit `pH`; indicator fractions use `1`. No implicit conversions/defaults.
 - A `SpeciesAmount` is **conserved analytical inventory**, not a transient equilibrium species. Only Agent 06 defines reagent composition, species/family keys, equilibria and indicator calculations. For example, its aqueous acid/base model uses `ion:chloride`, `ion:sodium`, `family:acetate`, and `family:ammonia`; the contracts do not interpret those keys.
 - Evidence: `REFERENCE_MEASURED | MODEL_CALCULATED | ILLUSTRATIVE | UNVERIFIED | UNSUPPORTED`. Run statuses: `QUEUED | RUNNING | SUCCEEDED | FAILED | CANCELLED | UNSUPPORTED`. Failed/unsupported solver variants cannot contain pH, speciation, indicator results or prepared contents.
@@ -79,6 +79,12 @@ Full exact declarations are in `lab/apparatus.ts`, `lab/science.ts` and `lab/run
 - `LabRuntimeReader.getSnapshot():RuntimeSnapshot`; `subscribe(listener:(snapshot,event)=>void):()=>void`. `LabActionAdapter.dispatch(action):Promise<ActionReceipt>`; `control(command):Promise<ControlReceipt>`. `LabRuntimeAdapter` exposes `{reader,actions}` separately. Snapshots and observations are readonly.
 - `ObservationRecord` adds immutable UUID/run/station/epoch/sequence identity around `Observation`. Optional `Observation.titration:{sourceInstanceId,receiverInstanceId,deliveredVolumeL}` is stamped only from cumulative accepted transfers for that pair in that epoch. If association is unavailable, omit it; do not infer delivered volume from receiver total volume.
 - `ExperimentPlugin` checks model support and requests solver inputs. `ApparatusCapabilityPlugin` validates/proposes actions only; the eventual authoritative runtime remains the sole inventory writer.
+
+### Reviewed 1.1.0 additions
+
+Agent 09 and Agent 10 approved two additive authority/attribution fixes. `INDICATOR` observations may contain `indicatorState:IndicatorResult`, copying Agent 06's exact fractions, color, source IDs and `ILLUSTRATIVE` color evidence. Outer indicator ID, fraction (`unit:'1'`) and source IDs must match. Other observation types reject this field; old indicator observations remain valid.
+
+`RuntimeSolverRequest={apparatusId:UUID,input:EquilibriumInput}` and optional `ExperimentPlugin.getSolverRequests(snapshot,stationId)` bind outputs explicitly to a vessel. Runtime uses this method exclusively when present, validates same-station container ownership and equality with authoritative contents, and permits copied-but-equal contents. Legacy `getSolverInputs` requires an unambiguous authoritative-container association; otherwise calculation is explicitly unsupported. These checks never change the Agent-06-owned pure solver API.
 
 ## Persistence and Node replay
 

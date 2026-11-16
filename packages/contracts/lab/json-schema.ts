@@ -122,7 +122,7 @@ const observationFields = {
   methodId: identifier, methodVersion: identifier, sourceIds: keys, speciesId: identifier, indicatorId: identifier,
   titration: ref('CumulativeTransfer'),
 };
-const observationOptional = ['apparatusId', 'stationId', 'methodVersion', 'speciesId', 'indicatorId', 'titration'];
+const observationOptional = ['apparatusId', 'stationId', 'methodVersion', 'speciesId', 'indicatorId', 'titration', 'indicatorState'];
 const observationQuantities = {
   PH: quantity('pH'),
   TEMPERATURE: quantity('K', temperature),
@@ -309,7 +309,10 @@ const definitions = {
   } satisfies JsonSchema,
   Observation: {
     oneOf: Object.entries(observationQuantities).map(([type, value]) =>
-      object({ ...observationFields, type: literal(type), quantity: value }, observationOptional)),
+      object({
+        ...observationFields, type: literal(type), quantity: value,
+        ...(type === 'INDICATOR' ? { indicatorState: ref('IndicatorResult') } : {}),
+      }, observationOptional)),
   } satisfies JsonSchema,
   CumulativeTransfer: object({
     sourceInstanceId: ref('UUID'), receiverInstanceId: ref('UUID'), deliveredVolumeL: volume,
@@ -374,6 +377,7 @@ const definitions = {
     methodVersion: identifier, initialScene: ref('ExperimentScene'),
     steps: array(ref('ReplayStep'), LAB_LIMITS.maxReplaySteps), limits: ref('RunLimits'),
   }, ['limits']),
+  RuntimeSolverRequest: object({ apparatusId: ref('UUID'), input: ref('EquilibriumInput') }),
   NodeRunResponse: object({
     schemaVersion: literal(1), result: ref('TerminalRunResult'), checkpoint: ref('RuntimeCheckpoint'),
   }, ['checkpoint']),

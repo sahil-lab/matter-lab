@@ -3,7 +3,7 @@ import type { JsonValue, ProblemDetails, ValidationIssue, ValidationResult } fro
 import type { LabAction, ReplayStep, RuntimeControl } from './actions.ts';
 import type { ApparatusDefinition, VesselCalibration } from './apparatus.ts';
 import type {
-  ActionReceipt, ControlReceipt, LabRuntimeEvent, NodeRunRequest, NodeRunResponse, RuntimeCheckpoint, RuntimeSnapshot,
+  ActionReceipt, ControlReceipt, LabRuntimeEvent, NodeRunRequest, NodeRunResponse, RuntimeCheckpoint, RuntimeSnapshot, RuntimeSolverRequest,
 } from './runtime.ts';
 import type { ApparatusInstance, Connection, ContainerContents, ExperimentAssembly, ExperimentScene } from './scene.ts';
 import type {
@@ -39,6 +39,7 @@ export interface LabContractTypes {
   readonly ControlReceipt: ControlReceipt;
   readonly NodeRunRequest: NodeRunRequest;
   readonly NodeRunResponse: NodeRunResponse;
+  readonly RuntimeSolverRequest: RuntimeSolverRequest;
   readonly ProblemDetails: ProblemDetails;
 }
 export type LabContractName = keyof LabContractTypes;
