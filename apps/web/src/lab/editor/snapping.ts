@@ -125,7 +125,7 @@ export function findSnapTarget(params: FindSnapParams): SnapResult {
   }
 
   const worldTransform = alignToSocket(ds.localTransform, planarTargetWorld(ns, best.point));
-  return { status: 'valid', socket: ns, worldTransform };
+  return { status: 'valid', socket: ns, draggedSocketId: ds.id, worldTransform };
 }
 
 /** For a planar socket, the alignment target is the drag point re-projected onto the surface (keeping its horizontal position); for a point socket it is simply the socket's own anchor. */

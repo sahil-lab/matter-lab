@@ -162,6 +162,15 @@ export interface Ray {
   readonly direction: Vec3;
 }
 
+/** Where `ray` meets the plane through `planePoint` with unit `planeNormal`; `null` if parallel or behind the ray's origin. Used for placement/drag previews (projecting the pointer onto a benchtop or a camera-facing plane). */
+export function rayIntersectsPlane(ray: Ray, planePoint: Vec3, planeNormal: Vec3): Vec3 | null {
+  const denom = dotVec3(ray.direction, planeNormal);
+  if (Math.abs(denom) < 1e-9) return null;
+  const t = dotVec3(subVec3(planePoint, ray.origin), planeNormal) / denom;
+  if (t < 0) return null;
+  return addVec3(ray.origin, scaleVec3(ray.direction, t));
+}
+
 /** Slab-method ray/AABB intersection; returns the entry distance along the ray, or `null` if it misses. */
 export function rayIntersectsAabb(ray: Ray, box: BoundsBox): number | null {
   let tMin = -Infinity;

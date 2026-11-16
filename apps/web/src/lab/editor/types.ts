@@ -60,7 +60,7 @@ export type SnapRejectReason =
   | 'CAPACITY_EXCEEDED';
 
 export type SnapResult =
-  | { readonly status: 'valid'; readonly socket: ResolvedSocket; readonly worldTransform: Transform }
+  | { readonly status: 'valid'; readonly socket: ResolvedSocket; readonly draggedSocketId: string; readonly worldTransform: Transform }
   | { readonly status: 'none' }
   | { readonly status: 'invalid'; readonly reason: SnapRejectReason; readonly message: string; readonly socket?: ResolvedSocket };
 

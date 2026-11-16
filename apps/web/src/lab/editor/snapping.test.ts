@@ -38,6 +38,7 @@ describe('findSnapTarget', () => {
     expect(result.status).toBe('valid');
     if (result.status === 'valid') {
       expect(result.socket.socketId).toBe('rail-mid');
+      expect(result.draggedSocketId).toBe('mount');
       // The clamp's mount socket (local x=-0.06) must land exactly on the stand's rail (world x=0).
       expect(result.worldTransform.positionM[0]).toBeCloseTo(0.06, 6);
       expect(result.worldTransform.positionM[1]).toBeCloseTo(0.38, 6);

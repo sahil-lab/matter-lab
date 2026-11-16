@@ -12,7 +12,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { footprintFor, getApparatusDefinition } from '../apparatus/catalog';
-import type { ApparatusInstance, Station, UUID } from './contracts';
+import type { ApparatusInstance, Station, Transform, UUID } from './contracts';
 import { newUUID } from './contracts';
 import { EMPTY_EDITOR_HISTORY } from './history';
 import type { EditorHistory } from './history';
@@ -33,6 +33,13 @@ export interface LabEditorState {
   gesture: GestureMode;
   /** Live preview while placing from the palette or dragging an existing instance; `null` otherwise. */
   placementPreview: PlacementPreview | null;
+  /**
+   * Positions shown in place of `scene.apparatus`'s during an in-progress drag — mirrors
+   * `render/viewApi.ts`'s `StageApi.setTransient` ("shows atoms at other positions than the
+   * scene's"). Nothing is committed to history or dispatched to the reducer until the gesture
+   * ends; rendering reads `transientTransforms.get(id) ?? scene.apparatus.get(id).transform`.
+   */
+  transientTransforms: ReadonlyMap<UUID, Transform> | null;
   /** Editor-local copy/paste buffer: full instances with their transforms, pasted as fresh ids. */
   clipboard: readonly ApparatusInstance[];
   stations: readonly Station[];
@@ -61,6 +68,7 @@ export function initialEditorState(): LabEditorState {
     hoveredInstanceId: null,
     gesture: IDLE_GESTURE,
     placementPreview: null,
+    transientTransforms: null,
     clipboard: [],
     stations: [defaultStation],
     activeStationId: defaultStation.id,
@@ -129,6 +137,15 @@ export function setPlacementPreview(preview: PlacementPreview | null): void {
   labEditor.set({ placementPreview: preview });
 }
 
+export function setTransientTransforms(transforms: ReadonlyMap<UUID, Transform> | null): void {
+  labEditor.set({ transientTransforms: transforms });
+}
+
+/** The transform rendering should use for `id`: the live (uncommitted) drag position if one is set, otherwise the committed scene transform. */
+export function liveTransformFor(state: LabEditorState, id: UUID): Transform | undefined {
+  return state.transientTransforms?.get(id) ?? state.scene.apparatus.get(id)?.transform;
+}
+
 /** True while an editing gesture (placing/dragging/gizmo/marquee/connecting/operating) owns the pointer, so the camera must not also react to it. */
 export function isEditorGestureActive(): boolean {
   const gesture = labEditor.get().gesture;
@@ -136,7 +153,7 @@ export function isEditorGestureActive(): boolean {
 }
 
 export function endGesture(): void {
-  labEditor.set({ gesture: labEditor.get().gesture.kind === 'camera' ? CAMERA_GESTURE : IDLE_GESTURE, placementPreview: null });
+  labEditor.set({ gesture: labEditor.get().gesture.kind === 'camera' ? CAMERA_GESTURE : IDLE_GESTURE, placementPreview: null, transientTransforms: null });
 }
 
 export function addStation(name: string): UUID {

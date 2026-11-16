@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Vec3 } from './types';
-import { aabbContainsPoint, aabbsOverlap, orientedBoxFor, rayIntersectsAabb, rotateVec3, worldAabbFor } from './footprint';
+import { aabbContainsPoint, aabbsOverlap, orientedBoxFor, rayIntersectsAabb, rayIntersectsPlane, rotateVec3, worldAabbFor } from './footprint';
 import type { ApparatusFootprint } from './types';
 
 const IDENTITY_QUAT: readonly [number, number, number, number] = [0, 0, 0, 1];
@@ -86,5 +86,20 @@ describe('rayIntersectsAabb', () => {
 
   it('returns 0 (the origin itself) when the ray starts inside the box', () => {
     expect(rayIntersectsAabb({ origin: [0, 0, 0], direction: [0, 0, 1] }, box)).toBe(0);
+  });
+});
+
+describe('rayIntersectsPlane', () => {
+  it('finds where a downward ray meets the ground plane', () => {
+    const point = rayIntersectsPlane({ origin: [1, 5, 2], direction: [0, -1, 0] }, [0, 0, 0], [0, 1, 0]);
+    expect(point).toEqual([1, 0, 2]);
+  });
+
+  it('returns null for a ray parallel to the plane', () => {
+    expect(rayIntersectsPlane({ origin: [0, 1, 0], direction: [1, 0, 0] }, [0, 0, 0], [0, 1, 0])).toBeNull();
+  });
+
+  it('returns null when the plane is behind the ray origin', () => {
+    expect(rayIntersectsPlane({ origin: [0, -1, 0], direction: [0, -1, 0] }, [0, 0, 0], [0, 1, 0])).toBeNull();
   });
 });
