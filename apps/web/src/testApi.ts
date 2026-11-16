@@ -22,6 +22,7 @@ import * as actions from './state/actions';
 import * as commands from './state/commands';
 import * as persistence from './state/persistence';
 import { lab } from './state/store';
+import * as challenges from './lab/challenges/state';
 
 /**
  * A small window onto the running app for automated browser tests and benchmarks. It is installed
@@ -50,6 +51,8 @@ export function installTestApi(): void {
     vault,
     vaultCatalogue,
     vaultLadder,
+    /** Agent 08's gameplay/guided-experiments store: modes, hints, scoring, notebook, attempts. */
+    challenges,
     device: getDeviceInfo,
     /** What is on the 3D stage besides the structure: sizes and settings, not the bulky arrays. */
     stage() {
