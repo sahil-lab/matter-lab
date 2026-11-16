@@ -23,6 +23,7 @@
     "@matterlab/contracts": "*",
     "@matterlab/core": "*",
     "@matterlab/forcefield": "*",
+    "@matterlab/lab-runtime": "*",
     "@matterlab/lab-science": "*",
     "@matterlab/quantum": "*",
     "@matterlab/reactions": "*",
