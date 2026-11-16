@@ -5,13 +5,15 @@
  * come from those files.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export function publish(section: string, data: Record<string, unknown>): void {
   console.log(`[uff-validation] ${section}: ${JSON.stringify(data)}`);
   if (process.env.UFF_WRITE_REPORT) {
-    const dir = new URL('../../test-results/', import.meta.url);
+    const dir = process.env.UFF_REPORT_DIR ?? fileURLToPath(new URL('../../test-results/', import.meta.url));
     mkdirSync(dir, { recursive: true });
-    writeFileSync(new URL(`validation-${section}.json`, dir), `${JSON.stringify(data, null, 2)}\n`);
+    writeFileSync(join(dir, `validation-${section}.json`), `${JSON.stringify(data, null, 2)}\n`);
   }
 }
 

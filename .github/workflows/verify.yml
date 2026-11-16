@@ -1,0 +1,128 @@
+name: Verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web / ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            node: 24.14.1
+          - os: ubuntu-latest
+            node: 24.14.1
+          - os: ubuntu-latest
+            node: 22.12.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: node tools/release/web-manifest.mjs
+      - name: Upload build and verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-${{ matrix.os }}-node-${{ matrix.node }}
+          path: |
+            apps/web/dist
+            qa/results
+          retention-days: 14
+
+  cpu-performance:
+    name: Explicit serial CPU performance assertions
+    runs-on: windows-latest
+    needs: web
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          cache: npm
+      - run: npm ci
+      - run: npm run test:performance
+      - name: Upload timings even when a threshold fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpu-performance
+          path: qa/results
+          retention-days: 30
+
+  browser-smoke:
+    name: Production browser smoke / software WebGL (not a GPU benchmark)
+    runs-on: ubuntu-latest
+    needs: web
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:smoke
+      - name: Upload actual browser screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-browser-smoke
+          path: qa/results
+          retention-days: 14
+
+  service:
+    name: FastAPI / PostgreSQL migrations / Excel / science
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COMPOSE_PROJECT_NAME: matterlab-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      MATTERLAB_DB_HOST_PORT: "15432"
+      MATTERLAB_API_HOST_PORT: "18787"
+      MATTERLAB_EXTERNAL_LOOKUPS_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the actual service image
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" build science
+      - name: Start isolated PostgreSQL
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" up -d --wait db
+      - name: Verify repeatable migrations
+        run: |
+          docker compose -p "$COMPOSE_PROJECT_NAME" run --rm science python -m matterlab_science migrate
+          docker compose -p "$COMPOSE_PROJECT_NAME" run --rm science python -m matterlab_science migrate
+          docker compose -p "$COMPOSE_PROJECT_NAME" run --rm science python -m matterlab_science migration-status
+      - name: Run API, schema, database, Excel and scientific tests
+        run: |
+          mkdir -p qa/results
+          docker compose -p "$COMPOSE_PROJECT_NAME" run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$PWD/qa/results:/qa-results" science \
+            pytest -m "not network" --junitxml=/qa-results/science.xml --basetemp=/qa-results/pytest-work
+      - name: Upload service test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-tests
+          path: qa/results/science.xml
+          retention-days: 14
+      - name: Remove only this hosted CI project's containers and disposable volume
+        if: always()
+        run: docker compose -p "$COMPOSE_PROJECT_NAME" down --volumes --remove-orphans

@@ -1,0 +1,19 @@
+[package]
+name = "matterlab-desktop"
+version = "0.1.0"
+description = "MATTER LAB Windows desktop shell"
+edition = "2021"
+rust-version = "1.95"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "=2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.5", features = [] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
