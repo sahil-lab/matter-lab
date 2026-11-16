@@ -1,0 +1,79 @@
+.ml-lab {
+  --mlab-void: #050c17;
+  --mlab-bed: #081321;
+  --mlab-surface: #0e1c2c;
+  --mlab-raised: #142537;
+  --mlab-ink: #e6edf1;
+  --mlab-muted: #a3b5c5;
+  --mlab-quiet: #839aaf;
+  --mlab-cool: #9bddd4;
+  --mlab-cool-ink: #092320;
+  --mlab-warm: #edbf83;
+  --mlab-success: #a6dfb2;
+  --mlab-danger: #ffa6af;
+  --mlab-line: #263b4d;
+  --mlab-line-soft: rgb(133 161 184 / 15%);
+  --mlab-line-bright: #4f6c81;
+  --mlab-glass: linear-gradient(150deg, rgb(23 42 59 / 95%), rgb(10 24 39 / 94%));
+  --mlab-elevation-1: 0 8px 28px rgb(0 0 0 / 24%), inset 0 1px rgb(227 242 255 / 4%);
+  --mlab-elevation-2: 0 24px 80px rgb(0 0 0 / 55%), inset 0 1px rgb(227 242 255 / 8%);
+  --mlab-radius-small: 4px;
+  --mlab-radius: 8px;
+  --mlab-radius-large: 14px;
+  --mlab-space-1: 4px;
+  --mlab-space-2: 8px;
+  --mlab-space-3: 12px;
+  --mlab-space-4: 16px;
+  --mlab-space-5: 24px;
+  --mlab-space-6: 32px;
+  --mlab-space-7: 48px;
+  --mlab-font: 'Inter Variable', Inter, system-ui, sans-serif;
+  --mlab-display: 'Space Grotesk Variable', 'Space Grotesk', var(--mlab-font);
+  --mlab-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+  --mlab-text-small: 11px;
+  --mlab-text: 12px;
+  --mlab-text-title: 18px;
+  --mlab-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --mlab-motion-fast: 120ms;
+  --mlab-motion-duration: 220ms;
+  --mlab-depth-panel: 2;
+  --mlab-depth-hud: 3;
+  --mlab-depth-navigation: 4;
+  --mlab-rail: 36px;
+
+  /* Existing kit and chart primitives inherit these aliases, without changing the molecular app. */
+  --bg: var(--mlab-void);
+  --surface: var(--mlab-surface);
+  --glass: var(--mlab-raised);
+  --accent: var(--mlab-cool);
+  --accent-ink: var(--mlab-cool-ink);
+  --energy: var(--mlab-warm);
+  --text: var(--mlab-ink);
+  --text-2: var(--mlab-muted);
+  --text-3: var(--mlab-quiet);
+  --danger: var(--mlab-danger);
+  --ok: var(--mlab-success);
+  --stroke: var(--mlab-line-soft);
+  --stroke-strong: var(--mlab-line-bright);
+  --font-ui: var(--mlab-font);
+  --font-display: var(--mlab-display);
+  --font-mono: var(--mlab-mono);
+  --r-xs: var(--mlab-radius-small);
+  --r-sm: var(--mlab-radius);
+  --r-md: var(--mlab-radius);
+  --r-lg: var(--mlab-radius-large);
+  color: var(--mlab-ink);
+  font-family: var(--mlab-font);
+  font-size: var(--mlab-text);
+  line-height: 1.5;
+  color-scheme: dark;
+}
+
+.ml-lab[data-reduced-motion='true'] {
+  --mlab-motion-fast: 0ms;
+  --mlab-motion-duration: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-lab { --mlab-motion-fast: 0ms; --mlab-motion-duration: 0ms; }
+}
