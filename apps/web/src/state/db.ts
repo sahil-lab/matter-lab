@@ -1,13 +1,13 @@
 /**
- * The on-device database (IndexedDB). Projects, experiments and discovery candidates each have a
- * store; every record is keyed by its `id`.
+ * The on-device database (IndexedDB). Projects, experiments, discovery candidates and lab
+ * challenge attempts each have a store; every record is keyed by its `id`.
  */
 
 const DB_NAME = 'matterlab';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
-export type StoreName = 'projects' | 'experiments' | 'candidates';
-const STORES: readonly StoreName[] = ['projects', 'experiments', 'candidates'];
+export type StoreName = 'projects' | 'experiments' | 'candidates' | 'labAttempts';
+const STORES: readonly StoreName[] = ['projects', 'experiments', 'candidates', 'labAttempts'];
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
