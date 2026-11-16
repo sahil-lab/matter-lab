@@ -136,6 +136,7 @@ const definitions: readonly ApparatusDefinition[] = [
     ],
   }),
   base('burette-clamp', 'CLAMP', 'Burette clamp', 'Supports', [0.38, 0.055, 0.075], ['MOUNT', 'MOUNTABLE'], {
+    tags: ['requires-mount'],
     boundsM: { min: [-0.03, -0.0275, -0.0375], max: [0.35, 0.0275, 0.0375] },
     sockets: [
       socket('stand-mount', 'MECHANICAL', [0, 0, 0], 'IN', 'retort-pole', ['retort-pole'], ['MOUNT']),
@@ -143,6 +144,7 @@ const definitions: readonly ApparatusDefinition[] = [
     ],
   }),
   vessel('burette-50ml', 'BURETTE', '50 mL burette', [0.06, 0.6, 0.025], burette, {
+    tags: ['requires-mount', 'upright-vessel', 'original-procedural-geometry'],
     sockets: [
       socket('barrel-mount', 'MECHANICAL', [0, 0.33, 0], 'IN', 'burette-barrel', ['burette-barrel'], ['MOUNT']),
       socket('inlet', 'FLUID', [0, 0.6, 0], 'IN', 'liquid', ['liquid'], ['FLOW_SOURCE'], { alignmentToleranceM: 0.06 }),
