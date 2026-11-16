@@ -1,0 +1,93 @@
+.lab-environment {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  overflow: hidden;
+  isolation: isolate;
+  color: #d9e3dd;
+  background: #091619;
+  font-family: inherit;
+}
+.lab-environment > div:has(> canvas) { position: absolute !important; inset: 0; }
+.lab-environment canvas { display: block; touch-action: none; }
+.lab-environment canvas:focus-visible { outline: 2px solid #b5dbbe; outline-offset: -3px; }
+.lab-environment-status {
+  position: absolute;
+  inset: auto 12px 10px auto;
+  display: flex;
+  gap: 12px;
+  padding: 5px 8px;
+  border: 1px solid #89ab9430;
+  border-radius: 4px;
+  background: #081619d9;
+  color: #b4c8bf;
+  font: 10px/1.4 ui-monospace, monospace;
+  pointer-events: none;
+}
+.lab-environment-loading,
+.lab-environment-fallback {
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 13px;
+}
+.lab-environment-error {
+  position: absolute;
+  inset: auto 12px 48px 12px;
+  padding: 8px;
+  background: #352822e8;
+  color: #f0d9b7;
+  font-size: 12px;
+}
+.lab-environment-skip { position: absolute; top: 12px; right: 12px; z-index: 3; }
+.lab-view-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: grid;
+  gap: 7px;
+  max-width: min(430px, calc(100% - 24px));
+  padding: 9px;
+  border: 1px solid #8cac9440;
+  border-radius: 7px;
+  background: #102426eb;
+  color: #e0e8e0;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.lab-view-controls-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.lab-environment button,
+.lab-view-controls button {
+  padding: 7px 9px;
+  border: 1px solid #a4c0aa45;
+  border-radius: 4px;
+  background: #173435;
+  color: #e0e8e0;
+  font: inherit;
+  cursor: pointer;
+}
+.lab-view-controls button[aria-pressed="true"] { background: #acccaf; color: #142c28; }
+.lab-environment button:focus-visible,
+.lab-view-controls button:focus-visible,
+.lab-view-controls input:focus-visible,
+.lab-view-controls summary:focus-visible { outline: 2px solid #c4e5c5; outline-offset: 2px; }
+.lab-environment button:disabled,
+.lab-view-controls button:disabled { opacity: 0.48; cursor: default; }
+.lab-view-controls form { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding-top: 8px; }
+.lab-view-controls label { grid-column: 1 / -1; }
+.lab-view-controls input { min-width: 0; padding: 5px; background: #0c2022; border: 1px solid #8cac9460; color: inherit; font: inherit; }
+.lab-view-controls ul { padding: 0; list-style: none; }
+.lab-view-controls li { display: flex; gap: 5px; margin-top: 5px; }
+.lab-view-controls p { max-width: 50ch; margin: 8px 0 0; font-size: 11px; }
+.lab-view-controls summary { cursor: pointer; }
+@media (max-width: 600px) {
+  .lab-environment-status { gap: 6px; font-size: 9px; }
+  .lab-view-controls { right: 12px; max-width: none; }
+}
