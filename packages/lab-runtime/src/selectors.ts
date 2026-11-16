@@ -8,13 +8,21 @@ export function selectCurrentObservation(
   if (!instance) return undefined;
   const station = snapshot.stationStates[instance.stationId];
   if (!station) return undefined;
-  if (['PH', 'CONCENTRATION', 'INDICATOR'].includes(type) &&
+  const scientific = ['PH', 'CONCENTRATION', 'INDICATOR'].includes(type);
+  if (scientific &&
       (['FAILED', 'UNSUPPORTED'].includes(station.status) || (snapshot.scene.containerStates[apparatusId]?.volumeL ?? 0) <= VOLUME_TOLERANCE_L)) return undefined;
+  const inScope = (record: ObservationRecord): boolean => record.runId === snapshot.runId &&
+    record.stationId === instance.stationId && record.epoch === station.epoch && record.observation.apparatusId === apparatusId;
+  const latestPH = scientific ? snapshot.observations.findLast((record) => inScope(record) && record.observation.type === 'PH') : undefined;
+  if (scientific) {
+    const inventory = snapshot.observations.findLast((record) => inScope(record) &&
+      (record.observation.type === 'VOLUME' || record.observation.type === 'TEMPERATURE'));
+    if (!latestPH || (inventory && latestPH.sequence < inventory.sequence)) return undefined;
+  }
   for (let index = snapshot.observations.length - 1; index >= 0; index--) {
     const record = snapshot.observations[index]!;
-    if (record.runId === snapshot.runId && record.stationId === instance.stationId &&
-        record.epoch === station.epoch && record.observation.apparatusId === apparatusId &&
-        record.observation.type === type) return record;
+    if (inScope(record) && record.observation.type === type &&
+        (!scientific || (record.sequence === latestPH!.sequence && record.observation.timeS === latestPH!.observation.timeS))) return record;
   }
   return undefined;
 }

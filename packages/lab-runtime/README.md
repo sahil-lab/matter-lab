@@ -70,6 +70,8 @@ PH apparatus IDs identify containers, not probes. `SET_PROBE` requires a valid s
 
 `selectCurrentObservation`, `selectTitrationObservations` and render-only `interpolatedVolumeL` support consumers. Titration metadata records cumulative **accepted** source/receiver delivery in the current epoch; ambiguity omits it. Source VOLUME records include zero at depletion. Indicator payloads copy Agent 06's exact fraction/color/source evidence. UI/fluids/gameplay must not calculate pH or inventory.
 
+Current scientific selectors also require the latest solve to be newer than that vessel's inventory observations. Indicator/concentration records must belong to the latest PH cohort; a same-time refill or removal of an indicator cannot retain a stale tint.
+
 ## Replay and Node
 
 Checkpoints retain the initial scene, ordered external steps (including atomic editor wrappers), contiguous event/receipt history, current state, versions and input hash. Restore verifies the hash, replays the completed prefix with the pinned solver/registry, and compares state/events before returning a runtime. Forged client inventory/results are not restored. Old contract/runtime/science versions fail explicitly, never silently migrate.
