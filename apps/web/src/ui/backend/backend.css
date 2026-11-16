@@ -1,0 +1,26 @@
+.ml-backend-panel { color: var(--text-1, #e7edf0); padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.ml-backend-panel h2, .ml-backend-panel h3, .ml-backend-panel p { margin: 0; }
+.ml-backend-panel header { display: grid; gap: 8px; }
+.ml-backend-panel header p, .ml-backend-muted { color: var(--text-3, #9caeb9); font-size: 12px; line-height: 1.6; }
+.ml-backend-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.ml-backend-form { display: grid; gap: 12px; }
+.ml-backend-form label, .ml-backend-search label, .ml-backend-file { display: grid; gap: 7px; font-size: 12px; }
+.ml-backend-form .ml-input { width: 100%; }
+.ml-backend-search { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.ml-backend-search label:nth-child(2) { flex: 1; min-width: 160px; }
+.ml-backend-metrics { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; font-size: 12px; }
+.ml-backend-metrics dd { margin: 0; overflow-wrap: anywhere; }
+.ml-backend-engines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ml-backend-engines li { display: grid; gap: 4px; padding: 10px; border: 1px solid var(--line, #33454f); border-radius: 8px; font-size: 12px; }
+.ml-backend-table { overflow: auto; max-height: 380px; border: 1px solid var(--line, #33454f); border-radius: 8px; }
+.ml-backend-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ml-backend-table caption { padding: 10px; text-align: left; color: var(--text-3, #9caeb9); }
+.ml-backend-table th, .ml-backend-table td { text-align: left; vertical-align: top; padding: 10px; border-bottom: 1px solid var(--line, #33454f); }
+.ml-backend-table th { font-weight: 600; }
+.ml-backend-table small { display: block; margin-top: 4px; color: var(--text-3, #9caeb9); overflow-wrap: anywhere; }
+.ml-backend-panel code, .ml-backend-panel pre { font-size: 11px; overflow-wrap: anywhere; }
+.ml-backend-panel pre { white-space: pre-wrap; max-height: 300px; overflow: auto; }
+.ml-backend-panel details { border: 1px solid var(--line, #33454f); border-radius: 8px; padding: 12px; font-size: 12px; }
+.ml-backend-panel summary { cursor: pointer; }
+.ml-backend-panel :focus-visible { outline: 2px solid var(--accent, #71d6dc); outline-offset: 3px; }
+@media (max-width: 600px) { .ml-backend-panel { padding: 12px; } .ml-backend-metrics { grid-template-columns: 1fr; } }
