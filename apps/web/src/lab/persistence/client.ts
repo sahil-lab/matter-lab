@@ -1,6 +1,7 @@
 import { parseApparatusDefinition, parseExperimentScene, parseLabContract, parseLabJson } from '@matterlab/contracts';
 import type { NodeRunRequest, Observation, RuntimeCheckpoint } from '@matterlab/contracts';
 import { ScienceClient, ServiceError } from '../../services/science-client';
+import { parseLearningState } from '../challenges/persistence';
 import type { Download, Page } from '../../services/science-client';
 import type { EquipmentPage, LabCapabilities, ReagentPage, RunEvent, RunResource, SceneDraft, SceneResource, SceneSummary, TemplateResource } from './types';
 
@@ -29,6 +30,7 @@ export function parseSceneResource(value: unknown): SceneResource {
     scene: parseExperimentScene(body.scene),
     runtimeCheckpoint: body.runtimeCheckpoint === null ? null : parseLabContract('RuntimeCheckpoint', body.runtimeCheckpoint),
     title: text(body.title), createdAt: text(body.createdAt), updatedAt: text(body.updatedAt),
+    ...(body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) }),
   };
 }
 
@@ -45,7 +47,8 @@ function parseRunResource(value: unknown): RunResource {
       typeof body.cancelRequested !== 'boolean' || !/^[a-f0-9]{64}$/.test(String(body.inputHash))) {
     throw new ServiceError(0, 'INVALID_RESPONSE', 'Invalid run metadata.');
   }
-  return { ...body, inputSnapshot: input, result, runtimeCheckpoint } as unknown as RunResource;
+  const learning = body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) };
+  return { ...body, ...learning, inputSnapshot: input, result, runtimeCheckpoint } as unknown as RunResource;
 }
 
 function write(body: unknown, key?: string, revision?: number): RequestInit {
@@ -196,7 +199,10 @@ export function importSceneDraft(json: string): SceneDraft {
     if (body.schemaVersion !== 1) throw new ServiceError(0, 'UNSUPPORTED_SCHEMA_VERSION', 'Only laboratory schema version 1 is supported.');
     const scene = parseExperimentScene(body.scene);
     const checkpoint: RuntimeCheckpoint | null = body.runtimeCheckpoint === null ? null : parseLabContract('RuntimeCheckpoint', body.runtimeCheckpoint);
-    return { title: text(body.title), scene, runtimeCheckpoint: checkpoint };
+    return {
+      title: text(body.title), scene, runtimeCheckpoint: checkpoint,
+      ...(body.learningState === undefined ? {} : { learningState: body.learningState === null ? null : parseLearningState(body.learningState) }),
+    };
   }
   return { title: 'Imported laboratory draft', scene: parseLabJson('ExperimentScene', json), runtimeCheckpoint: null };
 }

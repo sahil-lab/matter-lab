@@ -34,6 +34,7 @@ def export_document(scene: dict[str, Any], runs: list[dict[str, Any]]) -> dict[s
             "The scene and optional browser checkpoint are saved drafts, not verified scientific results.",
             "Only server replay results are authoritative model outputs. Imported JSON never creates trusted run results.",
             "JSON preserves all submitted scene/checkpoint fields; XLSX is a readable interchange view, not an executable protocol.",
+            "Learning metadata is CLIENT/DRAFT evidence. It is never promoted to a verified server score or scientific observation.",
         ],
     }
 
@@ -94,6 +95,8 @@ def export_workbook(document: dict[str, Any]) -> bytes:
             _append(sheets["Conditions"], [identifier, name, value, unit, "Saved inventory"])
         for species in contents["species"]:
             _append(sheets["Conditions"], [identifier, species["speciesId"], species["moles"], "mol", species.get("sourceId", "UNVERIFIED: no source ID supplied")])
+    if document.get("learningState") is not None:
+        _append(sheets["Conditions"], [scene["id"], "Learning attempts", len(document["learningState"]["attempts"]), "1", "CLIENT/DRAFT metadata; full exact sidecar is in JSON, no server-endorsed score."])
     headers = ["Run ID", "Station ID", "Epoch", "Apparatus ID", "Type", "Time (s)", "Value", "Unit", "Uncertainty", "Evidence", "Method", "Source IDs"]
     _append(sheets["Trial Measurements"], headers)
     _append(sheets["Observations"], [*headers, "Observation JSON"])

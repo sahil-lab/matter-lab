@@ -21,7 +21,7 @@ from matterlab_science.lab.exports import SHEETS, export_document, export_workbo
 from matterlab_science.lab.problems import LabProblem
 from matterlab_science.lab.runner import RunnerFailure, bundle_fingerprint, execute_bundle, terminal_result
 from matterlab_science.lab.validation import (
-    UNITS_POLICY, canonical_bytes, decode_json, duplicated_scene, run_input_hash, validate_checkpoint, validate_contract, validate_scene,
+    UNITS_POLICY, canonical_bytes, decode_json, duplicated_scene, run_input_hash,     validate_checkpoint, validate_contract, validate_learning_state, validate_scene,
 )
 from matterlab_science.main import create_app
 
@@ -182,3 +182,12 @@ def test_nonfinite_worker_deadlines_are_configuration_errors(monkeypatch: pytest
     monkeypatch.setenv("MATTERLAB_LAB_RUN_TIMEOUT_SECONDS", "NaN")
     with pytest.raises(ValueError, match="finite"):
         load_settings()
+
+
+def test_learning_sidecar_uses_agent08_parser_and_does_not_accept_scores() -> None:
+    state = {"schemaVersion": 1, "kind": "MATTERLAB_LEARNING_STATE", "attempts": []}
+    validate_learning_state(state, load_settings())
+    with pytest.raises(LabProblem) as error:
+        validate_learning_state({**state, "score": 100}, load_settings())
+    assert error.value.code == "CONTRACT_VALIDATION_FAILED"
+    assert decode_json(canonical_bytes(state)) == state

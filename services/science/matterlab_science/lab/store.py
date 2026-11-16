@@ -42,6 +42,7 @@ def scene_resource(row: dict[str, Any]) -> dict[str, Any]:
     return jsonable_encoder({
         "scene": row["scene"],
         "runtimeCheckpoint": row["runtime_checkpoint"],
+        "learningState": row.get("learning_state"),
         "title": row["title"],
         "createdAt": row["created_at"],
         "updatedAt": row["updated_at"],
@@ -57,6 +58,7 @@ def run_resource(row: dict[str, Any]) -> dict[str, Any]:
         "inputHash": row["input_hash"],
         "inputSnapshot": row["input_snapshot"],
         "runtimeCheckpoint": row["checkpoint"],
+        "learningState": row.get("learning_state_snapshot"),
         "result": row["result"],
         "failureCode": row["failure_code"],
         "cancelRequested": row["cancel_requested"],

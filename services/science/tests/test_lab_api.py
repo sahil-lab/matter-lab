@@ -220,3 +220,23 @@ def test_forward_migration_preserves_existing_v1_rows_and_checksums(live_postgre
             assert conn.execute("SELECT to_regclass('lab_run'),to_regclass('lab_scene')").fetchone() == ("lab_run", "lab_scene")
     finally:
         shutil.rmtree(directory)
+
+
+def test_learning_metadata_is_private_revisioned_and_cleared_on_duplicate(lab_env: tuple[TestClient, Any]) -> None:
+    client, _ = lab_env
+    saved = save(client)
+    path = f'/api/v1/lab/scenes/{saved["scene"]["id"]}'
+    learning = {"schemaVersion": 1, "kind": "MATTERLAB_LEARNING_STATE", "attempts": []}
+    updated = client.patch(path, json={"learningState": learning}, headers={**AUTH_A, "If-Match": '"1"'})
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["learningState"] == learning
+    assert updated.json()["scene"]["revision"] == 2
+    assert client.get(path, headers=AUTH_B).status_code == 404
+    notebook = client.get(path + "/export?format=json", headers=AUTH_A).json()
+    assert notebook["learningState"] == learning
+    cloned = client.post(path + "/duplicate", json={}, headers={**AUTH_A, "Idempotency-Key": str(uuid4())})
+    assert cloned.status_code == 201 and cloned.json()["learningState"] is None
+    queued = run(client, updated.json())
+    assert queued["learningState"] == learning and "learningState" not in queued["inputSnapshot"]
+    rejected = client.patch(path, json={"learningState": {**learning, "verifiedScore": 100}}, headers={**AUTH_A, "If-Match": '"2"'})
+    assert rejected.status_code == 422

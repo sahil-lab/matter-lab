@@ -54,7 +54,10 @@ export class ScenePersistenceCoordinator {
   save(draft: SceneDraft, signal?: AbortSignal): Promise<SceneResource> {
     const generation = this.stage(draft);
     const frozen = localDraft(draft, this.revision);
-    const snapshot: SceneDraft = { title: frozen.title, scene: frozen.scene, runtimeCheckpoint: frozen.runtimeCheckpoint };
+    const snapshot: SceneDraft = {
+      title: frozen.title, scene: frozen.scene, runtimeCheckpoint: frozen.runtimeCheckpoint,
+      ...(frozen.learningState === undefined ? {} : { learningState: frozen.learningState }),
+    };
     const operation = this.queued.catch(() => undefined).then(async () => {
       if (signal?.aborted) throw new ServiceError(0, 'REQUEST_ABORTED', 'The queued save was cancelled before it was sent.');
       this.publish({ status: 'saving' });

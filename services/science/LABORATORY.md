@@ -4,6 +4,7 @@ This is an **additive extension of the existing FastAPI/PostgreSQL service**, no
 Existing `/v1` endpoints, data and error responses remain unchanged. New endpoints are under
 `/api/v1/lab`. Migration `0006_laboratory_persistence.sql` adds private scenes/templates,
 immutable runs and append-only ledgers without rewriting migrations `0001`–`0005`.
+Forward migration `0007` adds nullable learning draft metadata; it does not rewrite `0006`.
 
 ## Authority and reproducibility
 
@@ -33,6 +34,13 @@ Scene metadata includes a nullable `runtimeCheckpoint` sidecar. It retains the i
 ordered steps, completed-step count, limits, snapshot and full sequence/epoch/deduplication history.
 The checkpoint snapshot must equal the submitted current scene, ignoring **only** durable revision.
 Saved browser checkpoints are drafts, not trusted calculations.
+
+The optional `learningState` sidecar uses Agent08's exact
+`{schemaVersion:1,kind:'MATTERLAB_LEARNING_STATE',attempts:[...]}` format and pure parser/schema.
+It is limited to 4 MiB, preserved atomically under the scene revision and in JSON exports/cache,
+and frozen separately at run enqueue. It is **CLIENT/DRAFT** data, not trusted scores or server
+observations, and is deliberately excluded from the scientific input hash. Duplicate/template
+instantiation clears it. A PATCH that omits it preserves it.
 
 When a checkpoint exists, run enqueue freezes:
 
@@ -114,6 +122,7 @@ and Agent06's real getters/preparation function. It produces:
 - `packages/lab-runtime/dist/catalog/reagent-definitions.json`
 - `packages/lab-runtime/dist/catalog/source-references.json`
 - `packages/lab-runtime/dist/catalog/starter-scene.json`
+- `packages/lab-runtime/dist/catalog/learning-state.schema.json` (generated from Agent08, not a second schema)
 
 The starter retains the parent's **unfilled** titration station plus independent blank bench.
 Its suggested virtual HCl/NaOH FILL commands use `prepareSolution`; there are no precomputed pH

@@ -3,11 +3,13 @@ import type {
 } from '@matterlab/contracts';
 import type { Page } from '../../services/science-client';
 import type { ReagentDefinition } from '@matterlab/lab-science';
+import type { LearningState } from '../challenges/types';
 
 export interface SceneDraft {
   readonly title: string;
   readonly scene: ExperimentScene;
   readonly runtimeCheckpoint: RuntimeCheckpoint | null;
+  readonly learningState?: LearningState | null;
 }
 
 export interface SceneResource extends SceneDraft {
@@ -55,6 +57,7 @@ export interface RunResource {
   readonly catalogSnapshot: JsonObject;
   readonly runnerSha256: string | null;
   readonly artifacts: readonly JsonObject[];
+  readonly learningState?: LearningState | null;
 }
 
 export interface RunEvent {

@@ -1,7 +1,8 @@
 import { LAB_LIMITS, hashNodeRunInput, parseLabContract, validateLabContract } from '../../../packages/contracts/src/index.ts';
 import type { LabContractName } from '../../../packages/contracts/src/index.ts';
+import { LearningStateError, parseLearningState } from '../../../apps/web/src/lab/challenges/persistence.ts';
 
-const supported = new Set<LabContractName>(['ExperimentScene', 'RuntimeCheckpoint', 'NodeRunRequest', 'NodeRunResponse', 'ApparatusDefinition']);
+const supported = new Set<string>(['ExperimentScene', 'RuntimeCheckpoint', 'NodeRunRequest', 'NodeRunResponse', 'ApparatusDefinition', 'LearningState']);
 const chunks: Buffer[] = [];
 let bytes = 0;
 try {
@@ -15,10 +16,15 @@ try {
     process.stdout.write(await hashNodeRunInput(parseLabContract('NodeRunRequest', input)));
   } else {
     const request = input as { readonly contract?: unknown; readonly value?: unknown };
-    if (typeof request.contract !== 'string' || !supported.has(request.contract as LabContractName)) throw new Error('Unsupported validation request.');
-    const result = validateLabContract(request.contract as LabContractName, request.value);
+    if (typeof request.contract !== 'string' || !supported.has(request.contract)) throw new Error('Unsupported validation request.');
+    const result = request.contract === 'LearningState'
+      ? { ok: true, value: parseLearningState(request.value) } as const
+      : validateLabContract(request.contract as LabContractName, request.value);
     process.stdout.write(JSON.stringify(result.ok ? { ok: true } : { ok: false, errors: result.errors }));
   }
-} catch {
-  process.stdout.write(JSON.stringify({ ok: false, errors: [{ code: 'INVALID_INPUT', path: '', message: 'Invalid or oversized shared-contract validation request.' }] }));
+} catch (error) {
+  process.stdout.write(JSON.stringify({ ok: false, errors: [{
+    code: 'INVALID_INPUT', path: error instanceof LearningStateError ? error.path : '',
+    message: error instanceof LearningStateError ? error.message.slice(0, 2048) : 'Invalid or oversized shared-contract validation request.',
+  }] }));
 }

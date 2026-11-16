@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import FastAPI
 
 
-def install_lab_openapi(app: FastAPI, path: Path) -> None:
+def install_lab_openapi(app: FastAPI, path: Path, learning_path: Path | None = None) -> None:
     original = app.openapi
 
     def rewrite(value: Any) -> Any:
@@ -33,6 +33,13 @@ def install_lab_openapi(app: FastAPI, path: Path) -> None:
         else:
             for name in ("ExperimentScene", "RuntimeCheckpoint", "NodeRunRequest", "RunResult"):
                 schemas["Lab" + name] = {"type": "object", "description": "Shared contract artifact is not installed; lab validation endpoints return CONTRACT_UNAVAILABLE."}
+        if learning_path is not None and learning_path.is_file():
+            learning = json.loads(learning_path.read_text(encoding="utf-8"))
+            for name, definition in learning["$defs"].items():
+                schemas.setdefault("Lab" + name, rewrite(definition))
+            schemas["LabLearningState"] = rewrite({key: value for key, value in learning.items() if key not in ("$defs", "$schema", "$id")})
+        else:
+            schemas["LabLearningState"] = {"type": "object", "description": "Agent08 client-draft schema is not installed; nonnull learning-state writes fail closed."}
         return rewrite(document)
 
     app.openapi = openapi

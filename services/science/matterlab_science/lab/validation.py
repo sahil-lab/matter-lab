@@ -82,9 +82,10 @@ def validate_contract(value: Any, definition: str, schema_path: Path, validator_
     canonical_bytes(value)
     try:
         document = _schema(str(schema_path), schema_path.stat().st_mtime_ns)
-        if definition not in document["$defs"]:
+        if definition != "LearningState" and definition not in document["$defs"]:
             raise KeyError(definition)
         validator = Draft202012Validator(
+            document if definition == "LearningState" else
             {"$schema": "https://json-schema.org/draft/2020-12/schema", "$defs": document["$defs"], "$ref": f"#/$defs/{definition}"},
             format_checker=FormatChecker(),
         )
@@ -124,6 +125,15 @@ def validate_contract(value: Any, definition: str, schema_path: Path, validator_
 
 def validate_scene(scene: dict[str, Any], schema_path: Path, validator_path: Path | None = None, node_binary: str = "node", timeout_seconds: float | None = None) -> None:
     validate_contract(scene, "ExperimentScene", schema_path, validator_path, node_binary, timeout_seconds)
+
+
+def validate_learning_state(value: dict[str, Any] | None, settings: Any) -> None:
+    if value is None:
+        return
+    if len(canonical_bytes(value)) > 4 * 1024 * 1024:
+        raise LabProblem(413, "LEARNING_STATE_TOO_LARGE", "Learning metadata exceeds 4 MiB; no evidence was silently truncated.")
+    validate_contract(value, "LearningState", settings.lab_learning_schema_path, settings.lab_validator_path,
+                      settings.lab_node_binary, settings.lab_validation_timeout_seconds)
 
 
 def remap_identifiers(value: Any, ids: dict[str, str]) -> Any:

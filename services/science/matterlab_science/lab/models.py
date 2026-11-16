@@ -23,12 +23,14 @@ class SceneCreate(StrictBody):
     title: str = Field(min_length=1, max_length=300)
     scene: dict[str, Any] = Field(json_schema_extra=shared_ref("ExperimentScene"))
     runtimeCheckpoint: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("RuntimeCheckpoint"), {"type": "null"}]})
+    learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
 
 
 class ScenePatch(StrictBody):
     title: str | None = Field(default=None, min_length=1, max_length=300)
     scene: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("ExperimentScene"), {"type": "null"}]})
     runtimeCheckpoint: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("RuntimeCheckpoint"), {"type": "null"}]})
+    learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
 
 
 class SceneResource(BaseModel):
@@ -37,6 +39,7 @@ class SceneResource(BaseModel):
     title: str
     createdAt: datetime
     updatedAt: datetime
+    learningState: dict[str, Any] | None = Field(default=None, json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
 
 
 class SceneSummary(BaseModel):
@@ -74,6 +77,8 @@ class RunResource(BaseModel):
     catalogSnapshot: dict[str, Any]
     runnerSha256: str | None
     artifacts: list[dict[str, Any]]
+    learningState: dict[str, Any] | None = Field(default=None, description="Frozen CLIENT/DRAFT metadata, not a verified score or scientific result.",
+                                               json_schema_extra={"anyOf": [shared_ref("LearningState"), {"type": "null"}]})
 
 
 class RunSummary(BaseModel):

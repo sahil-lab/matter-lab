@@ -111,5 +111,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(excel.info_router)
     app.include_router(excel.router, responses=error_responses(503))
     app.include_router(lab.router)
-    install_lab_openapi(app, settings.lab_schema_path)
+    install_lab_openapi(app, settings.lab_schema_path, settings.lab_learning_schema_path)
     return app
