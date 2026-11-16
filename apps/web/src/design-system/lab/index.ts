@@ -6,3 +6,6 @@ export * from './LabShell';
 export * from './LabEntry';
 export * from './LabTransport';
 export * from './LabTutorialCard';
+export * from './EquipmentLibrary';
+export * from './LabInspector';
+export * from './LabComponentGallery';

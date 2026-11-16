@@ -98,6 +98,8 @@ function LabShellContent({
   );
   const activePanels = panels ?? localPanels;
   const motionSettings = useLabMotion();
+  const reducedMotionCallback = useRef(onReducedMotionChange);
+  reducedMotionCallback.current = onReducedMotionChange;
   const isOpen = (panel: LabPanelId) => !immersive && activePanels[panel] && ({ library, inspector, timeline }[panel] != null);
   const setPanel = (panel: LabPanelId, open: boolean) => {
     const next = changePanelVisibility(activePanels, panel, open, compact);
@@ -105,7 +107,7 @@ function LabShellContent({
     onPanelsChange?.(next);
     if (!open) document.getElementById(`${id}-${panel}-toggle`)?.focus();
   };
-  useEffect(() => { onReducedMotionChange?.(motionSettings.reduced); }, [motionSettings.reduced, onReducedMotionChange]);
+  useEffect(() => { reducedMotionCallback.current?.(motionSettings.reduced); }, [motionSettings.reduced]);
   useEffect(() => {
     if (!compact || !activePanels.library || !activePanels.inspector) return;
     const next = changePanelVisibility(activePanels, 'inspector', true, true);
@@ -113,11 +115,12 @@ function LabShellContent({
     onPanelsChange?.(next);
   }, [compact, activePanels, panels, onPanelsChange]);
   useEffect(() => {
+    const element = root.current;
     const onFullscreen = () => { if (!document.fullscreenElement) setImmersive(false); };
     document.addEventListener('fullscreenchange', onFullscreen);
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreen);
-      if (document.fullscreenElement === root.current) void document.exitFullscreen().catch(() => undefined);
+      if (element && document.fullscreenElement === element) void document.exitFullscreen().catch(() => undefined);
     };
   }, []);
 

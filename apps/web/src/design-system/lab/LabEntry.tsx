@@ -1,5 +1,5 @@
 import { ArrowRight, BookOpen, Check, Crosshair } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLabMotion } from './motion';
 import type { LabMotion } from './motion';
 import { LabButton, LabDialog, LabTag } from './primitives';
@@ -37,18 +37,20 @@ export function LabEntry({ onEnter, onStageChange, storage, replay = false }: La
   const [open, setOpen] = useState(() => replay || needsLabEntry(preferenceStorage));
   const [stage, setStage] = useState<LabEntryStage>('wide');
   const motion = useLabMotion();
+  const stageCallback = useRef(onStageChange);
+  stageCallback.current = onStageChange;
   useEffect(() => {
     if (!open || motion.reduced) {
       setStage('ready');
-      onStageChange?.('ready', { ...motion, cameraDurationS: 0 });
+      stageCallback.current?.('ready', { ...motion, cameraDurationS: 0 });
       return;
     }
     setStage('wide');
-    onStageChange?.('wide', motion);
-    const approach = window.setTimeout(() => { setStage('bench'); onStageChange?.('bench', motion); }, motion.entryDurationMs / 2);
-    const ready = window.setTimeout(() => { setStage('ready'); onStageChange?.('ready', motion); }, motion.entryDurationMs);
+    stageCallback.current?.('wide', motion);
+    const approach = window.setTimeout(() => { setStage('bench'); stageCallback.current?.('bench', motion); }, motion.entryDurationMs / 2);
+    const ready = window.setTimeout(() => { setStage('ready'); stageCallback.current?.('ready', motion); }, motion.entryDurationMs);
     return () => { window.clearTimeout(approach); window.clearTimeout(ready); };
-  }, [open, motion, onStageChange]);
+  }, [open, motion]);
   const enter = (choice: 'explore' | 'guided') => {
     rememberLabEntry(preferenceStorage);
     setOpen(false);
