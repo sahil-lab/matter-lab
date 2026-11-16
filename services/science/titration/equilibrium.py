@@ -149,7 +149,7 @@ def solve_hydrogen_ion(totals: SystemTotals, *, ph_min: float = PH_SEARCH_MIN, p
     residual = charge_balance_residual(h_root, totals)
     return RootFindResult(
         converged=bool(results.converged),
-        hydrogen_ion_molar=h_root if h_root >= MIN_HYDROGEN_ION_MOLAR else max(h_root, MIN_HYDROGEN_ION_MOLAR),
+        hydrogen_ion_molar=max(h_root, MIN_HYDROGEN_ION_MOLAR),
         pH=ph_root,
         iterations=int(results.iterations),
         function_calls=int(results.function_calls) + calls,
