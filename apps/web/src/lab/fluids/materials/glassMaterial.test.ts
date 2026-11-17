@@ -31,11 +31,15 @@ describe('createGlassMaterial', () => {
     material.dispose();
   });
 
-  it('scales the refraction thickness parameter with the real wall thickness, never below a visible floor', () => {
+  it('keeps the transmission-ray thickness small relative to a typical vessel, regardless of the real wall thickness', () => {
+    // A thickness on the order of the object's own size (centimeters) is correct here; several
+    // centimeters or more pushed the refraction sample off the transmission texture in practice
+    // (verified visually: the vessel rendered solid black instead of refracting its surroundings).
     const thin = createGlassMaterial(FLUID_QUALITY.quality, { wallThicknessM: 0.0001 });
     const thick = createGlassMaterial(FLUID_QUALITY.quality, { wallThicknessM: 0.002 });
-    expect(thick.thickness).toBeGreaterThan(thin.thickness);
+    expect(thin.thickness).toBe(thick.thickness);
     expect(thin.thickness).toBeGreaterThan(0);
+    expect(thin.thickness).toBeLessThan(0.02);
     thin.dispose();
     thick.dispose();
   });

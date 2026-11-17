@@ -6,6 +6,7 @@
  */
 import { devProjection, devTelemetry, useDevStore } from './devStore';
 import type { ScenarioId } from './fixtures';
+import { fluidsPerfMonitor, fluidsPerfSnapshot } from './PerfTracker';
 
 export function installFluidsDevApi(): void {
   const api = {
@@ -18,6 +19,8 @@ export function installFluidsDevApi(): void {
     buretteReadingML: () => devTelemetry.buretteReadingML,
     /** CSS-pixel screen location of a world-space point under the live camera, or `null` before the first frame. */
     projectWorldPoint: (point: readonly [number, number, number]) => devProjection.project?.(point) ?? null,
+    perfSnapshot: () => fluidsPerfSnapshot(),
+    resetPerf: () => fluidsPerfMonitor.reset(),
   };
   (window as unknown as { __FLUIDS_LAB__: typeof api }).__FLUIDS_LAB__ = api;
 }

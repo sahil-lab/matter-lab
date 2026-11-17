@@ -19,12 +19,13 @@ describe('resolveFluidQuality', () => {
     expect(resolveFluidQuality('quality', { webgl2: true, software: false })).toEqual(FLUID_QUALITY.quality);
   });
 
-  it('every tier disables liquid transmission at or below efficient/balanced cost, and quality is the only fully-transmissive tier', () => {
+  it('enables glass transmission at balanced/quality, and never enables liquid transmission (nested transmission was found to hide the liquid color almost entirely)', () => {
     expect(FLUID_QUALITY.efficient.glassTransmission).toBe(false);
     expect(FLUID_QUALITY.efficient.liquidTransmission).toBe(false);
     expect(FLUID_QUALITY.balanced.glassTransmission).toBe(true);
     expect(FLUID_QUALITY.balanced.liquidTransmission).toBe(false);
-    expect(FLUID_QUALITY.quality.liquidTransmission).toBe(true);
+    expect(FLUID_QUALITY.quality.glassTransmission).toBe(true);
+    expect(FLUID_QUALITY.quality.liquidTransmission).toBe(false);
   });
 });
 

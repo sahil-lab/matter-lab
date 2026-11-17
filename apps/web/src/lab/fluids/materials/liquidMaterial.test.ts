@@ -1,20 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { FLUID_QUALITY } from '../quality/fluidQuality';
+import type { FluidQualitySettings } from '../quality/fluidQuality';
 import { createLiquidMaterial, updateLiquidMaterial } from './liquidMaterial';
 
+// No built-in preset currently enables liquid transmission (see fluidQuality.ts's comment: nested
+// transmission with the glass shell was found, via screenshots, to hide the liquid's own color).
+// The factory function must still handle it correctly in isolation, so these tests build a custom
+// settings object rather than relying on any `FLUID_QUALITY` preset for it.
+const TRANSMISSIVE_LIQUID: FluidQualitySettings = { ...FLUID_QUALITY.quality, liquidTransmission: true };
+
 describe('createLiquidMaterial', () => {
-  it('uses real transmission at the quality tier and tints the attenuation color to match', () => {
-    const material = createLiquidMaterial(FLUID_QUALITY.quality, { colorHex: '#3e8fd6' });
+  it('uses real transmission when requested and tints the attenuation color to match', () => {
+    const material = createLiquidMaterial(TRANSMISSIVE_LIQUID, { colorHex: '#3e8fd6' });
     expect(material.transmission).toBeGreaterThan(0);
     expect(material.attenuationColor.getHexString()).toBe('3e8fd6');
     material.dispose();
   });
 
-  it('falls back to alpha blending at tiers without liquid transmission', () => {
-    const material = createLiquidMaterial(FLUID_QUALITY.balanced, { colorHex: '#3e8fd6', opacity: 0.5 });
-    expect(material.transmission).toBe(0);
-    expect(material.opacity).toBeCloseTo(0.5, 9);
-    material.dispose();
+  it('falls back to alpha blending at every built-in tier', () => {
+    for (const quality of Object.values(FLUID_QUALITY)) {
+      const material = createLiquidMaterial(quality, { colorHex: '#3e8fd6', opacity: 0.5 });
+      expect(material.transmission).toBe(0);
+      expect(material.opacity).toBeCloseTo(0.5, 9);
+      material.dispose();
+    }
   });
 
   it('matches the requested color', () => {
@@ -26,7 +35,7 @@ describe('createLiquidMaterial', () => {
 
 describe('updateLiquidMaterial', () => {
   it('updates color and attenuation color for a transmissive material without rebuilding it', () => {
-    const material = createLiquidMaterial(FLUID_QUALITY.quality, { colorHex: '#3e8fd6' });
+    const material = createLiquidMaterial(TRANSMISSIVE_LIQUID, { colorHex: '#3e8fd6' });
     updateLiquidMaterial(material, { colorHex: '#d43f94' });
     expect(material.color.getHexString()).toBe('d43f94');
     expect(material.attenuationColor.getHexString()).toBe('d43f94');

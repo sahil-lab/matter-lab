@@ -11,6 +11,20 @@ export interface DevState {
   reducedMotion: boolean;
 }
 
+export interface PerfSnapshot {
+  fps: number;
+  frameMs: number;
+  frameMsP95: number;
+  cpuMs: number | null;
+  gpuMs: number | null;
+  gpuTimingAvailable: boolean;
+  drawCalls: number;
+  triangles: number;
+  pixelRatio: number;
+  idle: boolean;
+  framesRendered: number;
+}
+
 /** Typed access to the standalone `lab/fluids` dev harness at `/fluids-lab.html` (see `dev/devApi.ts`). */
 export class FluidsLab {
   readonly problems: string[] = [];
@@ -70,6 +84,14 @@ export class FluidsLab {
 
   buretteReadingML(): Promise<number | null> {
     return this.eval('return lab.buretteReadingML();');
+  }
+
+  perfSnapshot(): Promise<PerfSnapshot> {
+    return this.eval('return lab.perfSnapshot();');
+  }
+
+  async resetPerf(): Promise<void> {
+    await this.eval('lab.resetPerf();');
   }
 
   projectWorldPoint(point: readonly [number, number, number]): Promise<[number, number] | null> {

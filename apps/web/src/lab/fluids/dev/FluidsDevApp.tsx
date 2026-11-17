@@ -24,6 +24,7 @@ import { volumeAtHeight } from '../geometry/vesselProfile';
 import { FLUID_QUALITY } from '../quality/fluidQuality';
 import type { FluidQualityTier } from '../quality/fluidQuality';
 import { MAX_DELIVERED_ML, devProjection, devTelemetry, useDevStore } from './devStore';
+import { PerfTracker } from './PerfTracker';
 import {
   BURETTE_CAPACITY_ML,
   DEFAULT_TITRATION_FIXTURE,
@@ -63,17 +64,25 @@ function contentsOf(volumeL: number): ContainerContents {
   return { volumeL, species: [], temperatureK: 298.15, mixing: 'WELL_MIXED', modelId: 'dev-fixture' };
 }
 
-/** A small procedural studio (no external image/HDR files) — a stand-in for Agent 02's real environment. */
+/**
+ * A small procedural studio (no external image/HDR files) — a stand-in for Agent 02's real
+ * environment. Rendered as the visible background (`background` on `<Environment>`), not hidden:
+ * `MeshPhysicalMaterial`'s `transmission` refracts whatever is actually drawn behind an object, not
+ * the separate reflection-only environment map, so a flat, mostly-dark backdrop with no visible
+ * shapes behind the vessel left transmissive glass with nothing worth showing through it — found by
+ * screenshotting a plain transmissive sphere against a bright test backdrop and comparing.
+ */
 function DevLightingRig() {
   return (
     <>
-      <color attach="background" args={['#0a0f1a']} />
-      <hemisphereLight args={['#cbe0ff', '#0a1220', 0.4]} />
+      <hemisphereLight args={['#cbe0ff', '#0a1220', 0.5]} />
       <directionalLight position={[2, 3, 2]} intensity={1.2} />
-      <Environment resolution={128} frames={1} background={false}>
-        <Lightformer form="rect" intensity={2.6} color="#eaf2ff" position={[-2, 2.4, 2]} scale={[3, 2, 1]} target={[0, 0, 0]} />
-        <Lightformer form="ring" intensity={1.1} color="#55e2d1" position={[0, -2, -1]} scale={2.4} target={[0, 0, 0]} />
-        <Lightformer form="rect" intensity={1.4} color="#ffb66b" position={[2, 1, -2]} scale={[2, 1.4, 1]} target={[0, 0, 0]} />
+      <Environment resolution={256} frames={1} background blur={0.4}>
+        <color attach="background" args={['#0a0f1a']} />
+        <Lightformer form="rect" intensity={4} color="#eaf2ff" position={[-0.6, 0.5, -0.5]} scale={[1.1, 1.4, 1]} target={[0, 0.08, 0]} />
+        <Lightformer form="rect" intensity={2.4} color="#55e2d1" position={[0.5, -0.2, -0.6]} scale={[0.9, 1.2, 1]} target={[0, 0.08, 0]} />
+        <Lightformer form="rect" intensity={2.8} color="#ffb66b" position={[0.7, 0.6, -0.4]} scale={[0.7, 0.9, 1]} target={[0, 0.08, 0]} />
+        <Lightformer form="ring" intensity={1.6} color="#8c92fc" position={[-0.4, -0.4, -0.3]} scale={0.6} target={[0, 0.08, 0]} />
       </Environment>
     </>
   );
@@ -216,7 +225,9 @@ function SceneForScenario({ scenario }: { readonly scenario: ScenarioId }) {
 const CAMERA_BY_SCENARIO: Readonly<Record<ScenarioId, { readonly position: readonly [number, number, number]; readonly target: readonly [number, number, number] }>> = {
   'clear-liquid': { position: [0.22, 0.14, 0.26], target: [0, 0.05, 0] },
   'tinted-liquid': { position: [0.22, 0.14, 0.26], target: [0, 0.05, 0] },
-  'burette-levels': { position: [0, 0.16, 0.42], target: [0, 0.14, 0] },
+  // A 50 mL burette's graduated column is realistically ~0.55 m tall (narrow bore); frame the whole
+  // column (not just the dev panel's happenstance initial zoom level) so every tick/reading is visible.
+  'burette-levels': { position: [0.05, 0.5, 1.05], target: [0, 0.5, 0] },
   swirling: { position: [0.2, 0.12, 0.24], target: [0, 0.05, 0] },
   'endpoint-titration': { position: [0.28, 0.2, 0.34], target: [-0.01, 0.1, 0] },
 };
@@ -314,6 +325,7 @@ export function FluidsDevApp() {
         <SceneForScenario scenario={scenario} />
         <OrbitControls target={[...camera.target]} makeDefault minDistance={0.05} maxDistance={2} />
         <ProjectionBridge />
+        <PerfTracker />
       </Canvas>
     </div>
   );

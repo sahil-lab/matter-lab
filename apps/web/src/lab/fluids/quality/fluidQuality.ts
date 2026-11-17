@@ -12,7 +12,16 @@ export interface FluidQualitySettings {
   readonly tier: FluidQualityTier;
   /** Real refraction/transmission for the glass shell; false uses a cheap alpha-blended fallback. */
   readonly glassTransmission: boolean;
-  /** Real refraction/transmission for the liquid body; false uses a cheap alpha-blended fallback. */
+  /**
+   * Real refraction/transmission for the liquid body; false uses a cheap alpha-blended fallback.
+   * No current tier enables this: with the glass shell *also* transmissive (every tier that would
+   * want liquid transmission already wants glass transmission), the two transmissive surfaces
+   * along the same camera ray were found, via screenshots, to suppress the liquid's own color
+   * almost entirely — a tinted liquid rendered visually indistinguishable from clear. Alpha
+   * blending for the liquid looks correct and legible at every tier, including alongside
+   * transmissive glass (`createLiquidMaterial`/`createGlassMaterial` still both support real
+   * transmission in isolation, for when that interaction is revisited).
+   */
   readonly liquidTransmission: boolean;
   /** Radial segment count for vessel/liquid lathe geometry. */
   readonly latheRadialSegments: number;
@@ -48,7 +57,7 @@ export const FLUID_QUALITY: Readonly<Record<FluidQualityTier, FluidQualitySettin
   quality: {
     tier: 'quality',
     glassTransmission: true,
-    liquidTransmission: true,
+    liquidTransmission: false,
     latheRadialSegments: 64,
     meniscusRings: 6,
     meniscusSegments: 32,
