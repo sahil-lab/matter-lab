@@ -129,13 +129,33 @@ def build_all_fixtures() -> dict[str, dict[str, Any]]:
     fractions = [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 0.96, 0.999, 1.0, 1.001, 1.04, 1.2, 1.6, 2.0]
 
     unsupported_cases = [
-        _solve_case("sulfuric_acid_unsupported", "Diprotic acid, outside v1 monoprotic scope.", [SpeciesAmountInput("sulfuric-acid", 0.001)], 0.1),
-        _solve_case("phosphoric_acid_unsupported", "Triprotic acid, outside v1 monoprotic scope.", [SpeciesAmountInput("phosphoric-acid", 0.001)], 0.1),
-        _solve_case("weak_acid_mixture_unsupported", "Two distinct weak-acid systems dosed together.", [SpeciesAmountInput("acetic-acid", 0.001), SpeciesAmountInput("formic-acid", 0.001)], 0.1),
-        _solve_case("weak_acid_weak_base_mixture_unsupported", "A weak acid and a weak base dosed together.", [SpeciesAmountInput("acetic-acid", 0.001), SpeciesAmountInput("ammonia", 0.001)], 0.1),
+        _solve_case("boric_acid_unsupported", "Lewis acid, not a Bronsted proton donor; excluded on chemical-mechanism grounds, not scope size.", [SpeciesAmountInput("boric-acid", 0.001)], 0.1),
         _solve_case("temperature_out_of_range_unsupported", "500 K exceeds the validated aqueous equilibrium range.", [SpeciesAmountInput("hydrochloric-acid", 0.001)], 0.1, temperature_k=500.0),
         _solve_case("unknown_species_unsupported", "Species id not in the registry.", [SpeciesAmountInput("definitely-not-a-real-species", 0.001)], 0.1),
         _solve_case("negative_volume_failed", "Malformed physical input: negative volume.", [SpeciesAmountInput("hydrochloric-acid", 0.001)], -0.1),
+    ]
+
+    phosphoric_setup = TitrationSetup("phosphoric-acid", 0.100, 0.02500, "sodium-hydroxide", 0.100)
+    polyprotic_fractions = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5]
+
+    def _solve_with_activity_case(case_id: str, description: str, species: list[SpeciesAmountInput], volume_l: float, activity_model: str) -> dict[str, Any]:
+        result = solve_equilibrium(species=species, volume_l=volume_l, assumptions={"activity_model": activity_model})
+        return {
+            "case_id": case_id,
+            "description": description,
+            "input": {"species": [{"species_id": s.species_id, "moles": s.moles} for s in species], "volume_l": volume_l, "activity_model": activity_model},
+            "expected": {
+                "status": result.status,
+                "pH": result.pH,
+                "ionic_strength_molar": result.diagnostics.ionic_strength_molar,
+                "activity_model_iterations": result.diagnostics.activity_model_iterations,
+                "tolerance_pH": 1e-6,
+            },
+        }
+
+    activity_cases = [
+        _solve_with_activity_case("acetic_acid_ideal", "0.1 M acetic acid, ideal activity model (baseline).", [SpeciesAmountInput("acetic-acid", 0.01)], 0.1, "ideal"),
+        _solve_with_activity_case("acetic_acid_davies", "The same system with the Davies non-ideal activity correction: pH is lower (the salt effect).", [SpeciesAmountInput("acetic-acid", 0.01)], 0.1, "davies"),
     ]
 
     return {
@@ -157,7 +177,15 @@ def build_all_fixtures() -> dict[str, dict[str, Any]]:
             weak_base_setup,
             fractions,
         ),
+        "polyprotic_phosphoric_acid_naoh": _titration_curve_fixture(
+            "polyprotic_phosphoric_acid_naoh",
+            "25.00 mL of 0.100 M phosphoric acid (triprotic) titrated by 0.100 M NaOH at 25 degC: three buffer regions near pKa1 (2.15), pKa2 (7.21) and pKa3 (12.32); "
+            "'fraction_of_equivalence' here is relative to ONE proton (1.0 = enough NaOH to neutralize the first proton only).",
+            phosphoric_setup,
+            polyprotic_fractions,
+        ),
         "unsupported_and_failed_cases": {"cases": unsupported_cases},
+        "activity_model_cases": {"cases": activity_cases},
         "indicators": _indicator_fixture(),
         "species_registry": _species_fixture(),
     }

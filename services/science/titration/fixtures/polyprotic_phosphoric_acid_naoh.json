@@ -1,0 +1,73 @@
+{
+  "case_id": "polyprotic_phosphoric_acid_naoh",
+  "description": "25.00 mL of 0.100 M phosphoric acid (triprotic) titrated by 0.100 M NaOH at 25 degC: three buffer regions near pKa1 (2.15), pKa2 (7.21) and pKa3 (12.32); 'fraction_of_equivalence' here is relative to ONE proton (1.0 = enough NaOH to neutralize the first proton only).",
+  "setup": {
+    "analyte_species_id": "phosphoric-acid",
+    "analyte_concentration_molar": 0.1,
+    "analyte_volume_l": 0.025,
+    "titrant_species_id": "sodium-hydroxide",
+    "titrant_concentration_molar": 0.1,
+    "temperature_k": 298.15
+  },
+  "equivalence_volume_l": 0.025000000000000005,
+  "half_equivalence_volume_l": 0.012500000000000002,
+  "points": [
+    {
+      "fraction_of_equivalence": 0.0,
+      "delivered_volume_l": 0.0,
+      "total_volume_l": 0.025,
+      "pH": 1.6326066757751845,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 0.5,
+      "delivered_volume_l": 0.012500000000000002,
+      "total_volume_l": 0.037500000000000006,
+      "pH": 2.2859688080132123,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.0,
+      "delivered_volume_l": 0.025000000000000005,
+      "total_volume_l": 0.05,
+      "pH": 4.70891345848999,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 1.5,
+      "delivered_volume_l": 0.037500000000000006,
+      "total_volume_l": 0.0625,
+      "pH": 7.209996868717801,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 2.0,
+      "delivered_volume_l": 0.05000000000000001,
+      "total_volume_l": 0.07500000000000001,
+      "pH": 9.658855159458437,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 2.5,
+      "delivered_volume_l": 0.06250000000000001,
+      "total_volume_l": 0.08750000000000002,
+      "pH": 11.849157631269328,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 3.0,
+      "delivered_volume_l": 0.07500000000000001,
+      "total_volume_l": 0.1,
+      "pH": 12.166797345014773,
+      "status": "SUCCEEDED"
+    },
+    {
+      "fraction_of_equivalence": 3.5,
+      "delivered_volume_l": 0.08750000000000002,
+      "total_volume_l": 0.11250000000000002,
+      "pH": 12.341406187115076,
+      "status": "SUCCEEDED"
+    }
+  ],
+  "tolerance_pH": 1e-06
+}

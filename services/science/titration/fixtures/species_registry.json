@@ -55,6 +55,24 @@
       "unsupported_reason": null
     },
     {
+      "species_id": "calcium-hydroxide",
+      "name": "Calcium hydroxide",
+      "formula": "Ca(OH)2",
+      "role": "strong_base",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "barium-hydroxide",
+      "name": "Barium hydroxide",
+      "formula": "Ba(OH)2",
+      "role": "strong_base",
+      "pKa_298_15k": null,
+      "system_id": null,
+      "unsupported_reason": null
+    },
+    {
       "species_id": "acetic-acid",
       "name": "Acetic acid",
       "formula": "CH3COOH",
@@ -79,6 +97,42 @@
       "role": "weak_acid",
       "pKa_298_15k": 4.2,
       "system_id": "benzoic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "sulfuric-acid",
+      "name": "Sulfuric acid",
+      "formula": "H2SO4",
+      "role": "weak_acid",
+      "pKa_298_15k": null,
+      "system_id": "sulfuric-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "phosphoric-acid",
+      "name": "Phosphoric acid",
+      "formula": "H3PO4",
+      "role": "weak_acid",
+      "pKa_298_15k": null,
+      "system_id": "phosphoric-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "carbonic-acid",
+      "name": "Carbonic acid",
+      "formula": "H2CO3",
+      "role": "weak_acid",
+      "pKa_298_15k": null,
+      "system_id": "carbonic-acid",
+      "unsupported_reason": null
+    },
+    {
+      "species_id": "oxalic-acid",
+      "name": "Oxalic acid",
+      "formula": "C2H2O4",
+      "role": "weak_acid",
+      "pKa_298_15k": null,
+      "system_id": "oxalic-acid",
       "unsupported_reason": null
     },
     {
@@ -127,49 +181,13 @@
       "unsupported_reason": null
     },
     {
-      "species_id": "sulfuric-acid",
-      "name": "Sulfuric acid",
-      "formula": "H2SO4",
-      "role": "unsupported_polyprotic",
+      "species_id": "boric-acid",
+      "name": "Boric acid",
+      "formula": "H3BO3",
+      "role": "unsupported_other",
       "pKa_298_15k": null,
       "system_id": null,
-      "unsupported_reason": "Diprotic (two acidic protons with distinct Ka1/Ka2); the v1 solver supports monoprotic acids only."
-    },
-    {
-      "species_id": "phosphoric-acid",
-      "name": "Phosphoric acid",
-      "formula": "H3PO4",
-      "role": "unsupported_polyprotic",
-      "pKa_298_15k": null,
-      "system_id": null,
-      "unsupported_reason": "Triprotic (three acidic protons with distinct Ka1/Ka2/Ka3); the v1 solver supports monoprotic acids only."
-    },
-    {
-      "species_id": "carbonic-acid",
-      "name": "Carbonic acid",
-      "formula": "H2CO3",
-      "role": "unsupported_polyprotic",
-      "pKa_298_15k": null,
-      "system_id": null,
-      "unsupported_reason": "Diprotic (Ka1/Ka2) and involves CO2(aq)/CO2(g) phase equilibria; the v1 solver supports monoprotic acids only."
-    },
-    {
-      "species_id": "oxalic-acid",
-      "name": "Oxalic acid",
-      "formula": "C2H2O4",
-      "role": "unsupported_polyprotic",
-      "pKa_298_15k": null,
-      "system_id": null,
-      "unsupported_reason": "Diprotic (two acidic protons with distinct Ka1/Ka2); the v1 solver supports monoprotic acids only."
-    },
-    {
-      "species_id": "calcium-hydroxide",
-      "name": "Calcium hydroxide",
-      "formula": "Ca(OH)2",
-      "role": "unsupported_polyprotic",
-      "pKa_298_15k": null,
-      "system_id": null,
-      "unsupported_reason": "Diacidic (releases two hydroxide ions per formula unit, and is only sparingly soluble); the v1 solver supports monoacidic strong bases only."
+      "unsupported_reason": "Boric acid is a Lewis acid, not a Bronsted proton donor: it raises pH by accepting a hydroxide ion from water (B(OH)3 + H2O <-> B(OH)4- + H+), not by releasing a proton of its own. The n-step Bronsted dissociation model this solver implements does not describe that mechanism, so it is excluded rather than given an inapplicable pKa."
     }
   ]
 }

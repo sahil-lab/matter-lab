@@ -65,28 +65,28 @@
       "fraction_of_equivalence": 0.999,
       "delivered_volume_l": 0.024975000000000004,
       "total_volume_l": 0.049975000000000006,
-      "pH": 6.255083250372136,
+      "pH": 6.2550832503721425,
       "status": "SUCCEEDED"
     },
     {
       "fraction_of_equivalence": 1.0,
       "delivered_volume_l": 0.025000000000000005,
       "total_volume_l": 0.05,
-      "pH": 5.275460798282272,
+      "pH": 5.275460798282362,
       "status": "SUCCEEDED"
     },
     {
       "fraction_of_equivalence": 1.001,
       "delivered_volume_l": 0.025025000000000002,
       "total_volume_l": 0.050025,
-      "pH": 4.296439062490758,
+      "pH": 4.2964390624907605,
       "status": "SUCCEEDED"
     },
     {
       "fraction_of_equivalence": 1.04,
       "delivered_volume_l": 0.026000000000000006,
       "total_volume_l": 0.051000000000000004,
-      "pH": 2.7075670611756264,
+      "pH": 2.707567061175625,
       "status": "SUCCEEDED"
     },
     {

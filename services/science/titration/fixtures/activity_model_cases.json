@@ -1,0 +1,46 @@
+{
+  "cases": [
+    {
+      "case_id": "acetic_acid_ideal",
+      "description": "0.1 M acetic acid, ideal activity model (baseline).",
+      "input": {
+        "species": [
+          {
+            "species_id": "acetic-acid",
+            "moles": 0.01
+          }
+        ],
+        "volume_l": 0.1,
+        "activity_model": "ideal"
+      },
+      "expected": {
+        "status": "SUCCEEDED",
+        "pH": 2.88087574882631,
+        "ionic_strength_molar": 0.0013156011704028602,
+        "activity_model_iterations": 0,
+        "tolerance_pH": 1e-06
+      }
+    },
+    {
+      "case_id": "acetic_acid_davies",
+      "description": "The same system with the Davies non-ideal activity correction: pH is lower (the salt effect).",
+      "input": {
+        "species": [
+          {
+            "species_id": "acetic-acid",
+            "moles": 0.01
+          }
+        ],
+        "volume_l": 0.1,
+        "activity_model": "davies"
+      },
+      "expected": {
+        "status": "SUCCEEDED",
+        "pH": 2.863034118625406,
+        "ionic_strength_molar": 0.001370774072500248,
+        "activity_model_iterations": 6,
+        "tolerance_pH": 1e-06
+      }
+    }
+  ]
+}

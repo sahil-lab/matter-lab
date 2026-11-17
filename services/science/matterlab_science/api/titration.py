@@ -78,7 +78,7 @@ class SpeciesAmountIn(BaseModel):
 
 class SolveAssumptionsIn(BaseModel):
     mixing: Literal["WELL_MIXED", "UNMIXED"] = "WELL_MIXED"
-    activity_model: Literal["ideal"] = "ideal"
+    activity_model: Literal["ideal", "davies"] = "ideal"
 
 
 class SolveRequest(BaseModel):
@@ -116,6 +116,7 @@ class SolveDiagnosticsOut(BaseModel):
     root_finder_iterations: int | None
     root_finder_function_calls: int | None
     root_finder_bracket_ph: list[float] | None
+    activity_model_iterations: int | None = Field(default=None, description="Outer self-consistent iterations of the Davies activity correction; null for the ideal model.")
     input_hash: str | None
 
 
@@ -194,6 +195,7 @@ def _solve_response(result: SolveResult) -> SolveResponse:
             root_finder_iterations=diag.root_finder_iterations,
             root_finder_function_calls=diag.root_finder_function_calls,
             root_finder_bracket_ph=list(diag.root_finder_bracket_ph) if diag.root_finder_bracket_ph else None,
+            activity_model_iterations=diag.activity_model_iterations,
             input_hash=diag.input_hash,
         ),
     )
@@ -308,7 +310,8 @@ class SpeciesInfoOut(BaseModel):
     formula: str
     role: str
     charge_as_dosed: int
-    pKa_298_15k: float | None
+    pKa_steps: list[float] | None = Field(default=None, description="Ordered stepwise pKa (most acidic first); one value for a monoprotic/monoacidic system, more for a polyprotic one.")
+    pKa_298_15k: float | None = Field(default=None, description="Convenience value equal to pKa_steps[0] for a monoprotic/monoacidic system only; null for a polyprotic one (use pKa_steps).")
     system_id: str | None
     unsupported_reason: str | None
     provenance: ProvenanceOut | None
@@ -323,6 +326,7 @@ def species() -> list[SpeciesInfoOut]:
             formula=s.formula,
             role=s.role,
             charge_as_dosed=s.charge_as_dosed,
+            pKa_steps=list(s.pKa_steps) if s.pKa_steps is not None else None,
             pKa_298_15k=s.pKa_298_15k,
             system_id=s.system_id,
             unsupported_reason=s.unsupported_reason,

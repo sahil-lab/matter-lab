@@ -16,15 +16,18 @@ from .provenance import EvidenceLevel
 
 SolveStatus = Literal["SUCCEEDED", "UNSUPPORTED", "FAILED"]
 
-#: The only model identifier implemented in v1. Accepted as an explicit input (per the brief) so
-#: that a caller names the model it expects and gets UNSUPPORTED, not a silently different
-#: calculation, if it asks for anything else.
-MONOPROTIC_ELECTRONEUTRALITY_MODEL_ID = "monoprotic-acid-base-electroneutrality-v1"
-METHOD_VERSION = "1.0.0"
+#: The model identifier implemented by `solver.solve_equilibrium`. Accepted as an explicit input
+#: (per the brief) so that a caller names the model it expects and gets UNSUPPORTED, not a silently
+#: different calculation, if it asks for anything else. Named without "monoprotic" since v2 covers
+#: polyprotic acids/bases and multiple simultaneous weak systems too (see
+#: `services/science/titration/README.md` Section 3); the symbol keeps its original name for
+#: import stability, only the string value changed.
+MONOPROTIC_ELECTRONEUTRALITY_MODEL_ID = "acid-base-electroneutrality-v1"
+METHOD_VERSION = "2.0.0"
 SUPPORTED_MODEL_IDS: tuple[str, ...] = (MONOPROTIC_ELECTRONEUTRALITY_MODEL_ID,)
 
 MixingAssumption = Literal["WELL_MIXED", "UNMIXED"]
-ActivityModel = Literal["ideal"]
+ActivityModel = Literal["ideal", "davies"]
 
 
 @dataclass(frozen=True)
@@ -65,6 +68,9 @@ class SolveDiagnostics:
     root_finder_iterations: int | None = None
     root_finder_function_calls: int | None = None
     root_finder_bracket_ph: tuple[float, float] | None = None
+    activity_model_iterations: int | None = None
+    """Outer self-consistent iterations of the Davies-equation activity correction (None for the
+    ideal model, which needs none; see `activity.py`)."""
     input_hash: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
@@ -76,6 +82,7 @@ class SolveDiagnostics:
             "root_finder_iterations": self.root_finder_iterations,
             "root_finder_function_calls": self.root_finder_function_calls,
             "root_finder_bracket_ph": list(self.root_finder_bracket_ph) if self.root_finder_bracket_ph else None,
+            "activity_model_iterations": self.activity_model_iterations,
             "input_hash": self.input_hash,
         }
 

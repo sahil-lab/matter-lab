@@ -18,8 +18,10 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict
 
 from . import species as species_registry
+from .activity import MAX_VALIDATED_IONIC_STRENGTH_MOLAR, solve_with_activity_model
 from .constants import MAX_VALID_CONCENTRATION_MOLAR, MAX_VOLUME_L, MIN_VOLUME_L
-from .equilibrium import SystemTotals, solve_hydrogen_ion
+from .equilibrium import SystemTotals, WeakSystem, stepwise_distribution
+from .ka_temperature import IonizationThermodynamics, pKa_at_temperature
 from .provenance import weakest
 from .species import SpeciesDefinition
 from .types import (
@@ -36,13 +38,16 @@ from .types import (
 from .water import kw_at_temperature, validate_temperature_k
 
 #: Weak-acid/weak-base Ka/Kb values are tabulated at 298.15 K and are *not* given their own
-#: temperature model in v1 (only Kw(T) is, in `water.py`); they are held constant within this band
-#: around the reference temperature, with a warning, and the system is UNSUPPORTED outside it.
+#: temperature model (only Kw(T) is, in `water.py`) *unless* their species carries an
+#: `ionization_thermodynamics` record (`species.py`; currently acetic acid only), in which case
+#: `_adjusted_ka_steps` below uses it instead. Every other system is held constant within this
+#: band around the reference temperature, with a warning, and is UNSUPPORTED outside it.
 WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K = (288.15, 308.15)
 
-#: Ionic strength above which the ideal-activity assumption (activity coefficient = 1) is flagged
-#: as increasingly approximate (roughly the upper edge of where the Debye-Huckel limiting law is
-#: still a reasonable guide); a diagnostic warning, not a rejection.
+#: Ionic strength above which the *ideal*-activity assumption (activity coefficient = 1) is
+#: flagged as increasingly approximate (roughly the upper edge of where the Debye-Huckel limiting
+#: law is still a reasonable guide); a diagnostic warning, not a rejection. The Davies model
+#: (`activity_model="davies"`) has its own, higher ceiling (`activity.MAX_VALIDATED_IONIC_STRENGTH_MOLAR`).
 IONIC_STRENGTH_WARNING_THRESHOLD_MOLAR = 0.1
 
 
@@ -70,6 +75,54 @@ def _input_hash(species: Sequence[SpeciesAmountInput], volume_l: float, temperat
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _form_label(step_index: int, n_steps: int, *, is_acid: bool) -> str:
+    """A human-readable label for one protonation state of an n-step system. `step_index` is the
+    number of protons removed from the fully protonated reference form (0..n_steps)."""
+    if is_acid:
+        charge = -step_index
+    else:
+        charge = n_steps - step_index  # weak-base systems are indexed from their conjugate acid
+    if charge == 0:
+        return "fully protonated, neutral form" if is_acid else "fully deprotonated, neutral form"
+    sign = "-" if charge < 0 else "+"
+    magnitude = abs(charge)
+    charge_text = sign if magnitude == 1 else f"{magnitude}{sign}"
+    protons_removed = step_index if is_acid else n_steps - step_index
+    return f"{protons_removed} of {n_steps} proton(s) removed (charge {charge_text})"
+
+
+def _validated_ka_steps_at_temperature(
+    system_id: str, ka_steps_298: tuple[float, ...], thermo: IonizationThermodynamics | None, temperature_k: float
+) -> tuple[tuple[float, ...] | None, str | None]:
+    """`(ka_steps, None)` at `temperature_k` if valid, or `(None, reason)` if not.
+
+    Uses `thermo.valid_temperature_range_k` (a real Ka(T) model, `ka_temperature.py`) when the
+    species has one; otherwise falls back to the generic `WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K`
+    band with Ka held constant. Both paths return the *unchanged* 298.15 K values when the
+    requested temperature *is* 298.15 K, so the reference case never depends on this function's
+    (de)activation logic.
+    """
+    if abs(temperature_k - 298.15) < 1e-9:
+        return ka_steps_298, None
+    if thermo is not None:
+        lo, hi = thermo.valid_temperature_range_k
+        if lo <= temperature_k <= hi:
+            assert len(ka_steps_298) == 1, "ionization_thermodynamics is only defined for monoprotic/monoacidic systems"
+            pKa_298 = -math.log10(ka_steps_298[0])
+            pKa_T = pKa_at_temperature(pKa_298, thermo, temperature_k)
+            return (10.0 ** (-pKa_T),), None
+        return None, (
+            f"The Ka(T) model for {system_id!r} is validated only for {lo:.2f} K to {hi:.2f} K (see species.py), and {temperature_k:.2f} K is outside that range."
+        )
+    lo, hi = WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K
+    if lo <= temperature_k <= hi:
+        return ka_steps_298, None
+    return None, (
+        f"The dissociation constant(s) of {system_id!r} are tabulated at 25 degC (298.15 K) and are not given their own temperature model; they are "
+        f"held constant only for {lo:.2f} K to {hi:.2f} K, and {temperature_k:.2f} K is outside that band."
+    )
+
+
 def solve_equilibrium(
     species: Sequence[SpeciesAmountInput],
     volume_l: float,
@@ -81,22 +134,31 @@ def solve_equilibrium(
     explicit assumptions -> pH, equilibrium concentrations, status, diagnostics, method/version
     and numerical uncertainty. Pure and deterministic: identical inputs always give an identical
     result, and nothing is read from or written to a database, the network or the filesystem.
+
+    Supports any number of distinct weak-acid and weak-base systems together (each monoprotic or
+    polyprotic) alongside a strong acid and a strong base; see `species.py` for what is registered
+    and `README.md` Section 3 for the (few) combinations still excluded and why.
     """
     resolved_assumptions = _resolve_assumptions(assumptions)
     diagnostics = SolveDiagnostics(input_hash=_input_hash(species, volume_l, temperature_k, model_id, resolved_assumptions))
     assumption_notes = [
-        "Ideal dilute solution: ionic activity coefficients are taken as 1 (activity = molar concentration).",
         "Instantaneous, complete mixing (WELL_MIXED): the solution is homogeneous at the moment the equilibrium is evaluated.",
         "Strong acids and strong bases are modelled as completely dissociated (no residual undissociated form).",
     ]
+    if resolved_assumptions.activity_model == "ideal":
+        assumption_notes.insert(0, "Ideal dilute solution: ionic activity coefficients are taken as 1 (activity = molar concentration).")
+    elif resolved_assumptions.activity_model == "davies":
+        assumption_notes.insert(
+            0, "Non-ideal activity: the Davies equation (log10(gamma) = -A z^2 (sqrt(I)/(1+sqrt(I)) - 0.3 I), A = 0.509 at 25 degC) corrects Ka and Kw for ionic strength, solved self-consistently."
+        )
 
     if model_id not in SUPPORTED_MODEL_IDS:
         return _result("UNSUPPORTED", model_id, reason=f"Model id {model_id!r} is not implemented by this solver; supported model ids: {', '.join(SUPPORTED_MODEL_IDS)}.", diagnostics=diagnostics)
     if resolved_assumptions.mixing != "WELL_MIXED":
-        return _result("UNSUPPORTED", model_id, reason=f"mixing={resolved_assumptions.mixing!r} is not supported in v1; only WELL_MIXED is implemented.", diagnostics=diagnostics)
-    if resolved_assumptions.activity_model != "ideal":
+        return _result("UNSUPPORTED", model_id, reason=f"mixing={resolved_assumptions.mixing!r} is not supported; only WELL_MIXED is implemented.", diagnostics=diagnostics)
+    if resolved_assumptions.activity_model not in ("ideal", "davies"):
         return _result(
-            "UNSUPPORTED", model_id, reason=f"activity_model={resolved_assumptions.activity_model!r} is not implemented in v1; only 'ideal' (activity = concentration) is available.", diagnostics=diagnostics
+            "UNSUPPORTED", model_id, reason=f"activity_model={resolved_assumptions.activity_model!r} is not implemented; available models are 'ideal' (activity = concentration) and 'davies'.", diagnostics=diagnostics
         )
 
     # --- physical input validation: malformed request -> FAILED, not "unsupported chemistry" -----
@@ -124,19 +186,19 @@ def solve_equilibrium(
             return _result("UNSUPPORTED", model_id, reason=f"Species id {amount.species_id!r} is not a resolved chemical species known to this solver.", diagnostics=diagnostics)
         if definition.unsupported_reason is not None:
             return _result(
-                "UNSUPPORTED", model_id, reason=f"{definition.name} ({definition.formula}) is outside the v1 titration solver's scope: {definition.unsupported_reason}", diagnostics=diagnostics
+                "UNSUPPORTED", model_id, reason=f"{definition.name} ({definition.formula}) is outside this solver's scope: {definition.unsupported_reason}", diagnostics=diagnostics
             )
         resolved.append((amount, definition))
 
-    # --- classify and aggregate, enforcing the v1 scope (at most one weak-acid system, at most one
-    #     weak-base system, not both at once, no strong+weak mixture of the same acid/base type) --
+    # --- classify and aggregate into named pools; any number of distinct weak-acid and weak-base
+    #     systems (each monoprotic or polyprotic) may coexist, alongside a strong acid/base ---------
     strong_acid_moles = strong_base_moles = 0.0
-    weak_acid_system_id: str | None = None
-    weak_acid_Ka: float | None = None
-    weak_acid_moles = 0.0
-    weak_base_system_id: str | None = None
-    weak_base_Ka_conj: float | None = None
-    weak_base_moles = 0.0
+    acid_pool_moles: dict[str, float] = {}
+    acid_pool_ka_steps: dict[str, tuple[float, ...]] = {}
+    acid_pool_thermo: dict[str, IonizationThermodynamics | None] = {}
+    base_pool_moles: dict[str, float] = {}
+    base_pool_ka_steps: dict[str, tuple[float, ...]] = {}
+    base_pool_thermo: dict[str, IonizationThermodynamics | None] = {}
     extra_cation_moles = extra_anion_moles = 0.0
     initial_moles_by_species: dict[str, float] = {}
 
@@ -147,29 +209,17 @@ def solve_equilibrium(
         elif definition.role == "strong_base":
             strong_base_moles += amount.moles * definition.strong_base_equivalent_per_mole
         elif definition.role in ("weak_acid", "weak_acid_conjugate_salt"):
-            if weak_acid_system_id is None:
-                weak_acid_system_id, weak_acid_Ka = definition.system_id, definition.Ka_298_15k
-            elif weak_acid_system_id != definition.system_id:
-                return _result(
-                    "UNSUPPORTED",
-                    model_id,
-                    reason=f"Dosing two distinct weak-acid systems together ({weak_acid_system_id!r} and {definition.system_id!r}) is outside the v1 solver's scope (one weak-acid system per solve).",
-                    diagnostics=diagnostics,
-                )
-            weak_acid_moles += amount.moles * definition.system_total_per_mole
+            assert definition.system_id is not None and definition.Ka_steps is not None
+            acid_pool_moles[definition.system_id] = acid_pool_moles.get(definition.system_id, 0.0) + amount.moles * definition.system_total_per_mole
+            acid_pool_ka_steps.setdefault(definition.system_id, definition.Ka_steps)
+            acid_pool_thermo.setdefault(definition.system_id, definition.ionization_thermodynamics)
             extra_cation_moles += amount.moles * definition.extra_spectator_cation_per_mole
             extra_anion_moles += amount.moles * definition.extra_spectator_anion_per_mole
         elif definition.role in ("weak_base", "weak_base_conjugate_salt"):
-            if weak_base_system_id is None:
-                weak_base_system_id, weak_base_Ka_conj = definition.system_id, definition.Ka_298_15k
-            elif weak_base_system_id != definition.system_id:
-                return _result(
-                    "UNSUPPORTED",
-                    model_id,
-                    reason=f"Dosing two distinct weak-base systems together ({weak_base_system_id!r} and {definition.system_id!r}) is outside the v1 solver's scope (one weak-base system per solve).",
-                    diagnostics=diagnostics,
-                )
-            weak_base_moles += amount.moles * definition.system_total_per_mole
+            assert definition.system_id is not None and definition.Ka_steps is not None
+            base_pool_moles[definition.system_id] = base_pool_moles.get(definition.system_id, 0.0) + amount.moles * definition.system_total_per_mole
+            base_pool_ka_steps.setdefault(definition.system_id, definition.Ka_steps)
+            base_pool_thermo.setdefault(definition.system_id, definition.ionization_thermodynamics)
             extra_cation_moles += amount.moles * definition.extra_spectator_cation_per_mole
             extra_anion_moles += amount.moles * definition.extra_spectator_anion_per_mole
         elif definition.role == "neutral_electrolyte":
@@ -178,50 +228,46 @@ def solve_equilibrium(
         elif definition.role == "water":
             continue
         else:
-            return _result("UNSUPPORTED", model_id, reason=f"Species role {definition.role!r} of {definition.species_id!r} is not handled by the v1 solver.", diagnostics=diagnostics)
+            return _result("UNSUPPORTED", model_id, reason=f"Species role {definition.role!r} of {definition.species_id!r} is not handled by this solver.", diagnostics=diagnostics)
 
-    if weak_acid_system_id is not None and weak_base_system_id is not None:
-        return _result(
-            "UNSUPPORTED",
-            model_id,
-            reason=f"A weak-acid system ({weak_acid_system_id!r}) and a weak-base system ({weak_base_system_id!r}) dosed together are outside the v1 solver's validated scope.",
-            diagnostics=diagnostics,
-        )
-    if strong_acid_moles > 0 and weak_acid_system_id is not None:
-        return _result("UNSUPPORTED", model_id, reason="A strong acid and a weak acid dosed together are outside the v1 solver's validated scope (mixtures of acid strengths are not a v1 system).", diagnostics=diagnostics)
-    if strong_base_moles > 0 and weak_base_system_id is not None:
-        return _result("UNSUPPORTED", model_id, reason="A strong base and a weak base dosed together are outside the v1 solver's validated scope (mixtures of base strengths are not a v1 system).", diagnostics=diagnostics)
-
-    has_weak_system = weak_acid_system_id is not None or weak_base_system_id is not None
-    if has_weak_system and not (WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K[0] <= temperature_k <= WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K[1]):
-        lo, hi = WEAK_SYSTEM_VALID_TEMPERATURE_RANGE_K
-        return _result(
-            "UNSUPPORTED",
-            model_id,
-            reason=(
-                f"The dissociation constant of {(weak_acid_system_id or weak_base_system_id)!r} is tabulated at 25 degC (298.15 K) and is not given its own "
-                f"temperature model in v1; it is held constant only for {lo:.2f} K to {hi:.2f} K, and {temperature_k:.2f} K is outside that band."
-            ),
-            diagnostics=diagnostics,
-        )
-    if has_weak_system and abs(temperature_k - 298.15) > 1e-9:
-        assumption_notes.append(
-            f"The dissociation constant of {(weak_acid_system_id or weak_base_system_id)!r} is tabulated at 25 degC and is held constant with temperature in this model "
-            "(only Kw(T) is temperature-corrected); its true temperature dependence is not modelled."
-        )
+    # --- per-pool temperature validation: a real Ka(T) model where sourced (species.py's
+    #     ionization_thermodynamics; currently acetic acid only), the generic +/-10 K band otherwise ---
+    acid_pool_ka_steps_at_t: dict[str, tuple[float, ...]] = {}
+    base_pool_ka_steps_at_t: dict[str, tuple[float, ...]] = {}
+    for sid, ka_steps in acid_pool_ka_steps.items():
+        adjusted, reason = _validated_ka_steps_at_temperature(sid, ka_steps, acid_pool_thermo[sid], temperature_k)
+        if reason is not None:
+            return _result("UNSUPPORTED", model_id, reason=reason, diagnostics=diagnostics)
+        assert adjusted is not None
+        acid_pool_ka_steps_at_t[sid] = adjusted
+        if acid_pool_thermo[sid] is not None and abs(temperature_k - 298.15) > 1e-9:
+            assumption_notes.append(f"The dissociation constant of {sid!r} is corrected for temperature by a sourced van't Hoff + heat-capacity model (see species.py), not held constant.")
+        elif abs(temperature_k - 298.15) > 1e-9:
+            assumption_notes.append(f"The dissociation constant of {sid!r} is tabulated at 25 degC and held constant with temperature in this model; its true temperature dependence is not modelled.")
+    for sid, ka_steps in base_pool_ka_steps.items():
+        adjusted, reason = _validated_ka_steps_at_temperature(sid, ka_steps, base_pool_thermo[sid], temperature_k)
+        if reason is not None:
+            return _result("UNSUPPORTED", model_id, reason=reason, diagnostics=diagnostics)
+        assert adjusted is not None
+        base_pool_ka_steps_at_t[sid] = adjusted
+        if base_pool_thermo[sid] is not None and abs(temperature_k - 298.15) > 1e-9:
+            assumption_notes.append(f"The dissociation constant of {sid!r} is corrected for temperature by a sourced van't Hoff + heat-capacity model (see species.py), not held constant.")
+        elif abs(temperature_k - 298.15) > 1e-9:
+            assumption_notes.append(f"The dissociation constant of {sid!r} is tabulated at 25 degC and held constant with temperature in this model; its true temperature dependence is not modelled.")
+    has_weak_system = bool(acid_pool_moles) or bool(base_pool_moles)
 
     # --- concentrations, with the ideal-dilute-solution validated range -----------------------------
     def molar(total_moles: float) -> float:
         return total_moles / volume_l
 
-    named_concentrations = {
+    named_concentrations: dict[str, float] = {
         "strong acid": molar(strong_acid_moles),
         "strong base": molar(strong_base_moles),
-        "weak-acid system": molar(weak_acid_moles),
-        "weak-base system": molar(weak_base_moles),
         "extra spectator cation": molar(extra_cation_moles),
         "extra spectator anion": molar(extra_anion_moles),
     }
+    named_concentrations.update({f"weak-acid system '{sid}'": molar(m) for sid, m in acid_pool_moles.items()})
+    named_concentrations.update({f"weak-base system '{sid}'": molar(m) for sid, m in base_pool_moles.items()})
     for label, value in named_concentrations.items():
         if value > MAX_VALID_CONCENTRATION_MOLAR:
             return _result(
@@ -230,28 +276,35 @@ def solve_equilibrium(
 
     totals = SystemTotals(
         kw=water.kw,
-        strong_acid_molar=named_concentrations["strong acid"],
-        strong_base_molar=named_concentrations["strong base"],
-        weak_acid_system_molar=named_concentrations["weak-acid system"],
-        weak_acid_system_Ka=weak_acid_Ka,
-        weak_base_system_molar=named_concentrations["weak-base system"],
-        weak_base_system_Ka_conjugate=weak_base_Ka_conj,
-        extra_spectator_cation_molar=named_concentrations["extra spectator cation"],
-        extra_spectator_anion_molar=named_concentrations["extra spectator anion"],
+        strong_acid_molar=molar(strong_acid_moles),
+        strong_base_molar=molar(strong_base_moles),
+        acid_systems=tuple(WeakSystem(molar(m), acid_pool_ka_steps_at_t[sid]) for sid, m in acid_pool_moles.items()),
+        base_systems=tuple(WeakSystem(molar(m), base_pool_ka_steps_at_t[sid]) for sid, m in base_pool_moles.items()),
+        extra_spectator_cation_molar=molar(extra_cation_moles),
+        extra_spectator_anion_molar=molar(extra_anion_moles),
     )
+    acid_system_ids = list(acid_pool_moles.keys())
+    base_system_ids = list(base_pool_moles.keys())
 
-    root = solve_hydrogen_ion(totals)
-    if not root.converged or root.hydrogen_ion_molar is None or root.pH is None:
+    activity_result = solve_with_activity_model(totals, resolved_assumptions.activity_model)
+    root = activity_result.root
+    if not activity_result.converged or root.hydrogen_ion_molar is None or root.pH is None:
         diagnostics = SolveDiagnostics(
             input_hash=diagnostics.input_hash,
             root_finder_bracket_ph=root.bracket_ph,
             root_finder_iterations=root.iterations,
             root_finder_function_calls=root.function_calls,
+            activity_model_iterations=activity_result.outer_iterations,
         )
-        return _result("FAILED", model_id, reason=f"The equilibrium root finder did not converge: {root.failure_reason or 'no further detail available.'}", diagnostics=diagnostics)
+        reason = activity_result.failure_reason or root.failure_reason or "no further detail available."
+        return _result("FAILED", model_id, reason=f"The equilibrium solver did not converge: {reason}", diagnostics=diagnostics)
 
+    # Equilibrium concentrations are computed from the *apparent* (concentration-based) constants
+    # the root was actually found with -- the thermodynamic constants under the ideal model, or the
+    # Davies-corrected ones at the converged ionic strength otherwise (see activity.py).
+    solved_totals = activity_result.apparent_totals_at_convergence
     h = root.hydrogen_ion_molar
-    oh = totals.kw / h
+    oh = solved_totals.kw / h
     ph = -math.log10(h)
     poh = -math.log10(oh)
 
@@ -260,43 +313,35 @@ def solve_equilibrium(
         EquilibriumSpeciesConcentration("water", "OH-", oh, water.evidence),
     ]
     mass_balance_resid: dict[str, float] = {}
-    if weak_acid_system_id is not None and weak_acid_Ka is not None:
-        alpha_a_minus = weak_acid_Ka / (weak_acid_Ka + h)
-        ha = totals.weak_acid_system_molar * (1.0 - alpha_a_minus)
-        a_minus = totals.weak_acid_system_molar * alpha_a_minus
-        eq_concentrations.append(EquilibriumSpeciesConcentration(weak_acid_system_id, "HA (protonated/neutral form)", ha, "MODEL_CALCULATED"))
-        eq_concentrations.append(EquilibriumSpeciesConcentration(weak_acid_system_id, "A- (conjugate base)", a_minus, "MODEL_CALCULATED"))
-        mass_balance_resid[weak_acid_system_id] = (ha + a_minus) - totals.weak_acid_system_molar
-    if weak_base_system_id is not None and weak_base_Ka_conj is not None:
-        alpha_bh_plus = h / (h + weak_base_Ka_conj)
-        bh_plus = totals.weak_base_system_molar * alpha_bh_plus
-        b = totals.weak_base_system_molar * (1.0 - alpha_bh_plus)
-        eq_concentrations.append(EquilibriumSpeciesConcentration(weak_base_system_id, "BH+ (protonated/conjugate acid)", bh_plus, "MODEL_CALCULATED"))
-        eq_concentrations.append(EquilibriumSpeciesConcentration(weak_base_system_id, "B (free base form)", b, "MODEL_CALCULATED"))
-        mass_balance_resid[weak_base_system_id] = (bh_plus + b) - totals.weak_base_system_molar
-    if totals.strong_acid_molar > 0:
-        eq_concentrations.append(EquilibriumSpeciesConcentration("strong_acid", "fully dissociated conjugate base (spectator anion)", totals.strong_acid_molar, "MODEL_CALCULATED"))
-    if totals.strong_base_molar > 0:
-        eq_concentrations.append(EquilibriumSpeciesConcentration("strong_base", "fully dissociated spectator cation", totals.strong_base_molar, "MODEL_CALCULATED"))
-    if totals.extra_spectator_cation_molar > 0:
-        eq_concentrations.append(EquilibriumSpeciesConcentration("extra_electrolyte", "spectator cation", totals.extra_spectator_cation_molar, "MODEL_CALCULATED"))
-    if totals.extra_spectator_anion_molar > 0:
-        eq_concentrations.append(EquilibriumSpeciesConcentration("extra_electrolyte", "spectator anion", totals.extra_spectator_anion_molar, "MODEL_CALCULATED"))
+    for sid, acid_system in zip(acid_system_ids, solved_totals.acid_systems):
+        alphas = stepwise_distribution(h, acid_system.Ka_steps)
+        n = len(acid_system.Ka_steps)
+        for i, alpha in enumerate(alphas):
+            eq_concentrations.append(EquilibriumSpeciesConcentration(sid, _form_label(i, n, is_acid=True), acid_system.molar * alpha, "MODEL_CALCULATED"))
+        mass_balance_resid[sid] = sum(acid_system.molar * a for a in alphas) - acid_system.molar
+    for sid, base_system in zip(base_system_ids, solved_totals.base_systems):
+        alphas = stepwise_distribution(h, base_system.Ka_steps)
+        n = len(base_system.Ka_steps)
+        for i, alpha in enumerate(alphas):
+            eq_concentrations.append(EquilibriumSpeciesConcentration(sid, _form_label(i, n, is_acid=False), base_system.molar * alpha, "MODEL_CALCULATED"))
+        mass_balance_resid[sid] = sum(base_system.molar * a for a in alphas) - base_system.molar
+    if solved_totals.strong_acid_molar > 0:
+        eq_concentrations.append(EquilibriumSpeciesConcentration("strong_acid", "fully dissociated conjugate base (spectator anion)", solved_totals.strong_acid_molar, "MODEL_CALCULATED"))
+    if solved_totals.strong_base_molar > 0:
+        eq_concentrations.append(EquilibriumSpeciesConcentration("strong_base", "fully dissociated spectator cation", solved_totals.strong_base_molar, "MODEL_CALCULATED"))
+    if solved_totals.extra_spectator_cation_molar > 0:
+        eq_concentrations.append(EquilibriumSpeciesConcentration("extra_electrolyte", "spectator cation", solved_totals.extra_spectator_cation_molar, "MODEL_CALCULATED"))
+    if solved_totals.extra_spectator_anion_molar > 0:
+        eq_concentrations.append(EquilibriumSpeciesConcentration("extra_electrolyte", "spectator anion", solved_totals.extra_spectator_anion_molar, "MODEL_CALCULATED"))
 
-    # All present ions in this v1 scope are monovalent (z = +-1), so ionic strength I = 1/2 sum(C z^2)
-    # reduces to half the sum of every ionic concentration.
-    charged_molar_concentrations = [h, oh, totals.strong_acid_molar, totals.strong_base_molar, totals.extra_spectator_cation_molar, totals.extra_spectator_anion_molar]
-    if weak_acid_system_id is not None:
-        charged_molar_concentrations.append(a_minus)
-    if weak_base_system_id is not None:
-        charged_molar_concentrations.append(bh_plus)
-    ionic_strength = 0.5 * sum(charged_molar_concentrations)
-
-    warnings: list[str] = []
-    if ionic_strength > IONIC_STRENGTH_WARNING_THRESHOLD_MOLAR:
+    ionic_strength_value = activity_result.ionic_strength_molar
+    warning_threshold = MAX_VALIDATED_IONIC_STRENGTH_MOLAR if resolved_assumptions.activity_model == "davies" else IONIC_STRENGTH_WARNING_THRESHOLD_MOLAR
+    warnings: list[str] = list(activity_result.warnings)
+    if resolved_assumptions.activity_model == "ideal" and ionic_strength_value > warning_threshold:
         warnings.append(
-            f"Ionic strength is approximately {ionic_strength:.3g} mol/L, above the {IONIC_STRENGTH_WARNING_THRESHOLD_MOLAR:g} mol/L guide used here for the ideal-activity assumption; "
-            "activity coefficients are not actually 1 at this ionic strength, so the computed pH is a less accurate approximation than at lower concentrations."
+            f"Ionic strength is approximately {ionic_strength_value:.3g} mol/L, above the {warning_threshold:g} mol/L guide used here for the ideal-activity assumption; "
+            "activity coefficients are not actually 1 at this ionic strength, so the computed pH is a less accurate approximation than at lower concentrations. "
+            "Try assumptions={'activity_model': 'davies'} for a non-ideal correction."
         )
     if has_weak_system and abs(temperature_k - 298.15) > 1e-9:
         warnings.append(f"Temperature {temperature_k:.2f} K differs from the 25 degC (298.15 K) reference point of the tabulated Ka/Kb; see assumptions.")
@@ -305,10 +350,11 @@ def solve_equilibrium(
     diagnostics = SolveDiagnostics(
         charge_balance_residual_molar=root.residual,
         mass_balance_residuals_molar=mass_balance_resid,
-        ionic_strength_molar=ionic_strength,
+        ionic_strength_molar=ionic_strength_value,
         root_finder_iterations=root.iterations,
         root_finder_function_calls=root.function_calls,
         root_finder_bracket_ph=root.bracket_ph,
+        activity_model_iterations=activity_result.outer_iterations,
         input_hash=diagnostics.input_hash,
     )
 
@@ -318,16 +364,17 @@ def solve_equilibrium(
         total_volume_l=volume_l,
         temperature_k=temperature_k,
         initial_analytical_concentrations_molar={sid: m / volume_l for sid, m in initial_moles_by_species.items()},
-        kw=totals.kw,
-        pkw=-math.log10(totals.kw),
+        kw=water.kw,
+        pkw=-math.log10(water.kw),
     )
 
     numerical_uncertainty = NumericalUncertainty(
         ph_numerical_tolerance=1e-9,
         basis="Brent's method (scipy.optimize.brentq) convergence tolerance on pH; confirmed by re-evaluating the charge-balance residual at the root (see diagnostics.charge_balance_residual_molar).",
         limitations=(
-            "Measurement uncertainties of the underlying Ka/Kw reference values are not propagated to a pH confidence interval in v1.",
-            "Non-ideal activity effects (ionic-strength/Debye-Huckel corrections) are not modelled; see assumptions.",
+            "Measurement uncertainties of the underlying Ka/Kw reference values are not propagated to a pH confidence interval.",
+            "The Davies equation's own temperature dependence (its 'A' constant) is not modelled; the 25 degC value is used regardless of the solve temperature." if resolved_assumptions.activity_model == "davies"
+            else "Non-ideal activity effects (ionic-strength corrections) are not modelled under the ideal activity model; see assumptions.",
         ),
     )
 
@@ -347,3 +394,4 @@ def solve_equilibrium(
         assumptions=tuple(assumption_notes),
         diagnostics=diagnostics,
     )
+

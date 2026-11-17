@@ -2,40 +2,59 @@
 
 Governing equations
 --------------------
-For a well-mixed aqueous solution containing, in general, one strong acid, one strong base, at
-most one weak-acid system and at most one weak-base system (the v1 scope; `solver.py` enforces
-the "at most one" part), mass balance for each weak system and the electroneutrality (charge
-balance) condition combine into one equation in a single unknown, the free hydrogen-ion
-concentration h = [H+]:
+For a well-mixed aqueous solution containing a strong acid, a strong base, any number of distinct
+weak-acid systems and any number of distinct weak-base systems -- each of which may itself be
+monoprotic or polyprotic (n >= 1 acidic/basic sites with stepwise dissociation constants) -- mass
+balance for every weak system and electroneutrality (charge balance) combine into one equation in
+a single unknown, the free hydrogen-ion concentration h = [H+]:
 
-    G(h) = h + C_sb + C_wb * h/(h + Ka_wb) + C_cat,extra
-         - Kw/h - C_sa - C_wa * Ka_wa/(Ka_wa + h) - C_an,extra  = 0
+    G(h) = h + C_sb + C_an,extra + sum_j C_wb,j * Z_base(h, Ka_steps_wb,j)
+         - Kw/h - C_sa - C_cat,extra - sum_i C_wa,i * Z_acid(h, Ka_steps_wa,i)   = 0
 
-where
-    C_sa, C_sb    total analytical concentration of strong acid / strong base (mol/L); a strong
-                  acid or base is modelled as completely dissociated, so it contributes its full
-                  concentration to the spectator anion (C_sa) or cation (C_sb) side and never to
-                  an equilibrium term;
-    C_wa, Ka_wa   total analytical concentration and acid dissociation constant of the (at most
-                  one) weak-acid system; alpha_A- = Ka_wa / (Ka_wa + h) is the fraction present as
-                  the conjugate base, by mass balance ([HA] + [A-] = C_wa, Ka_wa = h[A-]/[HA]);
-    C_wb, Ka_wb   total analytical concentration of the (at most one) weak-base system and the
-                  acid dissociation constant *of its conjugate acid* BH+; alpha_BH+ = h / (h +
-                  Ka_wb) is the fraction present as BH+ ([B] + [BH+] = C_wb, Ka_wb = h[B]/[BH+]);
-    C_cat,extra, C_an,extra  inert (non-equilibrating) spectator ion concentrations, e.g. the Na+ of
-                  sodium acetate or the ions of a simple supporting electrolyte;
-    Kw            ion product of water at the working temperature (see `water.py`).
+| Symbol | Meaning |
+|---|---|
+| `C_sa`, `C_sb` | Total analytical concentration (mol/L) of strong acid / strong base. Modelled as completely dissociated: contributes its full concentration as a spectator ion, never through an equilibrium term. |
+| `C_wa,i`, `Ka_steps_wa,i` | Total analytical concentration and the ordered stepwise acid dissociation constants (Ka1, ..., Kan) of weak-acid system `i`. |
+| `C_wb,j`, `Ka_steps_wb,j` | Total analytical concentration of weak-base system `j` and the stepwise acid dissociation constants *of its conjugate acid* (most-protonated form first). |
+| `C_cat,extra`, `C_an,extra` | Inert (non-equilibrating) spectator ion concentrations, e.g. the Na+ of sodium acetate, or a simple supporting electrolyte. |
+| `Kw` | Ion product of water at the working temperature (`water.py`). |
 
-G is strictly increasing in h on (0, infinity): d(h)/dh = 1 > 0, d(-Kw/h)/dh = Kw/h^2 > 0, each
-d(C . Ka/(Ka+h))/dh term has a fixed sign (negative for the weak-acid term, positive for the
-weak-base term, both strictly monotonic in h), so the equation has exactly one positive root for
-any physically valid set of concentrations. That root is found by bracketing and Brent's method
-(`scipy.optimize.brentq`) on pH = -log10(h), not by any hardcoded or interpolated curve; the
-titration curve in `titration_curve.py` is this same root recomputed at each delivered volume.
+### The n-step distribution function Z
 
-This module is deliberately silent on what counts as a "valid" system (how many weak systems, what
-concentration range); `solver.py` is responsible for that validation and for turning a classified
-`ContainerContents`-like input into the `SystemTotals` this module consumes.
+For an n-protic weak-acid system with stepwise constants `Ka_1, ..., Ka_n` (H_nA -> H_(n-1)A^- +
+H+ is `Ka_1`, and so on), define the cumulative products `beta_0 = 1`, `beta_i = Ka_1 . Ka_2 ... Ka_i`
+and the distribution polynomial
+
+    D(h) = sum_{i=0}^{n} beta_i . h^(n-i)
+    alpha_i(h) = beta_i . h^(n-i) / D(h)        (fraction present with i protons removed, i = 0..n)
+
+`Z_acid(h) = sum_{i=0}^{n} i . alpha_i(h)` is the mean number of protons the system has lost at a
+given h -- the "bound proton deficiency function" of systematic equilibrium treatments (see e.g.
+Butler, *Ionic Equilibrium*). It ranges from 0 (h -> infinity, fully protonated) to n (h -> 0, fully
+deprotonated) and is **strictly monotonically decreasing in h** for any positive Ka_1..Ka_n (proved
+below); for `n = 1` it reduces exactly to the familiar `alpha_A- = Ka_1/(Ka_1 + h)`.
+
+A weak-base system is handled by the *same* function applied to its conjugate acid's stepwise
+constants (most-protonated form first): `Z_base(h, Ka_steps) = n - Z_acid(h, Ka_steps)`, which
+ranges from n (h -> infinity, fully protonated, maximally cationic) to 0 (h -> 0) and is strictly
+**increasing** in h. For `n = 1` this reduces to `alpha_BH+ = h/(h + Ka_conjugate)`.
+
+### Why G is still guaranteed to have exactly one root
+
+`d(h)/dh = 1 > 0` and `d(-Kw/h)/dh = Kw/h^2 > 0` as before. Each `Z_acid` term is monotonically
+*decreasing* in h (so each `-C . Z_acid(h)` term is monotonically *increasing*) and each `Z_base`
+term is monotonically *increasing* in h -- both proved by induction on n via the classical result
+that the n-step distribution's mean ionization is monotonic in h for any ladder of positive
+equilibrium constants (equivalently: `D(h)` has only positive coefficients in descending powers of
+h, so `-d(ln D)/d(ln h)` is bounded and monotonic). `services/science/tests/test_titration_equilibrium.py`
+checks this numerically for n = 1, 2 and 3 systems, not only asserts it. `G` therefore remains
+strictly increasing in h for *any* combination of strong/weak/polyprotic systems, so bracketing
+plus Brent's method (`scipy.optimize.brentq`) on pH = -log10(h) always finds the one root -- never
+a hardcoded or interpolated curve.
+
+This module is deliberately silent on what counts as a "valid" system (how many weak systems are
+allowed together, what concentration range); `solver.py` is responsible for that validation and for
+turning a classified species composition into the `SystemTotals` this module consumes.
 """
 
 from __future__ import annotations
@@ -49,6 +68,51 @@ from .constants import MIN_HYDROGEN_ION_MOLAR, PH_SEARCH_MAX, PH_SEARCH_MIN
 
 
 @dataclass(frozen=True)
+class WeakSystem:
+    """One weak-acid or weak-base system: a total analytical concentration and its ordered
+    stepwise acid dissociation constants (`Ka_steps`; for a base, those of its conjugate acid,
+    most-protonated form first). `len(Ka_steps)` is the number of acidic/basic sites (1 for a
+    monoprotic system)."""
+
+    molar: float
+    Ka_steps: tuple[float, ...]
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.molar) or self.molar < 0:
+            raise ValueError(f"WeakSystem.molar must be a non-negative finite number, got {self.molar!r}.")
+        if not self.Ka_steps:
+            raise ValueError("WeakSystem.Ka_steps must have at least one value.")
+        for ka in self.Ka_steps:
+            if not math.isfinite(ka) or ka <= 0:
+                raise ValueError(f"WeakSystem.Ka_steps must all be positive finite numbers, got {self.Ka_steps!r}.")
+
+
+def stepwise_distribution(hydrogen_ion_molar: float, Ka_steps: tuple[float, ...]) -> tuple[float, ...]:
+    """`alpha_0, ..., alpha_n` (n = len(Ka_steps)): the fraction of an n-step system present in
+    each successively deprotonated form at the given [H+]. Always sums to 1."""
+    n = len(Ka_steps)
+    betas = [1.0]
+    for ka in Ka_steps:
+        betas.append(betas[-1] * ka)
+    h = hydrogen_ion_molar
+    terms = [betas[i] * h ** (n - i) for i in range(n + 1)]
+    total = sum(terms)
+    return tuple(t / total for t in terms)
+
+
+def acid_charge_number(hydrogen_ion_molar: float, Ka_steps: tuple[float, ...]) -> float:
+    """Z_acid(h): mean protons lost (0..n), strictly decreasing in h. See module docstring."""
+    alphas = stepwise_distribution(hydrogen_ion_molar, Ka_steps)
+    return sum(i * a for i, a in enumerate(alphas))
+
+
+def base_charge_number(hydrogen_ion_molar: float, Ka_steps: tuple[float, ...]) -> float:
+    """Z_base(h) = n - Z_acid(h): mean protons bound to a weak-base system (0..n), strictly
+    increasing in h. `Ka_steps` are the conjugate acid's stepwise constants."""
+    return len(Ka_steps) - acid_charge_number(hydrogen_ion_molar, Ka_steps)
+
+
+@dataclass(frozen=True)
 class SystemTotals:
     """Aggregated, pH-independent description of one aqueous mixture: exactly what the charge
     balance equation needs. Produced by `solver.py` from a validated species composition."""
@@ -56,22 +120,17 @@ class SystemTotals:
     kw: float
     strong_acid_molar: float = 0.0
     strong_base_molar: float = 0.0
-    weak_acid_system_molar: float = 0.0
-    weak_acid_system_Ka: float | None = None
-    weak_base_system_molar: float = 0.0
-    weak_base_system_Ka_conjugate: float | None = None
+    acid_systems: tuple[WeakSystem, ...] = ()
+    base_systems: tuple[WeakSystem, ...] = ()
     extra_spectator_cation_molar: float = 0.0
     extra_spectator_anion_molar: float = 0.0
 
     def __post_init__(self) -> None:
-        for name in ("kw", "strong_acid_molar", "strong_base_molar", "weak_acid_system_molar", "weak_base_system_molar", "extra_spectator_cation_molar", "extra_spectator_anion_molar"):
+        for name in ("kw", "strong_acid_molar", "strong_base_molar", "extra_spectator_cation_molar", "extra_spectator_anion_molar"):
             value = getattr(self, name)
             if not math.isfinite(value) or value < 0:
                 raise ValueError(f"SystemTotals.{name} must be a non-negative finite number, got {value!r}.")
-        if self.weak_acid_system_molar > 0 and (self.weak_acid_system_Ka is None or self.weak_acid_system_Ka <= 0):
-            raise ValueError("weak_acid_system_molar > 0 requires a positive weak_acid_system_Ka.")
-        if self.weak_base_system_molar > 0 and (self.weak_base_system_Ka_conjugate is None or self.weak_base_system_Ka_conjugate <= 0):
-            raise ValueError("weak_base_system_molar > 0 requires a positive weak_base_system_Ka_conjugate.")
+        # WeakSystem.__post_init__ already validated each system; nothing further to check here.
 
 
 def charge_balance_residual(hydrogen_ion_molar: float, totals: SystemTotals) -> float:
@@ -80,14 +139,32 @@ def charge_balance_residual(hydrogen_ion_molar: float, totals: SystemTotals) -> 
     (the trial pH is too high / too basic)."""
     h = hydrogen_ion_molar
     cation = h + totals.strong_base_molar + totals.extra_spectator_cation_molar
-    if totals.weak_base_system_molar > 0:
-        assert totals.weak_base_system_Ka_conjugate is not None
-        cation += totals.weak_base_system_molar * (h / (h + totals.weak_base_system_Ka_conjugate))
+    for base in totals.base_systems:
+        cation += base.molar * base_charge_number(h, base.Ka_steps)
     anion = (totals.kw / h) + totals.strong_acid_molar + totals.extra_spectator_anion_molar
-    if totals.weak_acid_system_molar > 0:
-        assert totals.weak_acid_system_Ka is not None
-        anion += totals.weak_acid_system_molar * (totals.weak_acid_system_Ka / (totals.weak_acid_system_Ka + h))
+    for acid in totals.acid_systems:
+        anion += acid.molar * acid_charge_number(h, acid.Ka_steps)
     return cation - anion
+
+
+def ionic_strength(hydrogen_ion_molar: float, totals: SystemTotals) -> float:
+    """I = 1/2 . sum(C_i . z_i^2) over every ion present at equilibrium, including every
+    protonation state of every weak system with its correct integer charge -- not the "monovalent
+    only" shortcut (half the sum of concentrations) that was sufficient before polyprotic systems
+    were supported. Used both for the ideal-model diagnostic reported to callers and, by
+    `activity.py`, as the state variable of the Davies-equation self-consistent iteration."""
+    h = hydrogen_ion_molar
+    terms = [h, totals.kw / h, totals.strong_acid_molar, totals.strong_base_molar, totals.extra_spectator_cation_molar, totals.extra_spectator_anion_molar]
+    for acid in totals.acid_systems:
+        alphas = stepwise_distribution(h, acid.Ka_steps)
+        terms.extend(acid.molar * alphas[i] * i * i for i in range(1, len(acid.Ka_steps) + 1))
+    for base in totals.base_systems:
+        n = len(base.Ka_steps)
+        alphas = stepwise_distribution(h, base.Ka_steps)
+        # alpha_i is the conjugate acid's i-deprotonated state (i = 0..n); its actual charge on the
+        # base system is (n - i) (i = 0 is the fully protonated, most cationic form).
+        terms.extend(base.molar * alphas[i] * (n - i) * (n - i) for i in range(n))
+    return 0.5 * sum(terms)
 
 
 @dataclass(frozen=True)

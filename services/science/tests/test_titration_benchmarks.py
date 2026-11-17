@@ -190,35 +190,127 @@ def test_unit_conversion_volume_in_liters_vs_milliliters_gives_identical_ph() ->
 
 
 # ---------------------------------------------------------------------------------------------
-# "Test unsupported polyprotic/mixtures and out-of-range conditions; errors must propagate
-#  correctly."
+# Polyprotic acids/bases and multi-system mixtures (v2 extension: supported, not merely rejected
+# -- see README.md Section 3 for what changed relative to the original v1 brief and why).
 # ---------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("species_id", ["sulfuric-acid", "phosphoric-acid", "carbonic-acid", "oxalic-acid", "calcium-hydroxide"])
-def test_polyprotic_and_diacidic_species_are_unsupported(species_id: str) -> None:
-    result = solve_equilibrium(species=[SpeciesAmountInput(species_id, 0.001)], volume_l=0.1)
+def test_phosphoric_acid_is_supported_and_matches_known_dilute_solution_behavior() -> None:
+    """0.100 M phosphoric acid is a well-known general-chemistry example: pH approx 1.6, with the
+    first dissociation only partial (Ka1 = 6.9e-3 is not large enough, relative to 0.1 M, for
+    "complete" behavior) -- textbooks typically quote roughly 25-30% ionization of the first
+    proton at this concentration, so undissociated H3PO4 is still the single largest form, not
+    H2PO4-, which the rigorous solver reproduces rather than assuming the opposite."""
+    result = solve_equilibrium(species=[SpeciesAmountInput("phosphoric-acid", 0.01)], volume_l=0.1)
+    assert result.status == "SUCCEEDED"
+    assert 1.4 < result.pH < 1.8, result.pH  # type: ignore[operator]
+    by_form = {c.form: c.molar for c in result.equilibrium_concentrations if c.species_id == "phosphoric-acid"}
+    h3po4 = next(v for k, v in by_form.items() if "fully protonated" in k)
+    h2po4_minus = next(v for k, v in by_form.items() if "1 of 3" in k)
+    hpo4_2minus = next(v for k, v in by_form.items() if "2 of 3" in k)
+    po4_3minus = next(v for k, v in by_form.items() if "3 of 3" in k)
+    assert h3po4 > h2po4_minus > hpo4_2minus > po4_3minus  # degree of ionization falls off steeply at each step
+    assert h3po4 == pytest.approx(0.1 - h2po4_minus, abs=1e-6)  # first-step mass balance: H3PO4 + H2PO4- accounts for essentially all of it
+
+
+def test_phosphoric_acid_titration_curve_shows_three_equivalence_regions() -> None:
+    """A classic triprotic titration curve (H3PO4 by NaOH) has three buffer regions around pKa1,
+    pKa2, pKa3; checked here by requiring the solved pH to pass near each pKa at the corresponding
+    0.5, 1.5 and 2.5 equivalents of base, and to keep rising monotonically throughout (no hardcoded
+    shape). The match is loosest for the first step (Ka1 = 6.9e-3 is too large, relative to the
+    0.1 M scale of this titration, for the simple Henderson-Hasselbalch approximation to hold
+    tightly) and for the third (pKa3 = 12.32 is close enough to 14 that water's own autoionization
+    measurably shifts the half-neutralization point) -- both are real, expected deviations of the
+    textbook approximation from the rigorous solve, not solver error."""
+    setup = TitrationSetup("phosphoric-acid", 0.100, 0.02500, "sodium-hydroxide", 0.100)
+    equivalence = equivalence_volume_l(setup)  # 1 equivalent = enough NaOH for ONE proton
+    pKa1, pKa2, pKa3 = 2.15, 7.21, 12.32
+    volumes = [f * equivalence for f in (0.5, 1.0, 1.5, 2.0, 2.5, 3.0)]
+    points = titration_curve(setup, volumes)
+    assert all(p.result.status == "SUCCEEDED" for p in points)
+    phs = [p.pH for p in points]
+    assert all(b > a for a, b in zip(phs, phs[1:])), phs
+    assert phs[0] == pytest.approx(pKa1, abs=0.2)  # 0.5 equivalents: half of the first proton removed
+    assert phs[2] == pytest.approx(pKa2, abs=0.05)  # 1.5 equivalents: half of the second proton removed (textbook-accurate, true weak-acid regime)
+    assert phs[4] == pytest.approx(pKa3, abs=0.6)  # 2.5 equivalents: half of the third proton removed (near the practical pH ceiling; water autoionization matters here)
+
+
+def test_sulfuric_acid_is_more_acidic_than_an_equivalent_monoprotic_strong_acid() -> None:
+    """Because the second dissociation (Ka2 = 1.0e-2) is not complete, 0.05 M H2SO4 must be *less*
+    acidic than a hypothetical fully-dissociated diprotic strong acid at the same concentration
+    (pH 1.00), but still far more acidic than a monoprotic strong acid at the same formal
+    concentration (which would give pH 1.30)."""
+    result = solve_equilibrium(species=[SpeciesAmountInput("sulfuric-acid", 0.005)], volume_l=0.1)
+    assert result.status == "SUCCEEDED"
+    monoprotic_equivalent = solve_equilibrium(species=[SpeciesAmountInput("hydrochloric-acid", 0.005)], volume_l=0.1)
+    assert result.pH > 1.0  # type: ignore[operator]
+    assert result.pH < monoprotic_equivalent.pH  # type: ignore[operator]
+
+
+def test_oxalic_and_carbonic_acid_are_supported() -> None:
+    for species_id, expected_range in (("oxalic-acid", (1.0, 2.5)), ("carbonic-acid", (3.5, 5.0))):
+        result = solve_equilibrium(species=[SpeciesAmountInput(species_id, 0.001)], volume_l=0.1)
+        assert result.status == "SUCCEEDED", species_id
+        assert expected_range[0] < result.pH < expected_range[1], (species_id, result.pH)  # type: ignore[operator]
+
+
+@pytest.mark.parametrize("species_id", ["calcium-hydroxide", "barium-hydroxide"])
+def test_diacidic_strong_bases_release_two_hydroxides_per_mole(species_id: str) -> None:
+    result = solve_equilibrium(species=[SpeciesAmountInput(species_id, 0.01)], volume_l=0.1)
+    assert result.status == "SUCCEEDED"
+    monoacidic_equivalent_moles = 0.02  # same total OH- as 0.01 mol of a diacidic base
+    reference = solve_equilibrium(species=[SpeciesAmountInput("sodium-hydroxide", monoacidic_equivalent_moles)], volume_l=0.1)
+    assert result.pH == pytest.approx(reference.pH, abs=1e-6)
+
+
+def test_two_distinct_weak_acids_can_be_dosed_together() -> None:
+    """A mixture of acetic and formic acid is now a supported system. The mixture (0.1 M of each,
+    0.2 M total weak acid) must be more acidic than 0.2 M acetic acid alone (formic, the stronger
+    acid, is part of the mix) and less acidic than 0.2 M formic acid alone (acetic, the weaker
+    acid, dilutes the effect) -- comparing against solutions of the *same total acid
+    concentration*, not against the individual 0.1 M components alone, which carry only half the
+    mixture's total acid load and are not the relevant comparison."""
+    mixture = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.01), SpeciesAmountInput("formic-acid", 0.01)], volume_l=0.1)
+    acetic_same_total = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.02)], volume_l=0.1)
+    formic_same_total = solve_equilibrium(species=[SpeciesAmountInput("formic-acid", 0.02)], volume_l=0.1)
+    assert mixture.status == "SUCCEEDED"
+    assert formic_same_total.pH < mixture.pH < acetic_same_total.pH  # type: ignore[operator]
+    by_system = {c.species_id for c in mixture.equilibrium_concentrations}
+    assert {"acetic-acid", "formic-acid"} <= by_system
+
+
+def test_weak_acid_and_weak_base_together_reproduces_ammonium_acetate_near_neutrality() -> None:
+    """Equal moles of acetic acid and ammonia, once reacted, are chemically identical to ammonium
+    acetate solution -- a textbook example of a salt of a weak acid and a weak base that is almost
+    exactly neutral, because Ka(acetic acid) and Kb(ammonia) happen to be very close in magnitude."""
+    result = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.01), SpeciesAmountInput("ammonia", 0.01)], volume_l=0.1)
+    assert result.status == "SUCCEEDED"
+    assert result.pH == pytest.approx(7.0, abs=0.05)
+
+
+def test_strong_acid_and_weak_acid_can_be_dosed_together() -> None:
+    """A strong acid added alongside a weak acid (e.g. a drop of HCl in an acetic acid buffer) must
+    be more acidic than the weak acid alone at the same formal concentration, but the weak acid's
+    own equilibrium must still be represented in the output."""
+    mixed = solve_equilibrium(species=[SpeciesAmountInput("hydrochloric-acid", 0.01), SpeciesAmountInput("acetic-acid", 0.01)], volume_l=0.1)
+    acetic_alone = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.01)], volume_l=0.1)
+    assert mixed.status == "SUCCEEDED"
+    assert mixed.pH < acetic_alone.pH  # type: ignore[operator]
+    assert any(c.species_id == "acetic-acid" for c in mixed.equilibrium_concentrations)
+
+
+def test_boric_acid_remains_unsupported_as_a_lewis_acid() -> None:
+    """Boric acid is deliberately kept unsupported: it is a Lewis acid (accepts OH-), not a
+    Bronsted proton donor, so the n-step dissociation model does not describe it."""
+    result = solve_equilibrium(species=[SpeciesAmountInput("boric-acid", 0.001)], volume_l=0.1)
     assert result.status == "UNSUPPORTED"
     assert result.pH is None
-    assert result.reason is not None and species_id.split("-")[0] not in ("",)  # reason is populated
-    reason = result.reason.lower()  # type: ignore[union-attr]
-    assert any(keyword in reason for keyword in ("diprotic", "triprotic", "polyprotic", "diacidic")), reason
+    assert "lewis acid" in result.reason.lower()  # type: ignore[union-attr]
 
 
-def test_mixture_of_two_distinct_weak_acids_is_unsupported() -> None:
-    result = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.001), SpeciesAmountInput("formic-acid", 0.001)], volume_l=0.1)
-    assert result.status == "UNSUPPORTED"
-    assert "weak-acid system" in result.reason  # type: ignore[operator]
-
-
-def test_mixture_of_weak_acid_and_weak_base_is_unsupported() -> None:
-    result = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.001), SpeciesAmountInput("ammonia", 0.001)], volume_l=0.1)
-    assert result.status == "UNSUPPORTED"
-
-
-def test_mixture_of_strong_and_weak_acid_is_unsupported() -> None:
-    result = solve_equilibrium(species=[SpeciesAmountInput("hydrochloric-acid", 0.001), SpeciesAmountInput("acetic-acid", 0.001)], volume_l=0.1)
-    assert result.status == "UNSUPPORTED"
+# ---------------------------------------------------------------------------------------------
+# Out-of-range conditions still propagate correctly.
+# ---------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("temperature_k", [-5.0, 0.0, 200.0, 400.0, 1000.0])
@@ -229,8 +321,8 @@ def test_temperature_outside_validated_range_is_unsupported(temperature_k: float
 
 
 def test_weak_system_far_from_25c_is_unsupported_even_within_water_range() -> None:
-    """A weak-acid Ka is only held constant within +-10 K of 298.15 K in v1; 350 K is a valid
-    temperature for the water model but must still be refused for a weak-acid system."""
+    """A weak-acid Ka is only held constant within +-10 K of 298.15 K; 350 K is a valid temperature
+    for the water model but must still be refused for a weak-acid system."""
     result = solve_equilibrium(species=[SpeciesAmountInput("acetic-acid", 0.001)], volume_l=0.1, temperature_k=350.0)
     assert result.status == "UNSUPPORTED"
     assert "acetic-acid" in result.reason  # type: ignore[operator]

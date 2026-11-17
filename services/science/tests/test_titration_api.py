@@ -47,7 +47,7 @@ def test_solve_endpoint_matches_the_equivalence_benchmark(titration_client: Test
     assert body["status"] == "SUCCEEDED"
     assert body["pH"] == pytest.approx(7.0, abs=0.01)
     assert body["evidence"] == "MODEL_CALCULATED"
-    assert body["model_id"] == "monoprotic-acid-base-electroneutrality-v1"
+    assert body["model_id"] == "acid-base-electroneutrality-v1"
     assert body["diagnostics"]["charge_balance_residual_molar"] == pytest.approx(0.0, abs=1e-6)
     assert body["reference_quantities"]["kw"] == 1.0e-14
 
@@ -55,12 +55,12 @@ def test_solve_endpoint_matches_the_equivalence_benchmark(titration_client: Test
 def test_solve_endpoint_reports_unsupported_without_an_error_status_code(titration_client: TestClient) -> None:
     """A syntactically valid request for out-of-scope chemistry is still a 200 with an explicit
     UNSUPPORTED body (see module docstring): the HTTP layer does not swallow or recode the status."""
-    response = titration_client.post("/v1/titration/solve", json={"species": [{"species_id": "sulfuric-acid", "moles": 0.001}], "volume_l": 0.1})
+    response = titration_client.post("/v1/titration/solve", json={"species": [{"species_id": "boric-acid", "moles": 0.001}], "volume_l": 0.1})
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "UNSUPPORTED"
     assert body["pH"] is None
-    assert "diprotic" in body["reason"].lower()
+    assert "lewis acid" in body["reason"].lower()
 
 
 def test_solve_endpoint_reports_failed_for_malformed_physical_input(titration_client: TestClient) -> None:
@@ -133,10 +133,15 @@ def test_species_endpoint_lists_known_entries_with_reasons_for_unsupported_ones(
     assert response.status_code == 200
     by_id = {s["species_id"]: s for s in response.json()}
     assert by_id["acetic-acid"]["pKa_298_15k"] == pytest.approx(4.756, abs=1e-6)
+    assert by_id["acetic-acid"]["pKa_steps"] == pytest.approx([4.756], abs=1e-6)
     assert by_id["acetic-acid"]["unsupported_reason"] is None
     assert by_id["acetic-acid"]["provenance"]["evidence"] == "REFERENCE_MEASURED"
-    assert by_id["sulfuric-acid"]["unsupported_reason"] is not None
-    assert "diprotic" in by_id["sulfuric-acid"]["unsupported_reason"].lower()
+    # phosphoric acid is polyprotic: no single pKa_298_15k, but the full stepwise list is exposed
+    assert by_id["phosphoric-acid"]["pKa_298_15k"] is None
+    assert by_id["phosphoric-acid"]["pKa_steps"] == pytest.approx([2.15, 7.21, 12.32], abs=1e-6)
+    assert by_id["phosphoric-acid"]["unsupported_reason"] is None
+    assert by_id["boric-acid"]["unsupported_reason"] is not None
+    assert "lewis acid" in by_id["boric-acid"]["unsupported_reason"].lower()
 
 
 def test_indicators_endpoint_lists_the_three_shipped_indicators(titration_client: TestClient) -> None:
@@ -207,3 +212,42 @@ def test_solve_endpoint_is_deterministic_across_requests(titration_client: TestC
     second = titration_client.post("/v1/titration/solve", json=payload).json()
     assert first["pH"] == second["pH"]
     assert first["diagnostics"]["input_hash"] == second["diagnostics"]["input_hash"]
+
+
+def test_solve_endpoint_supports_polyprotic_species(titration_client: TestClient) -> None:
+    response = titration_client.post("/v1/titration/solve", json={"species": [{"species_id": "phosphoric-acid", "moles": 0.01}], "volume_l": 0.1})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "SUCCEEDED"
+    forms = {c["form"] for c in body["equilibrium_concentrations"] if c["species_id"] == "phosphoric-acid"}
+    assert any("fully protonated" in f for f in forms)
+    assert any("3 of 3" in f for f in forms)  # the fully deprotonated PO4^3- form is reported too
+
+
+def test_solve_endpoint_supports_multiple_simultaneous_weak_systems(titration_client: TestClient) -> None:
+    response = titration_client.post(
+        "/v1/titration/solve", json={"species": [{"species_id": "acetic-acid", "moles": 0.01}, {"species_id": "formic-acid", "moles": 0.01}], "volume_l": 0.1}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "SUCCEEDED"
+    systems = {c["species_id"] for c in body["equilibrium_concentrations"]}
+    assert {"acetic-acid", "formic-acid"} <= systems
+
+
+def test_solve_endpoint_accepts_davies_activity_model(titration_client: TestClient) -> None:
+    ideal = titration_client.post("/v1/titration/solve", json={"species": [{"species_id": "acetic-acid", "moles": 0.01}], "volume_l": 0.1}).json()
+    davies = titration_client.post(
+        "/v1/titration/solve", json={"species": [{"species_id": "acetic-acid", "moles": 0.01}], "volume_l": 0.1, "assumptions": {"activity_model": "davies"}}
+    ).json()
+    assert ideal["status"] == "SUCCEEDED" and davies["status"] == "SUCCEEDED"
+    assert davies["pH"] != ideal["pH"]  # the Davies correction must actually change the result
+    assert davies["diagnostics"]["activity_model_iterations"] is not None and davies["diagnostics"]["activity_model_iterations"] > 0
+    assert ideal["diagnostics"]["activity_model_iterations"] == 0
+
+
+def test_solve_endpoint_rejects_unknown_activity_model(titration_client: TestClient) -> None:
+    response = titration_client.post(
+        "/v1/titration/solve", json={"species": [{"species_id": "acetic-acid", "moles": 0.01}], "volume_l": 0.1, "assumptions": {"activity_model": "debye-huckel-extended"}}
+    )
+    assert response.status_code == 422  # rejected at the pydantic schema level (not one of the two literal values)

@@ -27,20 +27,21 @@ def test_committed_fixtures_match_the_live_solver() -> None:
         assert committed == payload, f"{path.name} is stale: regenerate with `python -m titration.fixtures.generate_fixtures`"
 
 
-@pytest.mark.parametrize("fixture_name", ["strong_acid_strong_base_hcl_naoh", "weak_acid_strong_base_acetic_acid_naoh", "weak_base_strong_acid_ammonia_hcl"])
+@pytest.mark.parametrize("fixture_name", ["strong_acid_strong_base_hcl_naoh", "weak_acid_strong_base_acetic_acid_naoh", "weak_base_strong_acid_ammonia_hcl", "polyprotic_phosphoric_acid_naoh"])
 def test_titration_curve_fixtures_are_internally_consistent(fixture_name: str) -> None:
     payload = json.loads((FIXTURES_DIR / f"{fixture_name}.json").read_text(encoding="utf-8"))
     points = payload["points"]
     assert all(p["status"] == "SUCCEEDED" for p in points)
     phs = [p["pH"] for p in points]
-    # A titrant that is a base raises pH as it is added (the HCl/NaOH and acetic-acid/NaOH cases);
-    # a titrant that is an acid (ammonia titrated by HCl) lowers it instead. Either way the curve
-    # must be strictly monotonic in one direction, never oscillating.
+    # A titrant that is a base raises pH as it is added (the HCl/NaOH, acetic-acid/NaOH and
+    # phosphoric-acid/NaOH cases); a titrant that is an acid (ammonia titrated by HCl) lowers it
+    # instead. Either way the curve must be strictly monotonic in one direction, never oscillating.
     rising = all(b >= a for a, b in zip(phs, phs[1:]))
     falling = all(b <= a for a, b in zip(phs, phs[1:]))
     assert rising or falling, fixture_name
-    equivalence_point = next(p for p in points if p["fraction_of_equivalence"] == 1.0)
-    assert equivalence_point["delivered_volume_l"] == pytest.approx(payload["equivalence_volume_l"], abs=1e-12)
+    equivalence_point = next((p for p in points if p["fraction_of_equivalence"] == 1.0), None)
+    if equivalence_point is not None:
+        assert equivalence_point["delivered_volume_l"] == pytest.approx(payload["equivalence_volume_l"], abs=1e-12)
 
 
 def test_unsupported_cases_fixture_reproduces_through_the_public_solver() -> None:
@@ -50,6 +51,22 @@ def test_unsupported_cases_fixture_reproduces_through_the_public_solver() -> Non
         assert result.status == case["expected"]["status"], case["case_id"]
         if case["expected"]["reason_contains"]:
             assert case["expected"]["reason_contains"] in (result.reason or ""), case["case_id"]
+
+
+def test_activity_model_cases_fixture_reproduces_through_the_public_solver() -> None:
+    payload = json.loads((FIXTURES_DIR / "activity_model_cases.json").read_text(encoding="utf-8"))
+    for case in payload["cases"]:
+        result = solve_equilibrium(
+            species=[SpeciesAmountInput(s["species_id"], s["moles"]) for s in case["input"]["species"]],
+            volume_l=case["input"]["volume_l"],
+            assumptions={"activity_model": case["input"]["activity_model"]},
+        )
+        assert result.status == case["expected"]["status"], case["case_id"]
+        assert result.pH == pytest.approx(case["expected"]["pH"], abs=case["expected"]["tolerance_pH"]), case["case_id"]
+    ideal_case, davies_case = payload["cases"]
+    assert davies_case["expected"]["pH"] < ideal_case["expected"]["pH"]  # the Davies salt effect must lower pH for a weak acid
+    assert davies_case["expected"]["activity_model_iterations"] > 0
+    assert ideal_case["expected"]["activity_model_iterations"] == 0
 
 
 def test_indicators_fixture_lists_every_shipped_indicator() -> None:
@@ -62,3 +79,6 @@ def test_species_registry_fixture_lists_every_registered_species() -> None:
     payload = json.loads((FIXTURES_DIR / "species_registry.json").read_text(encoding="utf-8"))
     ids = {s["species_id"] for s in payload["species"]}
     assert "acetic-acid" in ids and "sulfuric-acid" in ids and "hydrochloric-acid" in ids
+    by_id = {s["species_id"]: s for s in payload["species"]}
+    assert by_id["sulfuric-acid"]["unsupported_reason"] is None  # polyprotic acids are supported (v2)
+    assert by_id["boric-acid"]["unsupported_reason"] is not None  # still excluded (Lewis acid, not Bronsted)

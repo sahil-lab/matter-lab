@@ -10,7 +10,7 @@ import math
 
 import pytest
 
-from titration.equilibrium import SystemTotals, charge_balance_residual, solve_hydrogen_ion
+from titration.equilibrium import SystemTotals, WeakSystem, charge_balance_residual, ionic_strength, solve_hydrogen_ion, stepwise_distribution
 from titration.water import KW_REFERENCE_298_15K, codata_cross_check_kw, kw_at_temperature, validate_temperature_k
 
 
@@ -60,16 +60,13 @@ def test_charge_balance_residual_is_strictly_monotonic_in_hydrogen_ion() -> None
     """G(h) must be strictly increasing in h for the root to be unique and for Brent's method to
     be guaranteed to find it; this is asserted directly against the function, for a system
     exercising every term (strong acid, strong base, a weak-acid system and a weak-base system
-    together -- out of the solver's validated scope chemically, but a valid stress test of the
-    bare numerics, which make no scope decisions themselves)."""
+    together, both now a genuinely supported combination -- see test_titration_benchmarks.py)."""
     totals = SystemTotals(
         kw=1e-14,
         strong_acid_molar=0.02,
         strong_base_molar=0.01,
-        weak_acid_system_molar=0.05,
-        weak_acid_system_Ka=1.75e-5,
-        weak_base_system_molar=0.03,
-        weak_base_system_Ka_conjugate=5.6e-10,
+        acid_systems=(WeakSystem(0.05, (1.75e-5,)),),
+        base_systems=(WeakSystem(0.03, (5.6e-10,)),),
         extra_spectator_cation_molar=0.01,
         extra_spectator_anion_molar=0.02,
     )
@@ -79,8 +76,24 @@ def test_charge_balance_residual_is_strictly_monotonic_in_hydrogen_ion() -> None
         assert later > earlier, (hs, residuals)
 
 
+@pytest.mark.parametrize("n", [1, 2, 3])
+def test_n_step_charge_balance_residual_is_strictly_monotonic(n: int) -> None:
+    """The same monotonicity property, explicitly checked for 1, 2 and 3-step weak-acid and
+    weak-base systems (the module docstring's claim that this generalizes beyond n = 1), with a
+    tolerance that allows for floating-point noise where Z(h) is extremely close to its 0 or n
+    asymptote (not a real non-monotonicity, just finite precision at the tails)."""
+    Ka_steps = tuple([6.9e-3, 6.2e-8, 4.8e-13][:n]) if n > 1 else (1.75e-5,)
+    totals_acid = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(0.1, Ka_steps),))
+    totals_base = SystemTotals(kw=1e-14, base_systems=(WeakSystem(0.1, Ka_steps),))
+    hs = sorted(10.0**-ph for ph in [x * 0.25 for x in range(-12, 81)])  # pH -3.0 to 20.0 step 0.25, ascending h
+    for totals, label in ((totals_acid, "acid"), (totals_base, "base")):
+        residuals = [charge_balance_residual(h, totals) for h in hs]
+        for earlier, later in zip(residuals, residuals[1:]):
+            assert later >= earlier - 1e-12, (n, label, hs, residuals)
+
+
 def test_root_finder_residual_is_near_zero_at_convergence() -> None:
-    totals = SystemTotals(kw=1e-14, weak_acid_system_molar=0.2, weak_acid_system_Ka=1.75e-5, strong_base_molar=0.05)
+    totals = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(0.2, (1.75e-5,)),), strong_base_molar=0.05)
     root = solve_hydrogen_ion(totals)
     assert root.converged
     assert root.residual == pytest.approx(0.0, abs=1e-9)
@@ -88,7 +101,7 @@ def test_root_finder_residual_is_near_zero_at_convergence() -> None:
 
 
 def test_root_finder_is_deterministic() -> None:
-    totals = SystemTotals(kw=1e-14, weak_acid_system_molar=0.0667, weak_acid_system_Ka=1.75e-5, strong_base_molar=0.0333)
+    totals = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(0.0667, (1.75e-5,)),), strong_base_molar=0.0333)
     first = solve_hydrogen_ion(totals)
     second = solve_hydrogen_ion(totals)
     assert first.pH == second.pH
@@ -103,10 +116,46 @@ def test_weak_acid_half_neutralized_matches_henderson_hasselbalch() -> None:
     Ka = 1.75e-5
     pKa = -math.log10(Ka)
     c_total = 0.08
-    totals = SystemTotals(kw=1e-14, weak_acid_system_molar=c_total, weak_acid_system_Ka=Ka, strong_base_molar=c_total / 2.0)
+    totals = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(c_total, (Ka,)),), strong_base_molar=c_total / 2.0)
     root = solve_hydrogen_ion(totals)
     assert root.converged
     assert root.pH == pytest.approx(pKa, abs=0.01)
+
+
+def test_stepwise_distribution_sums_to_one_and_matches_bounds() -> None:
+    Ka_steps = (6.9e-3, 6.2e-8, 4.8e-13)
+    for ph in (-2, 0, 2, 4, 6, 8, 10, 12, 14, 16):
+        alphas = stepwise_distribution(10.0**-ph, Ka_steps)
+        assert len(alphas) == 4
+        assert sum(alphas) == pytest.approx(1.0, abs=1e-12)
+        assert all(0.0 <= a <= 1.0 for a in alphas)
+
+
+def test_ionic_strength_is_zero_for_pure_water_and_positive_for_any_electrolyte() -> None:
+    pure_water = SystemTotals(kw=1e-14)
+    root = solve_hydrogen_ion(pure_water)
+    i_pure = ionic_strength(root.hydrogen_ion_molar, pure_water)
+    assert i_pure == pytest.approx(1e-7, abs=1e-9)  # just [H+] + [OH-], each 1e-7
+
+    with_salt = SystemTotals(kw=1e-14, strong_acid_molar=0.1, strong_base_molar=0.1)
+    root2 = solve_hydrogen_ion(with_salt)
+    i_salt = ionic_strength(root2.hydrogen_ion_molar, with_salt)
+    assert i_salt == pytest.approx(0.1, abs=1e-5)  # 0.5*(0.1 spectator cation + 0.1 spectator anion)
+
+
+def test_ionic_strength_weights_multivalent_ions_by_charge_squared() -> None:
+    """A fully dissociated 2- ion must contribute 4x the ionic strength of a fully dissociated 1-
+    ion at the same concentration (I = 1/2 sum(C z^2)): checked using two polyprotic systems tuned
+    so the second deprotonation step is essentially complete."""
+    mostly_monovalent = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(0.01, (1e6, 1e-20)),))  # second step never happens in practice
+    mostly_divalent = SystemTotals(kw=1e-14, acid_systems=(WeakSystem(0.01, (1e6, 1e6)),))  # both steps essentially complete
+    h_mono = solve_hydrogen_ion(mostly_monovalent).hydrogen_ion_molar
+    h_di = solve_hydrogen_ion(mostly_divalent).hydrogen_ion_molar
+    i_mono = ionic_strength(h_mono, mostly_monovalent)
+    i_di = ionic_strength(h_di, mostly_divalent)
+    # mostly_monovalent: ~0.01 M of a 1- ion -> I ~ 0.5*0.01 = 0.005 (plus ~2x that from the 2 H+ released, but the first step's H+ already free)
+    # mostly_divalent: ~0.01 M of a 2- ion -> an extra 0.5*0.01*4 = 0.02 contribution from the squared charge, on top of releasing a second H+
+    assert i_di > i_mono + 0.01, (i_mono, i_di)
 
 
 def test_system_totals_rejects_invalid_values() -> None:
@@ -115,9 +164,11 @@ def test_system_totals_rejects_invalid_values() -> None:
     with pytest.raises(ValueError):
         SystemTotals(kw=1e-14, strong_acid_molar=-0.1)
     with pytest.raises(ValueError):
-        SystemTotals(kw=1e-14, weak_acid_system_molar=0.1, weak_acid_system_Ka=None)
+        WeakSystem(molar=0.1, Ka_steps=())
     with pytest.raises(ValueError):
-        SystemTotals(kw=1e-14, weak_base_system_molar=0.1, weak_base_system_Ka_conjugate=0.0)
+        WeakSystem(molar=0.1, Ka_steps=(0.0,))
+    with pytest.raises(ValueError):
+        WeakSystem(molar=-0.1, Ka_steps=(1.75e-5,))
 
 
 def test_kw_reference_value_is_the_cited_iupac_nist_value() -> None:
