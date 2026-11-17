@@ -6,6 +6,7 @@
   "description": "MATTER LAB - an interactive, GPU-accelerated 3D laboratory for building and investigating atoms, molecules and reactions.",
   "workspaces": [
     "packages/*",
+    "packages/contracts/*",
     "apps/*"
   ],
   "engines": {
