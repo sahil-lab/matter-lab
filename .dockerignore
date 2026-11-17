@@ -1,6 +1,8 @@
-# The science image is built with the repository root as its build context so that it can copy
-# the SQL migrations (db/migrations) and the generated reference data (tools/data/generated).
-# Everything else is kept out of the context.
+# The science image and the lab API image are both built with the repository root as their build
+# context: the science image needs the SQL migrations (db/migrations) and the generated reference
+# data (tools/data/generated); the lab API image needs the npm workspace (apps/api,
+# packages/contracts/lab, and every other workspace's package.json, so `npm ci` sees a consistent
+# lockfile). Everything else is kept out of the context.
 *
 
 !services/
@@ -17,7 +19,42 @@ tools/*
 tools/data/*
 !tools/data/generated/
 
+!package.json
+!package-lock.json
+!tsconfig.base.json
+
+!apps/
+apps/*
+!apps/api/
+!apps/web/
+apps/web/*
+!apps/web/package.json
+
+!packages/
+packages/*
+!packages/core/
+packages/core/*
+!packages/core/package.json
+!packages/forcefield/
+packages/forcefield/*
+!packages/forcefield/package.json
+!packages/quantum/
+packages/quantum/*
+!packages/quantum/package.json
+!packages/reactions/
+packages/reactions/*
+!packages/reactions/package.json
+!packages/contracts/
+packages/contracts/*
+!packages/contracts/lab/
+
 services/science/.venv/
+**/node_modules/
+**/dist/
+**/dist-e2e/
+**/.vite/
+**/test-results/
+**/playwright-report/
 **/__pycache__/
 **/*.pyc
 **/.pytest_cache/

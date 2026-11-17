@@ -1,7 +1,10 @@
-# MATTER LAB backend stack: PostgreSQL (authoritative database) + the Python science service.
+# MATTER LAB backend stack: PostgreSQL (authoritative database), the Python science service, and
+# the Astra lab API (apps/api).
 #
-#   docker compose -p matterlab up -d --build      start (builds the science image on first use)
-#   docker compose -p matterlab run --rm science pytest   run the test suite inside the service image
+#   docker compose -p matterlab up -d --build      start (builds the science and api images on first use)
+#   docker compose -p matterlab run --rm science pytest   run the science test suite inside its image
+#   docker compose -p matterlab run --rm api node node_modules/tsx/dist/cli.mjs apps/api/src/seed/cli.ts
+#                                                   seed lab equipment/reagent catalogs and sample scenes
 #   docker compose -p matterlab down               stop; the named volume matterlab_pgdata is kept
 #
 # Every setting has a local-development default and can be overridden from the environment or a
@@ -65,6 +68,31 @@ services:
       # also carries a copy of both, so it runs without these mounts.
       - ./db/migrations:/db/migrations:ro
       - ./tools/data/generated:/data/generated:ro
+
+  # Astra lab backend (Agent 09): REST API for scenes, runs, equipment/reagent catalogs, templates
+  # and exports, on the lab_* tables added by db/migrations 0006+. Depends on `science` (not just
+  # `db`) being healthy so the lab_* migrations and seed registries it needs have already run.
+  api:
+    image: matterlab-api:dev
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      science:
+        condition: service_healthy
+    init: true
+    stop_grace_period: 10s
+    environment:
+      MATTERLAB_DB_HOST: db
+      MATTERLAB_DB_PORT: "5432"
+      MATTERLAB_DB_USER: ${MATTERLAB_DB_USER:-matterlab}
+      MATTERLAB_DB_PASSWORD: ${MATTERLAB_DB_PASSWORD:-matterlab_local_dev}
+      MATTERLAB_DB_NAME: ${MATTERLAB_DB_NAME:-matterlab}
+      MATTERLAB_CORS_ORIGINS: ${MATTERLAB_CORS_ORIGINS:-http://127.0.0.1:5273,http://localhost:5273,http://127.0.0.1:4273,http://localhost:4273}
+      MATTERLAB_API_KEYS: ${MATTERLAB_API_KEYS:-matterlab-dev-key:lab:read,lab:write}
+      MATTERLAB_API_LOG_LEVEL: ${MATTERLAB_API_LOG_LEVEL:-info}
+    ports:
+      - "${MATTERLAB_BIND_ADDRESS:-127.0.0.1}:${MATTERLAB_LAB_API_HOST_PORT:-8788}:8788"
 
 volumes:
   pgdata:
