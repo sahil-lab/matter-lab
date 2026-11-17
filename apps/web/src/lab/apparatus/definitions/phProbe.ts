@@ -5,6 +5,7 @@
  */
 import { buildPhProbeGeometry, DEFAULT_PH_PROBE_CONFIG } from '../geometry';
 import { dimensionSource } from '../sources';
+import { uprightSocketTransform } from '../transforms';
 import type { ApparatusDefinition } from '../types';
 
 const config = DEFAULT_PH_PROBE_CONFIG;
@@ -22,7 +23,7 @@ export const PH_PROBE_COMBINATION: ApparatusDefinition = {
   dimensionsM: { width: config.headSizeM, depth: config.headSizeM, height: totalHeightM },
   massKg: 0.06,
   collision: { kind: 'cylinder', radiusM: config.shaftRadiusM * 1.6, heightM: totalHeightM, centerM: [0, totalHeightM / 2 - config.shaftHeightM * 0.02, 0] },
-  capabilities: ['PH_SENSOR'],
+  capabilities: ['PH_SENSOR', 'MOUNTABLE'],
   sockets: [
     {
       id: 'sensor-tip',
@@ -37,6 +38,20 @@ export const PH_PROBE_COMBINATION: ApparatusDefinition = {
       geometryCheck: { kind: 'none' },
       maxConnections: 1,
       highlightRadiusM: 0.015,
+    },
+    {
+      id: 'shaft-mount',
+      label: 'Shaft (can be held by a second clamp)',
+      kind: 'MECHANICAL',
+      role: 'probe-shaft',
+      accepts: ['clamp-jaw'],
+      gender: 'MALE',
+      mate: 'coincident',
+      transform: uprightSocketTransform([0, config.shaftHeightM * 0.5, 0]),
+      geometryCheck: { kind: 'none' },
+      nominalDiameterM: config.shaftRadiusM * 2,
+      maxConnections: 1,
+      highlightRadiusM: 0.018,
     },
   ],
   controls: [
@@ -53,9 +68,9 @@ export const PH_PROBE_COMBINATION: ApparatusDefinition = {
   ],
   defaultConfig: {},
   configSchema: [],
-  // A probe is normally hand-positioned over a vessel rather than rigidly mounted, so it declares
-  // no `flat-surface`-compatible resting socket in this revision — see module README "known gaps".
-  placement: { allowedSurfaceRoles: ['sensor-access'], allowRotationAboutUpAxis: false },
+  // Normally hand-positioned over a vessel; can alternatively be held steady by a second burette
+  // clamp on its own stand (clamp-jaw accepts this probe's `probe-shaft` role — see buretteClamp.ts).
+  placement: { allowedSurfaceRoles: ['sensor-access', 'clamp-jaw'], allowRotationAboutUpAxis: false },
   asset: {
     source: 'procedural',
     proceduralBuilderId: 'ph-probe-combination',

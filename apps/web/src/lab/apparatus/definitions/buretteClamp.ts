@@ -49,15 +49,16 @@ export const BURETTE_CLAMP_BOSS_HEAD: ApparatusDefinition = {
     },
     {
       id: 'jaw',
-      label: 'Jaw (grips the burette barrel)',
+      label: 'Jaw (grips the burette barrel or a probe shaft)',
       kind: 'MECHANICAL',
       role: 'clamp-jaw',
-      accepts: ['burette-barrel'],
+      accepts: ['burette-barrel', 'probe-shaft'],
       gender: 'FEMALE',
       mate: 'coincident',
       transform: uprightSocketTransform([config.armLengthM, 0, 0]),
-      // Brackets the calibrated ~9 mm burette barrel with headroom for other glassware of a
-      // similar diameter (a wide-mouth bottle neck, for example, should still be rejected).
+      // Brackets the calibrated ~9 mm burette barrel and a ~12 mm combination-electrode shaft
+      // (pH/conductivity probe) with headroom for similar-diameter glassware; a wide-mouth bottle
+      // neck, or a narrower ~6 mm digital temperature probe shaft, should still be rejected.
       geometryCheck: { kind: 'cylinder-fit', minDiameterM: 0.007, maxDiameterM: 0.012 },
       maxConnections: 1,
       highlightRadiusM: 0.025,
