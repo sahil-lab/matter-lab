@@ -1,0 +1,79 @@
+{
+  "indicators": [
+    {
+      "indicator_id": "phenolphthalein",
+      "name": "Phenolphthalein",
+      "pKin": 9.4,
+      "acid_color_hex": "#f5f2ea",
+      "base_color_hex": "#e0459a",
+      "visual_range": [
+        8.3,
+        10.0
+      ],
+      "endpoint_vs_equivalence": {
+        "strong_acid_strong_base_hcl_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.025012562388619108,
+          "difference_l": 1.256238861910286e-05,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Phenolphthalein changes colour where the solution's own pH crosses the indicator's pKin (9.4), which the solved curve places at 25.0126 mL -- a difference of +0.0126 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        },
+        "weak_acid_strong_base_acetic_acid_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.025011994792678825,
+          "difference_l": 1.1994792678819699e-05,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Phenolphthalein changes colour where the solution's own pH crosses the indicator's pKin (9.4), which the solved curve places at 25.0120 mL -- a difference of +0.0120 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        }
+      }
+    },
+    {
+      "indicator_id": "methyl-orange",
+      "name": "Methyl orange",
+      "pKin": 3.7,
+      "acid_color_hex": "#c82c2c",
+      "base_color_hex": "#f2c41a",
+      "visual_range": [
+        3.1,
+        4.4
+      ],
+      "endpoint_vs_equivalence": {
+        "strong_acid_strong_base_hcl_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.024900435564505455,
+          "difference_l": -9.956443549455005e-05,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Methyl orange changes colour where the solution's own pH crosses the indicator's pKin (3.7), which the solved curve places at 24.9004 mL -- a difference of -0.0996 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        },
+        "weak_acid_strong_base_acetic_acid_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.0019661896407339105,
+          "difference_l": -0.023033810359266094,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Methyl orange changes colour where the solution's own pH crosses the indicator's pKin (3.7), which the solved curve places at 1.9662 mL -- a difference of -23.0338 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        }
+      }
+    },
+    {
+      "indicator_id": "bromothymol-blue",
+      "name": "Bromothymol blue",
+      "pKin": 7.1,
+      "acid_color_hex": "#e8d32a",
+      "base_color_hex": "#2a5cc8",
+      "visual_range": [
+        6.0,
+        7.6
+      ],
+      "endpoint_vs_equivalence": {
+        "strong_acid_strong_base_hcl_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.025000023235971763,
+          "difference_l": 2.323597175779568e-08,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Bromothymol blue changes colour where the solution's own pH crosses the indicator's pKin (7.1), which the solved curve places at 25.0000 mL -- a difference of +0.0000 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        },
+        "weak_acid_strong_base_acetic_acid_naoh": {
+          "equivalence_volume_l": 0.025000000000000005,
+          "indicator_endpoint_volume_l": 0.02488730925944636,
+          "difference_l": -0.00011269074055364481,
+          "explanation": "The equivalence point (25.0000 mL) is defined by stoichiometry alone (moles of titrant delivered equal moles of analyte). Bromothymol blue changes colour where the solution's own pH crosses the indicator's pKin (7.1), which the solved curve places at 24.8873 mL -- a difference of -0.1127 mL. The two differ because the indicator's colour change is a property of the dye's own acid/base equilibrium, not of the titration; they coincide only when pKin equals the pH at equivalence."
+        }
+      }
+    }
+  ]
+}
