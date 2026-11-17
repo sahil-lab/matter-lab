@@ -14,7 +14,24 @@ lab/experiments/
   plugins/      ExperimentPlugin implementations (acid-base titration, the only template in
                 Agent 06's v1 scientific scope).
   testFixtures/ A test-only solver double and rig-assembly helper. Not production code.
+  harness/      A standalone, non-3D dev page (see "Live harness" below) that drives
+                ExperimentEngine directly, for manual exploration and screenshots without
+                waiting on Agent 02/04/05's 3D environment, editor or fluid renderer.
 ```
+
+## Live harness
+
+`npm run dev` (from `apps/web`, or the repo root) and open `/lab-experiments-harness.html`
+(`apps/web/lab-experiments-harness.html` → `harness/main.ts`). It is a plain-DOM page, not part of
+the production bundle (`vite build` only emits `index.html`) — a dev tool, not a shipped surface.
+
+It assembles two independent titration stations through the real `ExperimentEngine` (no separate
+"demo" state machine) and exposes every acceptance-test behaviour interactively: FILL/SET_VALVE,
+tick/run/pause/resume, a live pH read-out and pH-vs-delivered-mL sparkline, Duplicate station,
+and Save/Reopen/"Check replay determinism" against the exact `createSnapshot`/`replay` machinery
+`runtime/snapshot.ts` and Agent 09's persistence are expected to use. The pH it shows comes from the
+same non-production `testFixtures/fakeSolverClient.ts` described below — the banner on the page
+says so, matching the evidence badge (`UNVERIFIED`) shown next to every reading.
 
 Read `packages/contracts/lab/**` first — every type named below (`ExperimentScene`, `LabAction`,
 `ApparatusDefinition`, `SolverClient`, `ExperimentPlugin`, `LabEventRecord`, `ExperimentSnapshot`)
@@ -165,18 +182,23 @@ An `Observation` the solver seam produces, as recorded in the ledger (`getObserv
   full `events` array).
 - **Agent 10** (integration/QA): acceptance-test coverage lives in `runtime/engine.test.ts`; run
   `npm run typecheck` and `npx vitest run --project web apps/web/src/lab/experiments` from the repo
-  root.
+  root. `npm run dev` + `/lab-experiments-harness.html` gives a manual, screenshot-able check of the
+  same behaviour outside the automated suite.
 
 ## Known stubs / reconciliation flags
 
 - `registry/verticalSliceDefinitions.ts` is Agent 07's best-effort reconstruction of Agent 03's
   brief, not Agent 03's actual shipped definitions.
 - `testFixtures/fakeSolverClient.ts` is a non-production strong-acid/strong-base solver double
-  (evidence `UNVERIFIED`), used only by this package's own tests. Production wiring must use
-  `createUnavailableSolverClient()` until Agent 06's real client is reconciled in — it always
-  reports `UNSUPPORTED` rather than fabricating a result.
+  (evidence `UNVERIFIED`), used only by this package's own tests (and the harness). Production
+  wiring must use `createUnavailableSolverClient()` until Agent 06's real client is reconciled in —
+  it always reports `UNSUPPORTED` rather than fabricating a result.
 - Only one `ExperimentPlugin` (acid-base titration) exists; buffer/conductivity/calorimetry
   templates are future work per Agent 06's v1 scientific scope.
+- `harness/stationCard.ts`'s pH sparkline is the harness's own convenience history, not persisted
+  in `ExperimentSnapshot` — reopening a saved scene correctly restores the engine's real
+  observation ledger (verified by `engine.getObservations()`), but the harness's chart redraws
+  empty until new ticks arrive. Cosmetic only; not a defect in the engine itself.
 - Reagent bottles are not modelled as finite, depletable containers in P0 — `FILL` is the
   explicit, declared-unconserved "poured from an external source" action; only `TRANSFER` between
   two already-filled vessels conserves (see `inventory.ts`'s doc comment).
