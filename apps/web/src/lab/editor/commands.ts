@@ -41,6 +41,7 @@ function placeActionFor(instance: ApparatusInstance): LabAction {
 /** The `LabAction`s that keep the reducer in sync with one `EditorPatch` just applied to `EditorSceneState` (in either direction — undo hands back an already-inverted patch, so this one function covers do/undo/redo). Group/lock changes have no shared-contract equivalent and are intentionally not represented here. */
 function labActionsForPatch(patch: EditorPatch): LabAction[] {
   const actions: LabAction[] = [];
+  const removedIds = new Set(patch.apparatusRemoved.map((i) => i.id));
   for (const instance of patch.apparatusRemoved) {
     actions.push({ actionId: newUUID(), atSimulationS: 0, targetInstanceId: instance.id, type: 'CUSTOM', payload: asActionPayload({ op: 'REMOVE' }) });
   }
@@ -51,6 +52,13 @@ function labActionsForPatch(patch: EditorPatch): LabAction[] {
     actions.push({ actionId: newUUID(), atSimulationS: 0, targetInstanceId: change.after.id, type: 'MOVE', payload: asActionPayload({ transform: change.after.transform }) });
   }
   for (const connection of patch.connectionsRemoved) {
+    // The reducer's own CUSTOM/REMOVE already cascades to every connection touching the removed
+    // instance (sceneEditor.ts's removeApparatus does the same locally, which is *why* this
+    // connection is in the patch at all). Emitting a separate DETACH for it too would ask the
+    // reducer to detach a connection it already dropped as a side effect, which it correctly
+    // rejects (UNKNOWN_CONNECTION) — and that single rejection would otherwise roll back the
+    // *entire* patch, undoing the removal that had already succeeded.
+    if (removedIds.has(connection.from.instanceId) || removedIds.has(connection.to.instanceId)) continue;
     actions.push({ actionId: newUUID(), atSimulationS: 0, targetInstanceId: connection.from.instanceId, type: 'DETACH', payload: asActionPayload({ connectionId: connection.id }) });
   }
   for (const connection of patch.connectionsAdded) {

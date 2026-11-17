@@ -29,7 +29,7 @@ export function LabEditorHarness(): React.JSX.Element {
   const activeStationId = useLabEditor((s) => s.activeStationId);
 
   useEffect(() => installLabActionSink(reducer), [reducer]);
-  useEffect(() => installLabEditorTestApi(reducer, () => cameraRef.current), [reducer]);
+  useEffect(() => installLabEditorTestApi(reducer, () => cameraRef.current, () => gesturesRef.current), [reducer]);
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh', background: '#0b0f16', fontFamily: 'system-ui, sans-serif' }}>

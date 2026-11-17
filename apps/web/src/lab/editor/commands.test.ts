@@ -220,4 +220,30 @@ describe('removeInstances', () => {
     expect(labEditor.get().scene.apparatus.has(locked.instanceId)).toBe(true);
     expect(reducer.getApparatus().some((a) => a.id === unlocked.instanceId)).toBe(false);
   });
+
+  it('removing an instance that has a connection does not get rolled back by its own cascaded detach', () => {
+    // Regression test: the reducer's CUSTOM/REMOVE already cascades to every connection touching
+    // the removed instance, exactly like sceneEditor.ts's removeApparatus does locally. Emitting a
+    // *second*, separate DETACH action for that same connection used to make the reducer reject it
+    // (already gone) and roll back the whole patch — undoing a removal that had, in fact, already
+    // succeeded. See commands.ts's labActionsForPatch.
+    const stand = placeApparatus({ definitionId: 'stand.retort', kind: 'STAND', transform: IDENTITY_TRANSFORM, capabilities: ['MOUNT', 'MOUNTABLE'], stationId: 's1' });
+    const clamp = placeApparatus({
+      definitionId: 'clamp.burette',
+      kind: 'CLAMP',
+      transform: { positionM: [0.06, 0.38, 0], quaternion: IDENTITY_TRANSFORM.quaternion },
+      capabilities: ['MOUNT', 'MOUNTABLE'],
+      stationId: 's1',
+    });
+    const attach = attachConnection({ instanceId: stand.instanceId, socketId: 'rail-mid' }, { instanceId: clamp.instanceId, socketId: 'mount' }, 'MECHANICAL');
+    expect(attach.result.accepted).toBe(true);
+    expect(labEditor.get().scene.connections.size).toBe(1);
+
+    const results = removeInstances([stand.instanceId]);
+    expect(results.every((r) => r.accepted)).toBe(true);
+    expect(labEditor.get().scene.apparatus.has(stand.instanceId)).toBe(false);
+    expect(labEditor.get().scene.connections.size).toBe(0);
+    expect(reducer.getApparatus().some((a) => a.id === stand.instanceId)).toBe(false);
+    expect(reducer.getConnections()).toHaveLength(0);
+  });
 });

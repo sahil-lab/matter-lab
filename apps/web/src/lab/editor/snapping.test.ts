@@ -89,7 +89,7 @@ describe('findSnapTarget', () => {
 
   it('snaps a flask onto a benchtop surface, preserving its horizontal drag position', () => {
     const bench = instance('bench', 'bench.standard', [0, 0, 0]);
-    const candidateTransform = { positionM: [0.3, 0.05, 0.1] as const, quaternion: IDENTITY_TRANSFORM.quaternion };
+    const candidateTransform = { positionM: [0.3, 0.02, 0.1] as const, quaternion: IDENTITY_TRANSFORM.quaternion };
     const result = findSnapTarget({
       draggedKind: 'FLASK',
       draggedDefinition: getApparatusDefinition('flask.conical250')!,
@@ -102,8 +102,9 @@ describe('findSnapTarget', () => {
       expect(result.socket.surface).toBe('planar');
       expect(result.worldTransform.positionM[0]).toBeCloseTo(0.3, 6);
       expect(result.worldTransform.positionM[2]).toBeCloseTo(0.1, 6);
-      // The flask's base socket (local y=0) lands exactly on the bench surface (world y=0.025).
-      expect(result.worldTransform.positionM[1]).toBeCloseTo(0.025, 6);
+      // The flask's base socket (local y=0) lands exactly on the bench surface (world y=0, the
+      // bench instance's own origin height — see the comment on bench.standard's socket).
+      expect(result.worldTransform.positionM[1]).toBeCloseTo(0, 6);
     }
   });
 

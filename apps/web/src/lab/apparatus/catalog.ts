@@ -82,7 +82,11 @@ export const APPARATUS_CATALOG: readonly ApparatusDefinition[] = [
     capabilities: ['MOUNT'],
     dimensionsM: [1.2, 0.05, 0.6],
     footprintCenter: [0, -0.025, 0],
-    sockets: [socket('surface', 'MECHANICAL', 'Benchtop', at([0, 0.025, 0]), ['STAND', 'BEAKER', 'FLASK', 'STIRRER', 'OTHER'], 'planar', true)],
+    // The instance origin (y=0) sits at the top of the bench box (footprintCenter.y + half-height
+    // = -0.025 + 0.025 = 0), so the socket that represents the physical benchtop belongs at y=0,
+    // not above it — otherwise nothing placed exactly on the surface (e.g. by a ground-plane click)
+    // can ever be within snapping range of it.
+    sockets: [socket('surface', 'MECHANICAL', 'Benchtop', at([0, 0, 0]), ['STAND', 'BEAKER', 'FLASK', 'STIRRER', 'OTHER'], 'planar', true)],
     controls: [],
     requiresSupport: false,
     defaultConfig: {},
