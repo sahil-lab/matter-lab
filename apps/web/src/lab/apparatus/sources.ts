@@ -75,6 +75,30 @@ export const DIMENSION_SOURCES: readonly DimensionSource[] = [
     url: 'https://www.mt.com/ph/en/home/products/Laboratory_Analytics_Browse/pH-meter/sensor/pH-sensor/pH-Sensor-LE409.html',
   },
   {
+    id: 'graduated-cylinder-100ml-catalog',
+    title: 'Graduated cylinder catalog specifications (100 mL)',
+    detail: '100 mL graduated cylinder: overall height commonly ~240-250 mm, body outer diameter ~29-35 mm (a wider base is typical for stability).',
+    url: 'https://www.eiscolabs.com/products/ch0344l',
+  },
+  {
+    id: 'support-ring-catalog',
+    title: 'Laboratory support (retort) ring catalog specifications',
+    detail: 'Support rings with a boss-head clamp are commonly cataloged at 44-140 mm inside diameter, with 80-100 mm a common mid-size; fit standard support rods ~8-12.5 mm in diameter.',
+    url: 'https://chemglass.com/support-rings-with-clamps',
+  },
+  {
+    id: 'pasteur-pipette-catalog',
+    title: 'Pasteur pipette (dropper) catalog specifications',
+    detail: 'Disposable/reusable Pasteur pipette droppers are commonly cataloged at ~150 mm (short) or ~230 mm (long) overall length.',
+    url: 'https://www.witeg.de/en/pasteur-pipettes-disposable/4-100-150',
+  },
+  {
+    id: 'lab-thermometer-catalog',
+    title: 'Laboratory analog glass thermometer catalog specifications',
+    detail: 'Laboratory glass thermometers are commonly ~300 mm long with a 6-8 mm stem diameter (shorter ~150 mm and longer ~400 mm models also exist, depending on range).',
+    url: 'https://www.thermometerworld.co.uk/shop/laboratory-thermometers/',
+  },
+  {
     id: 'magnetic-stirrer-hotplate-catalog',
     title: 'Magnetic stirrer hotplate catalog specifications',
     detail:

@@ -1,16 +1,17 @@
 /**
  * The generic, data-driven renderer for any registered `ApparatusDefinition`: given a definition,
- * it resolves the matching procedural geometry builder, renders each group through
- * `GeometryGroupMesh`, and optionally overlays socket highlight rings. No per-apparatus-kind
- * switch statement lives here — a new plugin definition with its own `proceduralBuilderId` (or,
- * in the future, a `gltfUri`) renders through this same component without editor changes (brief
- * point 6).
+ * it resolves the matching procedural geometry builder (sharing one built copy across every
+ * instance of the same definition via `geometryCache`) or loads a glTF asset, renders each group
+ * through `GeometryGroupMesh`, and optionally overlays socket highlight rings. No per-apparatus-kind
+ * switch statement lives here — a new plugin definition with its own `proceduralBuilderId` or a
+ * `gltfUri` renders through this same component without editor changes (brief point 6).
  */
-import { useEffect, useMemo } from 'react';
-import type { BufferGeometry } from 'three';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BoxGeometry, EdgesGeometry } from 'three';
-import { resolveProceduralBuilder } from '../geometry';
+import { resolveProceduralBuilder } from '../definitions/builderRegistry';
+import { loadGltfBuildResult, type GeometryBuildResult } from '../geometry';
 import type { ApparatusDefinition, Transform } from '../types';
+import { acquireGeometryBuild, releaseGeometryBuild } from './geometryCache';
 import { GeometryGroupMesh } from './primitives/GeometryGroupMesh';
 import type { SocketIndicatorStatus } from './primitives/SocketIndicator';
 import { SocketIndicator } from './primitives/SocketIndicator';
@@ -39,9 +40,15 @@ function toArray4(v: readonly [number, number, number, number]): [number, number
 
 const IDENTITY: Transform = { positionM: [0, 0, 0], quaternion: [0, 0, 0, 1] };
 
-/** A bright, unmissable wireframe box stand-in for a definition this version of the renderer
- * cannot build yet (an unregistered `proceduralBuilderId`, or a future `gltfUri` asset — no glTF
- * loader is wired up in this revision). Brief point 7: visibly marked as incomplete, not shipped. */
+interface GroupsProps {
+  readonly partSpin: Readonly<Record<string, number>>;
+  readonly castShadow?: boolean;
+  readonly receiveShadow?: boolean;
+}
+
+/** A bright, unmissable wireframe box stand-in for a definition this renderer cannot build (an
+ * unregistered `proceduralBuilderId`, a glTF asset that is still loading, or one that failed to
+ * load). Brief point 7: visibly marked as incomplete, not shipped. */
 function MissingAssetPlaceholder({ dimensionsM }: { dimensionsM: ApparatusDefinition['dimensionsM'] }) {
   const edges = useMemo(() => new EdgesGeometry(new BoxGeometry(dimensionsM.width, dimensionsM.height, dimensionsM.depth)), [dimensionsM.width, dimensionsM.height, dimensionsM.depth]);
   useEffect(() => () => edges.dispose(), [edges]);
@@ -54,25 +61,79 @@ function MissingAssetPlaceholder({ dimensionsM }: { dimensionsM: ApparatusDefini
   );
 }
 
-export function ApparatusMesh({ definition, transform = IDENTITY, partSpin = {}, showSockets = false, socketStatus, castShadow, receiveShadow }: ApparatusMeshProps) {
-  const builder = definition.asset.source === 'procedural' && definition.asset.proceduralBuilderId ? resolveProceduralBuilder(definition.asset.proceduralBuilderId) : undefined;
+function BuildResultGroups({ build, partSpin, castShadow, receiveShadow }: GroupsProps & { build: GeometryBuildResult }) {
+  return (
+    <>
+      {build.groups.map((group, index) => (
+        <GeometryGroupMesh key={index} group={group} extraSpinRad={partSpin[group.materialSlot] ?? 0} castShadow={castShadow} receiveShadow={receiveShadow} />
+      ))}
+    </>
+  );
+}
 
-  // Rebuilt only when the resolved builder function identity changes (i.e. when the definition
-  // itself changes) — every geometry here is otherwise static per apparatus type.
-  const build = useMemo(() => builder?.(), [builder]);
+/** The `source: 'procedural'` path: builds (or reuses, via `geometryCache`) the definition's
+ * geometry once per distinct `proceduralBuilderId`, releasing its reference on unmount. */
+function ProceduralApparatus({ definition, partSpin, castShadow, receiveShadow }: GroupsProps & { definition: ApparatusDefinition }) {
+  const id = definition.asset.proceduralBuilderId;
+  const builder = id ? resolveProceduralBuilder(id) : undefined;
+
+  const build = useMemo(() => (id && builder ? acquireGeometryBuild(id, builder) : undefined), [id, builder]);
 
   useEffect(() => {
-    return () => {
-      for (const group of build?.groups ?? []) (group.geometry as BufferGeometry).dispose();
-    };
-  }, [build]);
+    if (!id || !builder) return undefined;
+    return () => releaseGeometryBuild(id);
+  }, [id, builder]);
 
+  if (!build) return <MissingAssetPlaceholder dimensionsM={definition.dimensionsM} />;
+  return <BuildResultGroups build={build} partSpin={partSpin} castShadow={castShadow} receiveShadow={receiveShadow} />;
+}
+
+/** The `source: 'gltf'` path: fetches and parses `asset.gltfUri` (see `geometry/gltfLoader.ts`),
+ * showing the placeholder while loading and on failure (logged, never thrown past this component).
+ * No current definition uses this path — see the module README. */
+function GltfApparatus({ definition, partSpin, castShadow, receiveShadow }: GroupsProps & { definition: ApparatusDefinition }) {
+  const uri = definition.asset.gltfUri;
+  const [build, setBuild] = useState<GeometryBuildResult | undefined>(undefined);
+  // A ref (not state) for cleanup: a successful load's own groups need disposing, but we must not
+  // re-run the loading effect just because `build` changed as a result of that same effect.
+  const buildRef = useRef<GeometryBuildResult | undefined>(undefined);
+
+  useEffect(() => {
+    if (!uri) return undefined;
+    let cancelled = false;
+    setBuild(undefined);
+    loadGltfBuildResult(uri)
+      .then((result) => {
+        if (cancelled) {
+          for (const group of result.groups) group.geometry.dispose();
+          return;
+        }
+        buildRef.current = result;
+        setBuild(result);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) console.warn(`ApparatusMesh: failed to load glTF asset "${uri}" for "${definition.id}":`, error);
+      });
+    return () => {
+      cancelled = true;
+      // Dispose directly (not through geometryCache): each glTF load here is this component's own
+      // copy, not deduplicated across instances in this revision — see the module README.
+      for (const group of buildRef.current?.groups ?? []) group.geometry.dispose();
+      buildRef.current = undefined;
+    };
+  }, [uri, definition.id]);
+
+  if (!build) return <MissingAssetPlaceholder dimensionsM={definition.dimensionsM} />;
+  return <BuildResultGroups build={build} partSpin={partSpin} castShadow={castShadow} receiveShadow={receiveShadow} />;
+}
+
+export function ApparatusMesh({ definition, transform = IDENTITY, partSpin = {}, showSockets = false, socketStatus, castShadow, receiveShadow }: ApparatusMeshProps) {
   return (
     <group position={toArray3(transform.positionM)} quaternion={toArray4(transform.quaternion)}>
-      {build ? (
-        build.groups.map((group, index) => <GeometryGroupMesh key={index} group={group} extraSpinRad={partSpin[group.materialSlot] ?? 0} castShadow={castShadow} receiveShadow={receiveShadow} />)
+      {definition.asset.source === 'gltf' && definition.asset.gltfUri ? (
+        <GltfApparatus definition={definition} partSpin={partSpin} castShadow={castShadow} receiveShadow={receiveShadow} />
       ) : (
-        <MissingAssetPlaceholder dimensionsM={definition.dimensionsM} />
+        <ProceduralApparatus definition={definition} partSpin={partSpin} castShadow={castShadow} receiveShadow={receiveShadow} />
       )}
       {showSockets && definition.sockets.map((socket) => <SocketIndicator key={socket.id} socket={socket} status={socketStatus?.(socket.id) ?? 'idle'} />)}
     </group>

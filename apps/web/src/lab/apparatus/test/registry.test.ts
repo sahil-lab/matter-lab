@@ -47,12 +47,30 @@ describe('every registered P0/P1 definition', () => {
     for (const id of ids) expect(id.trim().length).toBeGreaterThan(0);
   });
 
-  it('covers the full P0 vertical-slice equipment list (shared contract §6) plus a P1 subset', () => {
+  it('covers the full P0 vertical-slice equipment list (shared contract §6) plus the complete P1 library', () => {
     expect(P0_DEFINITIONS).toHaveLength(8);
-    expect(P1_DEFINITIONS).toHaveLength(4);
+    expect(P1_DEFINITIONS).toHaveLength(13);
     const kinds = new Set(P0_DEFINITIONS.map((d) => d.kind));
     for (const requiredKind of ['BENCH', 'STAND', 'CLAMP', 'BURETTE', 'FLASK', 'STIRRER', 'PH_PROBE']) {
       expect(kinds.has(requiredKind as ApparatusDefinition['kind']), `P0 set should include a ${requiredKind}`).toBe(true);
+    }
+    const p1Kinds = new Set(P1_DEFINITIONS.map((d) => d.kind));
+    for (const requiredKind of [
+      'BEAKER',
+      'TEST_TUBE',
+      'VOLUMETRIC_FLASK',
+      'PIPETTE',
+      'DROPPER',
+      'GRADUATED_CYLINDER',
+      'FUNNEL',
+      'SUPPORT_RING',
+      'LAB_JACK',
+      'THERMOMETER',
+      'CONDUCTIVITY_METER',
+      'BALANCE',
+      'TEMPERATURE_SENSOR',
+    ]) {
+      expect(p1Kinds.has(requiredKind as ApparatusDefinition['kind']), `P1 set should include a ${requiredKind}`).toBe(true);
     }
   });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BEAKER_250ML_LOW_FORM } from '../definitions/beaker';
 import { BURETTE_50ML_CLASS_A } from '../definitions/burette';
 import { CONICAL_FLASK_250ML } from '../definitions/conicalFlask';
+import { GRADUATED_CYLINDER_100ML } from '../definitions/graduatedCylinder';
 import { PIPETTE_25ML_VOLUMETRIC } from '../definitions/pipette';
 import { REAGENT_BOTTLE_250ML } from '../definitions/reagentBottle';
 import { TEST_TUBE_16X100MM } from '../definitions/testTube';
@@ -18,6 +19,7 @@ describe('every vessel definition holds exactly its declared nominal capacity', 
     ['volumetric flask', VOLUMETRIC_FLASK_250ML, 0.25],
     ['test tube', TEST_TUBE_16X100MM, 0.013],
     ['pipette', PIPETTE_25ML_VOLUMETRIC, 0.025],
+    ['graduated cylinder', GRADUATED_CYLINDER_100ML, 0.1],
   ];
 
   it.each(cases)('%s container.capacityL matches its nominal rating', (_label, def, expected) => {
@@ -98,5 +100,24 @@ describe('the burette\u2019s graduation', () => {
     for (const tick of labeled) {
       expect(tick.valueML % 5).toBeCloseTo(0, 6);
     }
+  });
+});
+
+describe('the graduated cylinder\u2019s graduation (zeroAtTop: false, the inverse of the burette)', () => {
+  const graduation = GRADUATED_CYLINDER_100ML.graduation!;
+  const container = GRADUATED_CYLINDER_100ML.container!;
+
+  it('is rated at 100.00 mL and reads bottom-up, unlike the burette', () => {
+    expect(graduation.capacityML).toBeCloseTo(100, 1);
+    expect(graduation.zeroAtTop).toBe(false);
+  });
+
+  it('reads 0 mL contained at the bottom (empty) and the full capacity at the top (full)', () => {
+    const ticks = buildGraduationTicks(graduation, container);
+    expect(ticks.length).toBeGreaterThan(0);
+    const topTick = ticks.reduce((a, b) => (a.heightM > b.heightM ? a : b));
+    const bottomTick = ticks.reduce((a, b) => (a.heightM < b.heightM ? a : b));
+    expect(bottomTick.valueML).toBeCloseTo(0, 6);
+    expect(topTick.valueML).toBeCloseTo(graduation.capacityML, 6);
   });
 });

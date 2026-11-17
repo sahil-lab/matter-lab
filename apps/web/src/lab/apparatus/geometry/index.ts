@@ -6,9 +6,9 @@
  */
 export * from './types';
 export * from './polycount';
+export * from './gltfLoader';
 export * from './hardware';
 export * from './profiles';
-export * from './builderRegistry';
 
 export * from './workbench';
 export * from './retortStand';
@@ -23,3 +23,10 @@ export * from './beaker';
 export * from './testTube';
 export * from './volumetricFlask';
 export * from './pipette';
+
+export * from './funnel';
+export * from './graduatedCylinder';
+export * from './dropper';
+export * from './supportRing';
+export * from './labJack';
+export * from './balance';

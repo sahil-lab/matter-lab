@@ -25,7 +25,9 @@ function toArray4(v: readonly [number, number, number, number] | undefined): [nu
 }
 
 export function GeometryGroupMesh({ group, castShadow = true, receiveShadow = true, extraSpinRad = 0 }: GeometryGroupMeshProps) {
-  const spec = useMemo(() => materialSpecForSlot(group.materialSlot), [group.materialSlot]);
+  // A glTF-sourced group carries its own authored material (see `geometry/gltfLoader.ts`), which
+  // always takes precedence over the provisional, slot-based palette procedural groups resolve.
+  const spec = useMemo(() => (group.material ? null : materialSpecForSlot(group.materialSlot)), [group.material, group.materialSlot]);
   const position = toArray3(group.transform?.positionM);
   const quaternion = toArray4(group.transform?.quaternion);
 
@@ -35,8 +37,8 @@ export function GeometryGroupMesh({ group, castShadow = true, receiveShadow = tr
        * `quaternion` in sync with each other, so applying both the base orientation (above) and an
        * additional spin to the *same* object would have the second simply overwrite the first. */}
       <group rotation-y={extraSpinRad}>
-        <mesh geometry={group.geometry as BufferGeometry} castShadow={castShadow} receiveShadow={receiveShadow}>
-          {spec.kind === 'physical' ? <meshPhysicalMaterial {...spec.props} /> : <meshStandardMaterial {...spec.props} />}
+        <mesh geometry={group.geometry as BufferGeometry} material={group.material} castShadow={castShadow} receiveShadow={receiveShadow}>
+          {!group.material && (spec!.kind === 'physical' ? <meshPhysicalMaterial {...spec!.props} /> : <meshStandardMaterial {...spec!.props} />)}
         </mesh>
       </group>
     </group>

@@ -4,7 +4,7 @@ import { BURETTE_50ML_CLASS_A } from '../definitions/burette';
 import { countTriangles, cylinderProfile } from '../geometry/profiles';
 import { boxGroup, cylinderGroup } from '../geometry/hardware';
 import { combineBuildResults } from '../geometry/types';
-import { PROCEDURAL_GEOMETRY_BUILDERS, resolveProceduralBuilder } from '../geometry/builderRegistry';
+import { PROCEDURAL_GEOMETRY_BUILDERS, resolveProceduralBuilder } from '../definitions/builderRegistry';
 import { ALL_DEFINITIONS } from '../definitions';
 
 describe('countTriangles', () => {
