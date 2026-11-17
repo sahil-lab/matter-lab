@@ -192,6 +192,7 @@ def geometry_optimization(job_input: dict[str, Any], settings: dict[str, Any], c
         steps = int(optimizer.nsteps)
         energy_final = float(atoms.get_potential_energy()) / ase.units.Hartree
         force_final = max_force(atoms)
+        forces = np.asarray(atoms.get_forces(), dtype=float)
         charges = np.asarray(atoms.calc.results["charges"], dtype=float)
         dipole = np.asarray(atoms.calc.results["dipole"], dtype=float) * elementary_charge_angstrom_to_debye()
         positions = np.asarray(atoms.get_positions(), dtype=float)
@@ -201,6 +202,7 @@ def geometry_optimization(job_input: dict[str, Any], settings: dict[str, Any], c
         raise _engine_failure(exc) from exc
     _finite([energy_initial, energy_final], "energy")
     _finite(positions, "geometry")
+    _finite(forces, "forces")
 
     warnings = list(system.warnings)
     if not converged:
@@ -236,6 +238,7 @@ def geometry_optimization(job_input: dict[str, Any], settings: dict[str, Any], c
         "force_tolerance_ev_per_angstrom": tolerance,
         "max_force_initial_ev_per_angstrom": force_initial,
         "max_force_final_ev_per_angstrom": force_final,
+        "forces_ev_per_angstrom": [[float(value) for value in vector] for vector in forces],
         "energy_initial_hartree": energy_initial,
         "energy_final_hartree": energy_final,
         "energy_change_hartree": energy_final - energy_initial,

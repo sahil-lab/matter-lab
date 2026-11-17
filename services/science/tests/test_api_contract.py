@@ -1,5 +1,8 @@
-"""API contract: every operation of the published OpenAPI schema is called for real, and every
-response it documents (success and error) is produced and validated against its schema.
+"""Legacy API contract: every original /v1 operation and documented response is exercised.
+
+The additive authenticated /api/v1/lab contract uses Problem Details and optional fields, rather
+than the original envelope/null conventions. Its real PostgreSQL and replay tests are in
+test_lab_api.py, test_lab_contracts.py and test_lab_replay.py.
 
 The tests of this module build on each other and run in file order: the last two check that
 nothing in the schema was left unexercised.
@@ -52,9 +55,13 @@ class Driver:
         return {
             (method.upper(), path, int(status))
             for path, item in self.contract.spec["paths"].items()
+            if not path.startswith("/api/v1/lab/")
             for method, operation in item.items()
             for status in operation["responses"]
         }
+
+    def operations(self) -> set[tuple[str, str]]:
+        return {(method, path) for method, path in self.contract.operations() if not path.startswith("/api/v1/lab/")}
 
 
 @pytest.fixture(scope="module")
@@ -86,8 +93,11 @@ def test_openapi_schema_is_served_and_well_formed(client: TestClient, api: Drive
     spec = api.contract.spec
     assert spec["info"]["title"] == "MATTER LAB science service" and spec["info"]["version"]
     operations = [(method.upper(), path, operation) for path, item in spec["paths"].items() for method, operation in item.items()]
-    assert len(operations) == 49
     assert len({operation["operationId"] for _, _, operation in operations}) == len(operations)
+    assert len(api.operations()) == 49
+    lab_operations = [(method, path, operation) for method, path, operation in operations if path.startswith("/api/v1/lab/")]
+    assert lab_operations, "The additive laboratory API must remain in the published schema."
+    operations = [(method, path, operation) for method, path, operation in operations if (method, path) in api.operations()]
     tags = {tag["name"] for tag in spec["tags"]}
     for method, path, operation in operations:
         where = f"{method} {path}"
@@ -402,7 +412,7 @@ def test_database_outage_is_reported_by_every_endpoint_that_needs_the_database(a
 
 def test_every_operation_and_every_documented_response_was_exercised(api: Driver) -> None:
     documented = api.documented()
-    assert {(method, path) for method, path, _ in documented} == api.contract.operations()
+    assert {(method, path) for method, path, _ in documented} == api.operations()
     not_exercised = sorted(documented - api.seen)
     assert not not_exercised, f"documented but never produced in this module: {not_exercised}"
-    assert api.contract.checked == api.contract.operations(), "every operation returned a schema-valid success response"
+    assert api.contract.checked == api.operations(), "every legacy operation returned a schema-valid success response"

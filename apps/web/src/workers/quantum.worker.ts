@@ -83,6 +83,21 @@ export interface SurfaceResponse {
   readonly elapsedMs: number;
 }
 
+export interface VolumeRequest {
+  readonly wavefunction: Wavefunction;
+  readonly field: FieldSpec;
+  readonly grid: GridRequest;
+}
+
+export interface VolumeResponse {
+  /** Scalar field in its scientific unit, indexed x + nx * (y + ny * z). */
+  readonly values: Float32Array;
+  readonly grid: GridSpec;
+  readonly min: number;
+  readonly max: number;
+  readonly elapsedMs: number;
+}
+
 export interface EspSurfaceRequest {
   readonly wavefunction: Wavefunction;
   /** Density isovalue of the surface the potential is mapped on, e/bohr^3. */
@@ -300,6 +315,15 @@ const methods = {
       .map((sign) => surfacePart(isosurface(field, request.field.kind, sign * request.isoValue), sign))
       .filter((part) => part.indices.length > 0);
     return transferring({ parts, grid: field.grid, fieldMin: field.min, fieldMax: field.max, elapsedMs: performance.now() - started }, buffersOf(parts));
+  },
+
+  volume(request: VolumeRequest, progress: (value: FieldProgress) => void): VolumeResponse {
+    const started = performance.now();
+    const report = throttle(progress);
+    const field = sampleField(request.wavefunction, request.field, request.grid, (fraction) => report({ stage: 'field', fraction }));
+    // The worker retains the original samples for subsequent surface/volume requests.
+    const values = field.values.slice();
+    return transferring({ values, grid: field.grid, min: field.min, max: field.max, elapsedMs: performance.now() - started }, [values.buffer]);
   },
 
   /** A density isosurface with the electrostatic potential evaluated at each of its vertices. */

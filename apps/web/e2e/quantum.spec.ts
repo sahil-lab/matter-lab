@@ -133,6 +133,37 @@ function heliumRadius(density: number): number {
 }
 
 test.describe('Hartree-Fock in the browser', () => {
+  test('compares two pinned computed states without changing the current molecule', async ({ page }) => {
+    await loadXyz('hydrogen comparison', [['H', 0, 0, 0], ['H', 1.4 * BOHR, 0, 0]]);
+    const first = await calculate();
+    await page.getByRole('button', { name: 'Compute', exact: true }).click();
+    await page.getByTestId('pin-quantum-view').click();
+    await lab.eval('lab.actions.setAtomPosition(2, [1.05, 0, 0]);');
+    const second = await calculate();
+    expect(first?.converged).toBe(true);
+    expect(second?.converged).toBe(true);
+    expect(Math.abs(second!.energy - first!.energy)).toBeGreaterThan(0.001);
+    const current = await lab.atoms();
+    await page.getByTestId('pin-quantum-view').click();
+    await page.getByTestId('open-quantum-comparison').click();
+    const dialog = page.getByRole('dialog', { name: 'Compare electronic states', exact: true });
+    await expect(dialog.getByTestId('quantum-comparison-view')).toHaveCount(2);
+    await expect(dialog).toContainText(first!.energy.toFixed(8));
+    await expect(dialog).toContainText(second!.energy.toFixed(8));
+    await expect(dialog.getByTestId('quantum-energy-difference')).toContainText(((second!.energy - first!.energy) * 2625.4996394799).toFixed(3));
+    const canvas = dialog.locator('canvas').first();
+    await expect(canvas).toBeVisible();
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('The comparison canvas did not render.');
+    await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.6);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.55, { steps: 8 });
+    await page.mouse.up();
+    expect(await lab.atoms()).toEqual(current);
+    await dialog.getByRole('button', { name: /^Close/ }).click();
+    expect(await lab.atoms()).toEqual(current);
+  });
+
   test('reproduces the textbook result for H2, from the button to the read-out', async ({ page }) => {
     // Szabo and Ostlund, Modern Quantum Chemistry, section 3.5.2: STO-3G H2 at R = 1.4 bohr has
     // E = -1.1167 hartree and orbital energies -0.5782 and +0.6703 hartree.
@@ -720,6 +751,60 @@ test.describe('molecular surfaces', () => {
     expect(info.atoms).toBe(2);
     expect(Math.abs(info.area / expected.area - 1)).toBeLessThan(0.006);
     expect(Math.abs(info.volume / expected.volume - 1)).toBeLessThan(0.008);
+  });
+
+  test('ray-marches computed volume samples, preserves their units, and removes the volume after an edit', async ({ page }) => {
+    await loadXyz('helium-volume', [['He', 0, 0, 0]]);
+    expect((await calculate())?.converged).toBe(true);
+    await lab.eval("lab.lab.set({ ambientMotion: false, quality: 'efficient', inspectorOpen: true, inspectorTab: 'compute' }); lab.quantum.setField({ kind: 'off' });");
+    await lab.ready();
+    await lab.eval("lab.viewApi.setStandardView('front');");
+    await lab.settle(700);
+    const sampledPixel = () => lab.eval<number[]>(`
+      return lab.viewApi.capture(4096).then(async (url) => {
+        if (!url) throw new Error('No rendered frame was captured.');
+        const image = await createImageBitmap(await (await fetch(url)).blob());
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width; canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('No image reader is available.');
+        context.drawImage(image, 0, 0);
+        const rect = document.querySelector('.ml-viewport canvas').getBoundingClientRect();
+        const p = lab.viewApi.project([0.7, 0, 0]);
+        const x = Math.round(p[0] * image.width / rect.width);
+        const y = Math.round(p[1] * image.height / rect.height);
+        const color = Array.from(context.getImageData(x, y, 1, 1).data).slice(0, 3);
+        image.close();
+        return color;
+      });`);
+    const background = await sampledPixel();
+    await page.getByRole('group', { name: 'Field on stage', exact: true }).getByRole('button', { name: 'Density', exact: true }).click();
+    await page.getByRole('group', { name: 'How the field is drawn' }).getByRole('button', { name: 'Volume', exact: true }).click();
+    await idle();
+    expect(await fieldInfo()).toMatchObject({ style: 'volume', kind: 'density', parts: [] });
+    expect(await lab.eval('return lab.quantum.useQuantum.getState().fieldError;')).toBeNull();
+    const uploaded = await lab.eval<{ samples: number; dimensions: number[] }>('return lab.stage().volume;');
+    expect(uploaded.samples).toBe(uploaded.dimensions.reduce((a, b) => a * b, 1));
+    const pixels = await sampledPixel();
+    expect(pixels.reduce((sum, value, i) => sum + Math.abs(value - background[i]!), 0)).toBeGreaterThan(15);
+    const grid = await lab.eval<Array<{ r: number; value: number }>>(`
+      const record = lab.quantum.currentRecord();
+      return lab.qm.fields.volume({ wavefunction: { id: record.id, input: record.input, result: record.result }, field: { kind: 'density' },
+        grid: { spacing: 0.18, padding: 3, maxPoints: 500000 } }).then(({values, grid}) => {
+          const [nx, ny, nz] = grid.dims;
+          const y = Math.floor(ny/2), z = Math.floor(nz/2);
+          return [Math.floor(nx/2), Math.floor(nx/2)+2, Math.floor(nx/2)+5].map((x) => ({
+            r: Math.hypot(grid.origin[0]+x*grid.spacing[0],grid.origin[1]+y*grid.spacing[1],grid.origin[2]+z*grid.spacing[2]),
+            value: values[x+nx*(y+ny*z)]
+          }));
+        });`);
+    for (const point of grid) {
+      const expected = heliumDensity(point.r / BOHR);
+      expect(Math.abs(point.value - expected)).toBeLessThan(Math.max(1e-7, expected * 1e-5));
+    }
+    await lab.eval("lab.actions.setAtomPosition(1, [0.2, 0, 0]);");
+    await idle();
+    expect(await lab.eval('return lab.stage().volume;')).toBeNull();
   });
 
   test('are rebuilt when the structure is edited and coloured by the atom underneath', async () => {

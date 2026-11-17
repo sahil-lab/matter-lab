@@ -33,13 +33,15 @@ import { getDeviceInfo } from '../render/MatterCanvas';
 import { QUALITY } from '../render/quality';
 import { cancelJob, clearFinishedJobs, isRunning, useJobs } from '../science/jobs';
 import type { LabJob } from '../science/jobs';
-import { clearSelection, enterWorkspace, newDocument, redo, undo } from '../state/actions';
+import { clearSelection, enterWorkspace, newDocument, notify, redo, undo } from '../state/actions';
 import { pickFile } from '../state/commands';
 import { saveCurrentProject } from '../state/persistence';
 import { lab, useLab } from '../state/store';
 import type { EditMode, QualityId, Workspace } from '../state/store';
 import { Button, IconButton, Segmented, cx, useDismiss } from './kit';
 import { useSettledScene } from '../state/useSettledScene';
+import { useScienceConnection } from '../services/connection';
+import { openCatalogueCompound } from '../services/workbench-storage';
 
 const BackendPanel = lazy(() => import('./backend').then(({ BackendPanel }) => ({ default: BackendPanel })));
 
@@ -150,7 +152,12 @@ function SettingsMenu() {
         <LabDialog open={backendOpen} size="large" title="Scientific backend & catalogs" description="Connect to the existing science service. No credentials or chemical state are stored by this dialog." onClose={closeBackend}>
           <LabModuleBoundary title="Backend tools" onBack={closeBackend} backLabel="Close backend tools">
             <Suspense fallback={<LabStateNotice status="loading">Loading the backend connection tools.</LabStateNotice>}>
-              <BackendPanel />
+              <BackendPanel onWorkbenchOpened={closeBackend} onChooseCompound={(compound) => {
+                const client = useScienceConnection.getState().client;
+                if (!client) { notify('error', 'Connect the science service first'); return; }
+                void openCatalogueCompound(client, compound).then(closeBackend).catch((error: unknown) =>
+                  notify('error', 'The catalogue model could not be opened', error instanceof Error ? error.message : String(error)));
+              }} />
             </Suspense>
           </LabModuleBoundary>
         </LabDialog>

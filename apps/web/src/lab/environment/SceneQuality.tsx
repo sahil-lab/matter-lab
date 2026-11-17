@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { addAfterEffect, useFrame, useThree } from '@react-three/fiber';
 import type { Frameloop } from '@react-three/fiber';
 import { Group, Vector3 } from 'three';
 import { adaptDpr, FrameMetricsWindow, readRendererCounters, SCENE_QUALITY } from './qualityMath';
@@ -26,8 +26,25 @@ export function SceneMetrics({
   const window = useRef(new FrameMetricsWindow());
   const callback = useRef(onMetrics);
   callback.current = onMetrics;
+  const pending = useRef<NonNullable<ReturnType<FrameMetricsWindow['addFrame']>> | null>(null);
   const dprState = useRef<AdaptiveDprState>({ dpr: quality.dpr[1], slowWindows: 0, fastWindows: 0 });
   const skipNext = useRef(true);
+
+  useEffect(() => {
+    // WebGPU resets counters before its frame callbacks; read them after R3F actually renders.
+    const unsubscribe = addAfterEffect(() => {
+      const sample = pending.current;
+      if (!sample) return;
+      pending.current = null;
+      const state = get();
+      callback.current?.({
+        ...sample, ...readRendererCounters(state.gl.info), backend, quality: quality.preset,
+        measurement: 'render-cadence', frameloop,
+        dpr: state.viewport.dpr, viewportPx: [state.size.width, state.size.height], visibility: 'visible',
+      });
+    });
+    return () => { unsubscribe(); pending.current = null; };
+  }, [get, backend, quality, frameloop]);
 
   useEffect(() => {
     const state = get();
@@ -40,6 +57,7 @@ export function SceneMetrics({
   useEffect(() => {
     const onVisibility = () => {
       window.current.reset();
+      pending.current = null;
       skipNext.current = true;
       get().setFrameloop(document.hidden ? 'never' : frameloop);
       if (!document.hidden) get().invalidate();
@@ -60,11 +78,7 @@ export function SceneMetrics({
       if (next.dpr !== dprState.current.dpr) state.setDpr(next.dpr);
       dprState.current = next;
     }
-    callback.current?.({
-      ...sample, ...readRendererCounters(state.gl.info), backend, quality: quality.preset,
-      measurement: 'render-cadence', frameloop,
-      dpr: state.viewport.dpr, viewportPx: [state.size.width, state.size.height], visibility: 'visible',
-    });
+    pending.current = sample;
   });
   return null;
 }

@@ -96,6 +96,10 @@ export function SceneLayer({ quality }: { quality: QualitySettings }) {
         fields.setCloud(cloud);
         invalidate();
       },
+      setVolume(volume) {
+        fields.setVolume(volume);
+        invalidate();
+      },
       setCut(cut) {
         fields.setCut(cut);
         invalidate();
@@ -205,6 +209,8 @@ export function SceneLayer({ quality }: { quality: QualitySettings }) {
   }, [gl, get, invalidate, view, ghost]);
 
   // Representation changes ease from one style to the next.
+  // Camera and geometry update at 0; both render pipelines draw at 1.
+  useFrame(({ camera }) => fields.prepareVolumeDepth(gl, camera, view.depthMeshes()), 0.5);
   useFrame((state) => {
     const t = transition.current;
     if (!t) return;

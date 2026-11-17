@@ -315,6 +315,11 @@ export class SceneView {
     return this.stickCount;
   }
 
+  /** Borrowed opaque geometry for the volume's depth pass; selection halos are deliberately excluded. */
+  depthMeshes(): readonly InstancedMesh[] {
+    return [this.atomMesh, this.bondMesh];
+  }
+
   /** Current position of an atom, including any live drag override. */
   position(id: AtomId): Vec3 | undefined {
     return this.transient?.get(id) ?? this.scene.atoms.get(id)?.position;

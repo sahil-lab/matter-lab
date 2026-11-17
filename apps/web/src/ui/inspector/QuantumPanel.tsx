@@ -5,6 +5,7 @@ import type { ScfResult } from '@matterlab/quantum';
 import { Atom, ChevronLeft, ChevronRight, FlipHorizontal2, Square } from 'lucide-react';
 import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { pinQuantumView, useQuantumComparison } from '../../compute/comparison';
 import {
   ISO_LIMITS,
   MOLECULAR_SURFACE_ATOM_LIMIT,
@@ -262,6 +263,7 @@ function ElectronicStructure() {
           <Atom /> {current ? 'Run again' : 'Run Hartree–Fock'}
         </Button>
       )}
+      <ComparisonControls />
       {atoms === 0 ? (
         <p className="ml-empty">Build a molecule and its orbitals, electron density and electrostatic potential can be computed here.</p>
       ) : supported && support ? (
@@ -329,6 +331,7 @@ const FIELD_OPTIONS: ReadonlyArray<{ value: FieldKind; label: string; tip: strin
 ];
 
 const STYLE_OPTIONS: ReadonlyArray<{ value: FieldStyle; label: string; tip: string }> = [
+  { value: 'volume', label: 'Volume', tip: 'Ray-marched samples of the computed field; opacity is an illustrative optical mapping' },
   { value: 'surface', label: 'Isosurface', tip: 'The surface on which the field has one chosen value' },
   { value: 'cloud', label: 'Dot cloud', tip: 'Dots drawn at random in proportion to the field: a picture of the whole volume' },
 ];
@@ -370,6 +373,20 @@ function OrbitalPicker({ record }: { record: QuantumRecord }) {
   );
 }
 
+function ComparisonControls() {
+  const count = useQuantumComparison((state) => state.snapshots.length);
+  const record = useQuantum((state) => state.record);
+  const scene = useLab((state) => state.scene);
+  return <div className="ml-actions" style={{ marginTop: 8 }}>
+    <Button size="sm" variant="outline" disabled={!quantumIsCurrent(record, scene) || !record.result.converged} onClick={pinQuantumView} data-testid="pin-quantum-view">
+      {count === 2 ? 'Replace oldest comparison view' : 'Pin current calculation view'}
+    </Button>
+    <Button size="sm" variant="outline" disabled={count === 0} onClick={() => lab.set({ dialog: 'quantum-comparison' })} data-testid="open-quantum-comparison">
+      Compare views ({count}/2)
+    </Button>
+  </div>;
+}
+
 function FieldSection({ record }: { record: QuantumRecord }) {
   const field = useQuantum((s) => s.field);
   const busy = useQuantum((s) => s.fieldBusy);
@@ -386,9 +403,9 @@ function FieldSection({ record }: { record: QuantumRecord }) {
       {(kind === 'orbital' || kind === 'density') && (
         <Segmented<FieldStyle> label="How the field is drawn" fill value={field.style} options={STYLE_OPTIONS} onChange={(value) => setField({ style: value })} />
       )}
-      {kind === 'orbital' && field.style === 'surface' && (
+      {kind === 'orbital' && field.style !== 'cloud' && (
         <Slider
-          label="Isovalue"
+          label={field.style === 'volume' ? 'Opacity reference' : 'Isovalue'}
           name="Orbital isovalue"
           log
           min={ISO_LIMITS.orbital.min}
@@ -403,9 +420,9 @@ function FieldSection({ record }: { record: QuantumRecord }) {
           testId="iso-orbital"
         />
       )}
-      {kind === 'density' && field.style === 'surface' && (
+      {kind === 'density' && field.style !== 'cloud' && (
         <Slider
-          label="Isovalue"
+          label={field.style === 'volume' ? 'Opacity reference' : 'Isovalue'}
           name="Density isovalue"
           log
           min={ISO_LIMITS.density.min}
@@ -547,6 +564,8 @@ function FieldSection({ record }: { record: QuantumRecord }) {
         <p className="ml-empty">
           {field.style === 'cloud'
             ? 'Each dot stands for the same amount of charge, so dots crowd where the density is high. Detail finer than the sampling grid, such as the sharp peak at each nucleus, is not resolved.'
+            : field.style === 'volume'
+              ? 'The computed density is sampled along each viewing ray. Opacity is illustrative, not measured absorbance or electron probability. Features finer than the grid are unresolved.'
             : 'The surface encloses the region where the electron density is above the chosen value. About 0.002 e/a₀³ is commonly taken as the outline of a molecule.'}
         </p>
       )}

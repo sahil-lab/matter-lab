@@ -63,6 +63,8 @@ test('release verification rejects a leaked test hook and a missing referenced a
     assert.equal((await inspectBuild(directory)).productionTestHooksAbsent, true);
     await writeFile(join(directory, 'entry.js'), 'window.__MATTERLAB__ = {};');
     await assert.rejects(() => inspectBuild(directory), /exposes the molecular test hook/);
+    await writeFile(join(directory, 'entry.js'), 'window.__MATTERLAB_LAB__ = {};');
+    await assert.rejects(() => inspectBuild(directory), /exposes the laboratory test hook/);
     await rm(join(directory, 'entry.js'));
     await assert.rejects(() => inspectBuild(directory), /ENOENT/);
   } finally {

@@ -1,38 +1,25 @@
-import { getIndicatorDefinitions, solveEquilibrium } from '@matterlab/lab-science';
-import { parseLabContract } from '@matterlab/contracts';
 import { expect, it } from 'vitest';
 import { createLabRuntime } from '../src/runtime.ts';
 import { createAqueousExperimentPlugin } from '../src/plugins.ts';
 import { selectCurrentObservation } from '../src/selectors.ts';
-import { action, dependencies, fixture, prepared, uuid } from './fixtures.ts';
+import { action, dependencies, fixture, prepared } from './fixtures.ts';
 
 it('current scientific selectors reject an old tint after a same-time successful solve without that indicator', async () => {
   const { scene, ids, runId } = fixture();
   const runtime = await createLabRuntime({ ...dependencies, initialScene: scene, runId });
   const before = runtime.reader.getSnapshot();
   const oldPH = selectCurrentObservation(before, ids.flaskId, 'PH')!;
-  const result = solveEquilibrium({
-    contents: scene.containerStates[ids.flaskId]!, methodId: dependencies.science.methodId,
-    assumptions: dependencies.science.assumptions, indicatorIds: [getIndicatorDefinitions()[0]!.id],
-  });
-  if (result.status !== 'SUCCEEDED') throw new Error(result.error.detail);
-  const indicator = result.indicators[0]!;
-  const oldIndicator = parseLabContract('ObservationRecord', {
-    ...oldPH, id: uuid(7000), observation: {
-      type: 'INDICATOR', apparatusId: ids.flaskId, stationId: ids.stationId,
-      timeS: oldPH.observation.timeS, quantity: { value: indicator.baseFraction, unit: '1' },
-      evidence: result.evidence, methodId: result.methodId, methodVersion: result.methodVersion,
-      sourceIds: indicator.sourceIds, indicatorId: indicator.indicatorId, indicatorState: indicator,
-    },
-  });
-  await runtime.actions.dispatch(action(runtime, 7001, ids.flaskId, 'FILL', {
-    contents: prepared('hcl', 0.03, 0.05), preparation: { kind: 'EXTERNAL', sourceId: 'test:changed-preparation' },
+  const oldIndicator = selectCurrentObservation(before, ids.flaskId, 'INDICATOR')!;
+  expect(oldIndicator).toBeDefined();
+  const receipt = await runtime.actions.dispatch(action(runtime, 7001, ids.flaskId, 'CUSTOM', {
+    pluginId: 'matterlab:container-config-v1', actionType: 'SET_CONFIG', data: { indicatorId: 'none' },
   }));
+  expect(receipt.status).toBe('APPLIED');
   const after = runtime.reader.getSnapshot();
-  const history = { ...after, observations: [...before.observations, oldIndicator, ...after.observations.slice(before.observations.length)] };
-  expect(selectCurrentObservation(history, ids.flaskId, 'PH')!.sequence).toBeGreaterThan(oldPH.sequence);
-  expect(selectCurrentObservation(history, ids.flaskId, 'PH')!.observation.timeS).toBe(oldPH.observation.timeS);
-  expect(selectCurrentObservation(history, ids.flaskId, 'INDICATOR')).toBeUndefined();
+  expect(after.observations).toContainEqual(oldIndicator);
+  expect(selectCurrentObservation(after, ids.flaskId, 'PH')!.sequence).toBeGreaterThan(oldPH.sequence);
+  expect(selectCurrentObservation(after, ids.flaskId, 'PH')!.observation.timeS).toBe(oldPH.observation.timeS);
+  expect(selectCurrentObservation(after, ids.flaskId, 'INDICATOR')).toBeUndefined();
   runtime.dispose();
 });
 

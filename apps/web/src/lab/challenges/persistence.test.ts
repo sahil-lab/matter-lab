@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { LAB_LIMITS } from '@matterlab/contracts';
 import { createChallengeController } from './controller.ts';
 import { TITRATION_CHALLENGE } from './definition.ts';
 import { parseChallengeDefinition, parseLearningState, parseLearningStateJson, serializeLearningState } from './persistence.ts';
@@ -6,6 +7,29 @@ import { createEmptyHarness } from './test-fixtures.ts';
 import type { LearningState } from './types.ts';
 
 describe('versioned learning sidecar', () => {
+  it('saves an independent learning attempt for every supported laboratory station', () => {
+    const harness = createEmptyHarness();
+    const snapshot = harness.reader.snapshot;
+    const stations = Array.from({ length: LAB_LIMITS.maxStations }, (_, index) =>
+      snapshot.scene.stations[index] ?? { id: harness.makeId(), name: `Station ${index + 1}` });
+    harness.reader.snapshot = {
+      ...snapshot,
+      scene: { ...snapshot.scene, stations },
+      stationStates: Object.fromEntries(stations.map((station) => [station.id, {
+        stationId: station.id, epoch: 0, status: 'PREPARING', simulationTimeS: 0, tick: 0, speed: 1,
+      }])),
+    };
+    const controllers = stations.map((station) => createChallengeController({ ...harness.options, stationId: station.id, bindings: {} }));
+    try {
+      const state: LearningState = { schemaVersion: 1, kind: 'MATTERLAB_LEARNING_STATE', attempts: controllers.map((controller) => controller.exportAttempt()) };
+      expect(parseLearningStateJson(serializeLearningState(state))).toEqual(state);
+      expect(() => parseLearningState({ ...state, attempts: [...state.attempts, state.attempts[0]] })).toThrow(/Array length/);
+    } finally {
+      controllers.forEach((controller) => controller.dispose());
+      harness.controller.dispose();
+    }
+  });
+
   it('round-trips an actual registry/science-backed attempt without inventing runtime actions or scores', () => {
     const harness = createEmptyHarness();
     harness.controller.setInstructionIndex(6);

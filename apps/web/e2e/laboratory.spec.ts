@@ -100,8 +100,8 @@ test('operates the real worker-driven titration, preserves inventory and restore
   expect((await snapshot(page)).observations).toEqual(final.observations);
 });
 
-test('drags real apparatus onto an empty bench without rotating the camera', async ({ page }) => {
-  test.setTimeout(120_000);
+test('assembles a working titration from an empty bench with drag and accessible socket controls', async ({ page }) => {
+  test.setTimeout(240_000);
   await page.setViewportSize({ width: 1366, height: 768 });
   await openLaboratory(page);
   await page.getByRole('button', { name: 'New empty lab', exact: true }).click();
@@ -129,13 +129,57 @@ test('drags real apparatus onto an empty bench without rotating the camera', asy
   const stand = (await snapshot(page)).scene.apparatus.find((instance) => instance.kind === 'STAND')!;
   expect(stand.transform.positionM[1]).toBeCloseTo(0.9, 5);
   expect((await snapshot(page)).scene.containerStates).toEqual({});
+
+  await page.getByRole('button', { name: 'Open scientific inspector', exact: true }).click();
+  const inspector = page.getByRole('region', { name: 'Accessible laboratory editor', exact: true });
+  async function choose(label: string) {
+    await page.getByRole('searchbox', { name: 'Find equipment', exact: true }).fill(label);
+    await page.getByRole('region', { name: 'Apparatus palette' }).getByRole('button', { name: new RegExp(`^${label}`) }).click();
+  }
+  async function mount(label: string, parent: string) {
+    await choose(label);
+    await inspector.getByRole('combobox', { name: 'Compatible mechanical mount' }).selectOption({ label: parent });
+    await inspector.getByRole('button', { name: 'Place and attach atomically', exact: true }).click();
+    await expect.poll(async () => (await snapshot(page)).scene.apparatus.length).toBe(++count);
+  }
+  let count = 3;
+  await mount('Burette clamp', 'Retort stand / clamp-mount');
+  await mount('50 mL burette', 'Burette clamp / barrel-grip');
+  await choose('Magnetic stirrer');
+  await inspector.getByRole('spinbutton', { name: 'Local X (m)', exact: true }).fill('-0.13');
+  await inspector.getByRole('spinbutton', { name: 'Local Z (m)', exact: true }).fill('0');
+  await inspector.getByRole('button', { name: 'Place on surface', exact: true }).click();
+  await expect.poll(async () => (await snapshot(page)).scene.apparatus.length).toBe(++count);
+  await mount('250 mL conical flask', 'Magnetic stirrer / platform');
+  const assembled = await snapshot(page);
+  const source = assembled.scene.apparatus.find((instance) => instance.kind === 'BURETTE')!;
+  const receiver = assembled.scene.apparatus.find((instance) => instance.kind === 'FLASK')!;
+  await inspector.getByRole('listbox', { name: 'Apparatus selection' }).selectOption(source.id);
+  await inspector.locator('[data-control-id="socket:outlet"]').click();
+  await inspector.getByRole('combobox', { name: 'Target socket', exact: true }).selectOption({ label: '250 mL conical flask / inlet' });
+  await inspector.getByRole('button', { name: 'Connect selected sockets', exact: true }).click();
+  await expect.poll(async () => (await snapshot(page)).scene.connections.some((edge) => edge.kind === 'FLUID' && edge.from.instanceId === source.id && edge.to.instanceId === receiver.id)).toBe(true);
+  await page.getByTestId('lab-prepare-reference').click();
+  await expect(page.getByTestId('lab-current-ph')).toHaveText('1.0000');
 });
 
 test('renders with forced WebGL fallback while scientific state stays unchanged', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await openLaboratory(page);
   const initial = await snapshot(page);
+  await expect.poll(() => page.evaluate(() => window.__MATTERLAB_LAB__!.metrics()!.drawCalls)).toBeGreaterThan(0);
   await page.getByText('World & camera', { exact: true }).click();
+  const options = page.locator('.laboratory-view-options');
+  await options.getByLabel('Laboratory rendering backend', { exact: true }).scrollIntoViewIfNeeded();
+  const cameraLayout = await options.evaluate((element) => {
+    const panel = element.getBoundingClientRect();
+    const controls = element.querySelector('.lab-view-controls')!.getBoundingClientRect();
+    const selector = element.querySelector('select[aria-label="Laboratory rendering backend"]')!.getBoundingClientRect();
+    return { top: controls.top, after: selector.bottom, left: controls.left, right: controls.right, panelLeft: panel.left, panelRight: panel.right };
+  });
+  expect(cameraLayout.top).toBeGreaterThan(cameraLayout.after);
+  expect(cameraLayout.left).toBeGreaterThanOrEqual(cameraLayout.panelLeft);
+  expect(cameraLayout.right).toBeLessThanOrEqual(cameraLayout.panelRight);
   await page.getByLabel('Laboratory rendering backend', { exact: true }).selectOption('webgl2');
   await page.waitForFunction(() => window.__MATTERLAB_LAB__?.metrics()?.backend === 'webgl2');
   expect((await snapshot(page)).scene).toEqual(initial.scene);
@@ -145,5 +189,62 @@ test('renders with forced WebGL fallback while scientific state stays unchanged'
   expect(measured!.triangles).toBeGreaterThan(100);
   await page.getByLabel('Laboratory environment', { exact: true }).selectOption('studio');
   await page.getByRole('button', { name: 'Top-down view', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.getByRole('button', { name: 'Laboratory display settings', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Render quality' }).selectOption('low');
+  await page.getByRole('button', { name: 'Close Display & access', exact: true }).click();
+  await expect(page.locator('.lab-environment')).toHaveAttribute('data-lab-reduced-motion', 'true');
+  await expect.poll(() => page.evaluate(() => window.__MATTERLAB_LAB__?.metrics()?.quality)).toBe('low');
   expect((await snapshot(page)).scene).toEqual(initial.scene);
+  expect((await snapshot(page)).observations).toEqual(initial.observations);
+});
+
+test('duplicates an empty station, runs two independent titrations and reopens both notebooks', async ({ page }) => {
+  test.setTimeout(240_000);
+  await openLaboratory(page);
+  const firstId = (await snapshot(page)).scene.stations[0]!.id;
+  await page.getByRole('button', { name: 'Open scientific inspector', exact: true }).click();
+  await page.getByRole('button', { name: 'Duplicate workstation…', exact: true }).click();
+  await page.waitForFunction(() => window.__MATTERLAB_LAB__?.snapshot().scene.stations.length === 3 && !!window.__MATTERLAB_LAB__.metrics());
+  const scene = (await snapshot(page)).scene;
+  const secondId = scene.stations[2]!.id;
+  const firstVessels = scene.apparatus.filter((instance) => instance.stationId === firstId && instance.capabilities.includes('CONTAINER')).map((instance) => instance.id);
+  const secondVessels = scene.apparatus.filter((instance) => instance.stationId === secondId && instance.capabilities.includes('CONTAINER')).map((instance) => instance.id);
+  const station = page.getByRole('combobox', { name: 'Active laboratory station', exact: true });
+  for (const id of [firstId, secondId]) {
+    await station.selectOption(id);
+    await page.getByTestId('lab-prepare-reference').click();
+    await expect(page.getByTestId('lab-current-ph')).toHaveText('1.0000');
+  }
+  const prepared = await snapshot(page);
+  await station.selectOption(firstId);
+  await page.getByTestId('lab-play').click();
+  await page.getByRole('spinbutton', { name: 'Metered dose in milliliters' }).fill('10');
+  await page.getByTestId('lab-dose-drop').click();
+  await expect(page.getByTestId('lab-delivered-ml')).toHaveText('10.000');
+  await page.getByTestId('lab-play').click();
+  const firstFinished = await snapshot(page);
+  for (const id of secondVessels) expect(firstFinished.scene.containerStates[id]).toEqual(prepared.scene.containerStates[id]);
+  expect(firstFinished.stationStates[secondId]).toEqual(prepared.stationStates[secondId]);
+  await station.selectOption(secondId);
+  await page.getByTestId('lab-play').click();
+  await page.getByRole('spinbutton', { name: 'Metered dose in milliliters' }).fill('25');
+  await page.getByTestId('lab-dose-drop').click();
+  await expect(page.getByTestId('lab-current-ph')).toHaveText('7.0000');
+  await page.getByTestId('lab-play').click();
+  const finished = await snapshot(page);
+  for (const id of firstVessels) expect(finished.scene.containerStates[id]).toEqual(firstFinished.scene.containerStates[id]);
+  expect(finished.stationStates[firstId]).toEqual(firstFinished.stationStates[firstId]);
+  await page.getByTestId('lab-notebook').click();
+  await page.getByRole('button', { name: 'Close Laboratory notebook', exact: true }).click();
+  await page.reload();
+  await lab.ready();
+  await openLaboratory(page);
+  expect((await snapshot(page)).scene.containerStates).toEqual(finished.scene.containerStates);
+  expect((await snapshot(page)).observations).toEqual(finished.observations);
+  await expect.poll(() => page.evaluate(() => window.__MATTERLAB_LAB__!.session.challenges.size)).toBe(3);
+  await page.getByRole('combobox', { name: 'Active laboratory station', exact: true }).selectOption(firstId);
+  await expect(page.getByTestId('lab-delivered-ml')).toHaveText('10.000');
+  await page.getByRole('combobox', { name: 'Active laboratory station', exact: true }).selectOption(secondId);
+  await expect(page.getByTestId('lab-delivered-ml')).toHaveText('25.000');
 });

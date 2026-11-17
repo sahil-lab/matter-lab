@@ -16,6 +16,8 @@ import type {
   SliceResponse,
   SurfaceRequest,
   SurfaceResponse,
+  VolumeRequest,
+  VolumeResponse,
 } from '../workers/quantum.worker';
 import { WorkerClient, WorkerError } from './rpc';
 import type { CallOptions } from './rpc';
@@ -104,6 +106,7 @@ export const fields = {
   espSurface: (request: EspSurfaceRequest, options?: CallOptions<FieldProgress>): Promise<EspSurfaceResponse> => fieldClient.call('espSurface', request, options),
   slice: (request: SliceRequest, options?: CallOptions<FieldProgress>): Promise<SliceResponse> => fieldClient.call('slice', request, options),
   cloud: (request: CloudRequest, options?: CallOptions<FieldProgress>): Promise<CloudResponse> => fieldClient.call('cloud', request, options),
+  volume: (request: VolumeRequest, options?: CallOptions<FieldProgress>): Promise<VolumeResponse> => fieldClient.call('volume', request, options),
   molecularSurface: (request: MolecularSurfaceRequest, options?: CallOptions<FieldProgress>): Promise<MolecularSurfaceResponse> =>
     fieldClient.call('molecularSurface', request, options),
 };

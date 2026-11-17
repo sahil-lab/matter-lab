@@ -21,6 +21,7 @@ import { IconButton } from './ui/kit';
 import { ContextBar, ToolRail } from './ui/Tools';
 import { TopBar } from './ui/TopBar';
 import { AxisGizmo, PerfHud, ScaleBar, ViewBar } from './ui/ViewControls';
+import { QuantumComparisonDialog } from './ui/QuantumComparison';
 import { openLaboratory, returnToMolecular, useWorkbenchNavigation } from './ui/workbenchNavigation';
 import { VaultBanner, VaultLab } from './vault/VaultLab';
 
@@ -158,6 +159,7 @@ export function App({ hasQualityPreference, laboratory: Laboratory }: AppProps) 
         {dialog === 'export' && <ExportDialog />}
         {dialog === 'shortcuts' && <ShortcutsDialog />}
         {dialog === 'nucleus' && <NucleusDialog />}
+        {dialog === 'quantum-comparison' && <QuantumComparisonDialog />}
       </div>
     </div>
   );

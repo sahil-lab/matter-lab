@@ -22,8 +22,9 @@ npm run dev        # http://127.0.0.1:5273/
 ```
 
 On first start the application opens with caffeine on stage; afterwards it restores the last
-session. Nothing else has to be running: every calculation the application offers is done in the
-browser. [docs/examples/README.md](docs/examples/README.md) lists things to try.
+session. The molecular editor and the instrument laboratory work independently of the backend.
+Connected calculations, PostgreSQL notebooks and Excel interchange use the optional science
+service. [docs/examples/README.md](docs/examples/README.md) lists things to try.
 
 ## What is here
 
@@ -35,18 +36,24 @@ browser. [docs/examples/README.md](docs/examples/README.md) lists things to try.
 | Geometry optimisation with the Universal Force Field, with comparison, replay and explanation | works, tested |
 | Electronic structure: restricted Hartree-Fock, STO-3G, closed-shell molecules of H to Ar; orbitals, density, electrostatic potential, cutting planes | works, tested, within those limits |
 | Reaction Laboratory: balancing, thermodynamics for 175 species, eight sourced gas-phase rate laws, timeline, graphs, saved and reproducible records | works, tested; the 3D chamber is illustrative and says so |
-| Discovery Vault: candidates, catalogue searches, an evidence ladder, reports | works, tested; stored in the browser |
-| Science service: FastAPI, PostgreSQL, RDKit, xTB, PySCF jobs, catalogue, Excel workbook | built and tested on its own; **not connected to the interface** |
+| Instrument laboratory: 21 apparatus types, room/studio, assembly, calibrated liquid, real acid-base titration, guided/precision notebooks and independent stations | integrated; equations, conservation, replay and browser interactions tested |
+| Discovery Vault: candidates, catalogue searches, an evidence ladder, reports | local working records; full reports can also be archived and reopened from PostgreSQL |
+| Connected science: FastAPI, PostgreSQL, RDKit catalogue, xTB/PySCF jobs, Excel import/export and versioned lab notebooks | accessible from Display settings and the instrument-room notebook |
+| Quantum display | isosurfaces, dot clouds, ray-marched volumes, slices and two independently navigable pinned calculation views |
 
-Not built: WebGPU (the renderer is WebGL 2), ray-marched volume rendering, a desktop package, any
-Rust or C++ layer, computed reaction trajectories, and the connection between the interface and the
-science service. The complete list, feature by feature, is in
+Start with the [instrument laboratory guide](docs/laboratory.md) for assembly, titration,
+independent stations and the difference between local drafts and confirmed database saves.
+See the [actual laboratory screenshots](docs/screenshots/laboratory/README.md) and
+[rendering measurements](docs/benchmarks/laboratory.md).
+
+The instrument room has an experimental WebGPU path and a WebGL 2 fallback; the existing molecular
+renderer remains WebGL 2. Arbitrary reaction prediction, reactive trajectories and unvalidated
+instrument chemistry are not implemented or simulated by decorative effects. The complete list is in
 [docs/feature-status.md](docs/feature-status.md); what each result can and cannot be trusted for is
 in [docs/scientific-limitations.md](docs/scientific-limitations.md).
 
-A [Tauri Windows desktop scaffold](apps/desktop/README.md) and
-[CI/verification gates](qa/README.md) are now prepared. The desktop is **not built or verified**:
-the local Rust/Cargo toolchain and a reviewed Cargo dependency lock are still missing.
+The [Windows desktop package](apps/desktop/README.md) uses the same application.
+[CI/verification gates](qa/README.md) keep correctness and absolute performance assertions separate.
 
 ## Requirements
 
@@ -126,20 +133,28 @@ battery-powered machine moves the numbers.
 
 ## The science service
 
-A separate Python service with its own database. The application does not use it yet; it can be
-started, tested and called on its own.
+A separate Python service with PostgreSQL and a bundled copy of the exact same laboratory
+runtime/solver as the browser. The new laboratory endpoints require a scoped bearer credential.
 
 ```powershell
-docker compose -p matterlab up -d --build             # PostgreSQL and the service; first build about 1.1 GB
+.\tools\start-science.ps1                            # builds and starts this project's stack
 curl.exe http://127.0.0.1:8787/health
-docker compose -p matterlab run --rm science pytest   # its test suite, about 7 minutes
+.\tools\start-science.ps1 -ShowToken                 # explicitly display the local token in your terminal
+.\tools\test-connected.ps1 -Production               # real browser -> API -> PostgreSQL integration
+docker compose -p matterlab run --rm science pytest
 docker compose -p matterlab down                      # stop; the database volume is kept
 ```
+
+Paste the token into **Display settings → Scientific backend & catalogs → Connection** or
+the instrument room's **Connect science** dialog. It remains in browser memory only.
+The startup helper encrypts the local credential with Windows DPAPI under Git-ignored `.local`;
+Docker receives only its hash. Never commit or share the token.
 
 The API is at http://127.0.0.1:8787 (interactive documentation at `/docs`), PostgreSQL at
 `127.0.0.1:55432`; both are bound to the loopback interface only. The database credentials in
 `docker-compose.yml` are development defaults, not secrets, and can be overridden from the
-environment. The service has no authentication and is meant for local development. More in
+environment. Legacy `/v1` endpoints remain shared local-development APIs; `/api/v1/lab`
+enforces authenticated ownership and revision checks. Neither is an internet deployment recipe. More in
 [services/science/README.md](services/science/README.md) and [docs/api/README.md](docs/api/README.md).
 
 ## Deployment
@@ -147,11 +162,11 @@ environment. The service has no authentication and is meant for local developmen
 The application is a static site. `npm run build` writes it to `apps/web/dist` (about 21 MB with
 source maps, of which the RDKit WebAssembly file is 7 MB); any web server that serves that folder
 at the root of a site will do, and `npm run preview` does it locally. The build assumes the path
-`/`, so serving it from a sub-folder needs Vite's `base` option. It needs no backend. Nothing has
-been deployed anywhere, and there is no desktop package.
+`/`, so serving it from a sub-folder needs Vite's `base` option. Local calculations need no
+backend; connected operations need the separately deployed service.
 
-The science service is a local development stack: it has no authentication and its ports are bound
-to the loopback interface. Do not expose it as it is.
+The science service is a local development stack whose ports are bound to loopback. Do not expose
+the unauthenticated legacy API as it is. See [services/science/LABORATORY.md](services/science/LABORATORY.md).
 
 ## Reference data
 

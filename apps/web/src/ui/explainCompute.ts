@@ -235,6 +235,8 @@ function fieldParagraphs(record: QuantumRecord, view: QuantumView, advanced: boo
         `**On stage:** ${what}. ${occupied} The two surfaces are where the orbital has the values +${iso(field.orbitalIso)} and −${iso(field.orbitalIso)} a₀^(−3/2); violet is the positive phase, amber the negative.`,
         'The sign of a wavefunction cannot be measured, and swapping the two colours would describe the same orbital. What matters is where the sign changes: on that surface, a node, the electron is never found.',
       );
+    } else if (field.style === 'volume') {
+      paragraphs.push(`**On stage:** ${what}, sampled on a regular three-dimensional grid and ray-marched. ${occupied} Colour identifies the sign of the orbital. Opacity scales with absolute orbital amplitude relative to ${iso(field.orbitalIso)} a₀^(−3/2); it is an illustrative optical mapping, not probability or measured absorbance.`);
     } else {
       paragraphs.push(
         `**On stage:** ${what}, as a cloud of dots. ${occupied} The dots are placed at random with a probability proportional to the square of the orbital, and coloured by its sign; they picture where an electron in this orbital is likely to be found, not electrons themselves.`,
@@ -245,7 +247,9 @@ function fieldParagraphs(record: QuantumRecord, view: QuantumView, advanced: boo
     paragraphs.push(
       field.style === 'surface'
         ? `**On stage:** the electron density of all ${record.result.nElectrons} electrons. The surface joins the points where the density is ${iso(field.densityIso)} e/a₀³; inside it the density is higher.`
-        : `**On stage:** the electron density of all ${record.result.nElectrons} electrons, as a cloud of dots placed at random with a probability proportional to the density. The dots picture the distribution; they are not electrons.`,
+        : field.style === 'volume'
+          ? `**On stage:** the electron density of all ${record.result.nElectrons} electrons, sampled on a regular three-dimensional grid and ray-marched. Opacity scales with density relative to ${iso(field.densityIso)} e/a₀³; it is illustrative, not measured absorbance. Features finer than the sampling grid are not resolved.`
+          : `**On stage:** the electron density of all ${record.result.nElectrons} electrons, as a cloud of dots placed at random with a probability proportional to the density. The dots picture the distribution; they are not electrons.`,
       'Unlike an orbital, the electron density is an observable: X-ray diffraction measures it.',
     );
     if (shown && shown.captured !== null) paragraphs.push(`Summed over the sampled volume the density amounts to ${shown.captured.toFixed(2)} electrons out of ${record.result.nElectrons}; the rest lies in the thin tail outside it.`);

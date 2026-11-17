@@ -183,7 +183,7 @@ ones that matter for the stack and sets `MATTERLAB_DB_HOST=db`, `MATTERLAB_DB_PO
 |---|---|
 | `MATTERLAB_DATABASE_URL` | Full connection string or URL; overrides the five variables below |
 | `MATTERLAB_DB_HOST` (`127.0.0.1`), `MATTERLAB_DB_PORT` (`55432`), `MATTERLAB_DB_USER` (`matterlab`), `MATTERLAB_DB_PASSWORD` (`matterlab_local_dev`), `MATTERLAB_DB_NAME` (`matterlab`) | Database connection. The password is a local-development default, not a secret. |
-| `MATTERLAB_CORS_ORIGINS` (`http://127.0.0.1:5273,http://localhost:5273,http://127.0.0.1:4273,http://localhost:4273`) | Allowed browser origins, comma-separated |
+| `MATTERLAB_CORS_ORIGINS` (`http://127.0.0.1:5273,http://localhost:5273,http://127.0.0.1:4273,http://localhost:4273,http://tauri.localhost`) | Allowed browser and Windows desktop origins, comma-separated |
 | `MATTERLAB_AUTO_MIGRATE` (`true`), `MATTERLAB_AUTO_SEED` (`true`) | Apply migrations / load seeds at start. With `AUTO_MIGRATE=false` the service refuses to start on an outdated schema. |
 | `MATTERLAB_MIGRATIONS_DIR` (`/db/migrations`), `MATTERLAB_GENERATED_DATA_DIR` (`/data/generated`), `MATTERLAB_SEED_DIR` (`/app/seed`) | Where migrations, the generated element and isotope files, and the PubChem snapshot are read from |
 | `MATTERLAB_DB_CONNECT_TIMEOUT_SECONDS` (`60`) | How long to wait for PostgreSQL at start |
@@ -223,7 +223,7 @@ when PubChem cannot be reached.
 | `test_discoveries.py` | Workflow, wording, status ladder, evidence rules, PubChem lookup |
 | `test_excel.py` | Ten sheets, headers and row counts, round trip, rejected rows, dry run, atomic mode, immutability, import into a second database |
 | `test_api_contract.py` | Every operation and every documented response, validated against the OpenAPI schema; database outage |
-| `test_errors_cors.py` | CORS for the four frontend origins, the error shape, UTC timestamps |
+| `test_errors_cors.py` | CORS for web/preview and the Windows desktop origin, rejected foreign origins, error shape and UTC timestamps |
 | `test_provenance.py` | Sources, units, and engine/version/method/settings/convergence of computed results |
 
 ## Limitations

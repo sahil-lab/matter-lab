@@ -14,7 +14,7 @@ from matterlab_science.context import AppContext
 
 from .helpers import ASPIRIN, PENTAVALENT_CARBON, is_error_shape, run_job, smiles
 
-FRONTEND_ORIGINS = ["http://127.0.0.1:5273", "http://localhost:5273", "http://127.0.0.1:4273", "http://localhost:4273"]
+FRONTEND_ORIGINS = ["http://127.0.0.1:5273", "http://localhost:5273", "http://127.0.0.1:4273", "http://localhost:4273", "http://tauri.localhost"]
 OTHER_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5274", "https://localhost:5273", "http://evil.example", "null"]
 UTC_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$")
 
@@ -24,7 +24,7 @@ UTC_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$"
 # ---------------------------------------------------------------------------------------------
 
 
-def test_default_origins_are_the_four_frontend_origins(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_default_origins_are_the_web_and_windows_desktop_origins(monkeypatch: pytest.MonkeyPatch) -> None:
     assert list(DEFAULT_CORS_ORIGINS) == FRONTEND_ORIGINS
     monkeypatch.delenv("MATTERLAB_CORS_ORIGINS", raising=False)
     assert list(load_settings().cors_origins) == FRONTEND_ORIGINS
@@ -34,13 +34,14 @@ def test_default_origins_are_the_four_frontend_origins(monkeypatch: pytest.Monke
 
 @pytest.mark.parametrize("origin", FRONTEND_ORIGINS)
 def test_preflight_is_answered_for_the_frontend_origins(client: TestClient, origin: str) -> None:
-    for method, path in (("POST", "/v1/chem/validate"), ("DELETE", "/v1/jobs/00000000-0000-4000-8000-000000000000"), ("PATCH", "/v1/experiments/x"), ("PUT", "/v1/experiments/x")):
-        response = client.options(path, headers={"Origin": origin, "Access-Control-Request-Method": method, "Access-Control-Request-Headers": "content-type"})
+    for method, path in (("POST", "/v1/chem/validate"), ("DELETE", "/v1/jobs/00000000-0000-4000-8000-000000000000"), ("PATCH", "/v1/experiments/x"), ("PUT", "/v1/experiments/x"), ("GET", "/api/v1/lab/scenes")):
+        response = client.options(path, headers={"Origin": origin, "Access-Control-Request-Method": method, "Access-Control-Request-Headers": "content-type,authorization"})
         assert response.status_code == 200, (method, path, response.text)
         assert response.headers["access-control-allow-origin"] == origin
         assert method in response.headers["access-control-allow-methods"]
         assert "content-type" in response.headers["access-control-allow-headers"].lower()
-        assert "access-control-allow-credentials" not in response.headers, "the API uses no cookies or credentials"
+        assert "authorization" in response.headers["access-control-allow-headers"].lower()
+        assert "access-control-allow-credentials" not in response.headers, "the API does not use browser-managed cookie credentials"
 
 
 @pytest.mark.parametrize("origin", FRONTEND_ORIGINS)

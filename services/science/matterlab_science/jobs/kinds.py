@@ -324,6 +324,9 @@ class XtbOptimizationResult(_Strict):
     force_tolerance_ev_per_angstrom: float
     max_force_initial_ev_per_angstrom: float
     max_force_final_ev_per_angstrom: float
+    forces_ev_per_angstrom: list[tuple[float, float, float]] | None = Field(
+        default=None, description="Cartesian forces at the returned geometry, one vector per atom in input order. Null for older stored records."
+    )
     energy_initial_hartree: float
     energy_final_hartree: float
     energy_change_hartree: float

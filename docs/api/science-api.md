@@ -4,20 +4,21 @@
 
 Reference for the science service, version 0.1.0. Base URL of the development stack: **`http://127.0.0.1:8787`** (`docker compose -p matterlab up -d`). Interactive documentation: `/docs`; machine-readable schema: `/openapi.json` (a copy is in [`openapi.json`](openapi.json)).
 
-**How this file was made.** The endpoint list, parameters, request fields and status codes below are read from the service's OpenAPI schema. Every example is a real HTTP exchange, captured on 2026-11-14 from the service running on a freshly migrated and seeded database (schema version 0005; engines: RDKit 2026.09.2, xTB (tblite) 0.8.0, PySCF 2.15.0). Nothing in the examples was edited, with one exception that is always marked: long lists are cut to their first items followed by `"… N more"`, long texts end in `… (N characters)`, and in a few places a nested document is replaced by `"{… N fields}"` or `"[… N items]"`.
+**How this file was made.** The endpoint list, parameters, request fields and status codes below are read from the service's OpenAPI schema. Every example is a real HTTP exchange, captured on 2026-11-17 from the service running on a freshly migrated and seeded database (schema version 0008; engines: RDKit 2026.09.2, xTB (tblite) 0.8.0, PySCF 2.15.0). Nothing in the examples was edited, with one exception that is always marked: long lists are cut to their first items followed by `"… N more"`, long texts end in `… (N characters)`, and in a few places a nested document is replaced by `"{… N fields}"` or `"[… N items]"`.
 
 ## Conventions
 
 - **JSON everywhere.** Request and response bodies are JSON (the workbook export and upload excepted).
-- **One error shape.** Every non-2xx response is `{"error": {"code": "...", "message": "...", "details": ...}}`. `code` is stable and machine-readable; `details` depends on the code (for `validation_error` it is a list of `{location, message, type}`). See [Errors](#errors).
-- **Units.** Coordinates are in angstrom. Every numeric field carries its unit in its name (`energy_hartree`, `melting_point_k`, `molecular_weight_g_per_mol`) or in a `units`/`unit` field next to it.
+- **Legacy errors.** Legacy `/v1` non-2xx responses are `{"error": {"code": "...", "message": "...", "details": ...}}`. `code` is stable and machine-readable; `details` depends on the code (for `validation_error` it is a list of `{location, message, type}`). See [Errors](#errors).
+- **Laboratory authentication/errors.** `/api/v1/lab` requires a scoped bearer token and uses RFC 9457 problem details. Owner isolation, revision checks, shared Node replay and export semantics are documented in [LABORATORY.md](../../services/science/LABORATORY.md). Legacy `/v1` remains a local shared API.
+- **Units.** Molecular coordinates are in angstrom; laboratory apparatus coordinates are meters. Every numeric field carries its unit in its name (`energy_hartree`, `melting_point_k`, `molecular_weight_g_per_mol`) or in a `units`/`unit` field next to it.
 - **Time.** Timestamps are ISO 8601 in UTC with a `Z` suffix. Retrieval dates are ISO dates.
-- **Nulls.** Every field of a response schema is present. A value that does not exist is `null`; fields are not omitted.
+- **Nulls.** Legacy response fields are present with `null` for absent values. Versioned laboratory DTOs also have explicitly optional fields; consult their schema.
 - **Identifiers.** Records have UUIDs. Catalogue compounds, solvents and catalysts have name-based (version 5) UUIDs derived from the InChIKey or the name, so the same record has the same id in every instance.
 - **Provenance.** Every stored record has a source in the registry (`GET /v1/data-sources`). List responses carry `items[].source` (a key into the page's `sources` map); detail responses embed a `provenance` object with source, version, URL, retrieval date, licence (where the source states one) and citations. The object has the fields of the `Provenance` type of `packages/core` (`source`, `version`, `citations`, `url`, `retrieved`, `license`, `notes`) plus `source_key`, `kind` and `publisher`.
 - **Evidence labels.** `reference` (taken from a published dataset or service), `computed` (calculated by an engine from the given input), `rule-based` (an empirical model or a pattern definition), `user-input` (typed in or imported; not verified by the service), `unsupported`, `illustrative` (never assigned by the service itself).
 - **No invented results.** A structure RDKit rejects comes back with RDKit's own messages. A calculation an engine cannot do ends as `unsupported` or `failed` with the reason; such a job has no `result`. A search that finds nothing says which catalogue was searched, how many records it held and when, and nothing more.
-- **CORS.** Allowed origins: `http://127.0.0.1:5273`, `http://localhost:5273`, `http://127.0.0.1:4273`, `http://localhost:4273` (setting `MATTERLAB_CORS_ORIGINS`).
+- **CORS.** Allowed origins: `http://127.0.0.1:5273`, `http://localhost:5273`, `http://127.0.0.1:4273`, `http://localhost:4273`, `http://tauri.localhost` (setting `MATTERLAB_CORS_ORIGINS`).
 
 ## Endpoints
 
@@ -72,6 +73,295 @@ Reference for the science service, version 0.1.0. Base URL of the development st
 | `GET` | `/v1/excel/format` | The workbook format: sheets, headers, types and units |
 | `GET` | `/v1/excel/export` | Download the database as an .xlsx workbook |
 | `POST` | `/v1/excel/import` | Import an .xlsx workbook |
+| `GET` | `/api/v1/lab/capabilities` | Capabilities |
+| `POST` | `/api/v1/lab/scenes` | Create Scene |
+| `GET` | `/api/v1/lab/scenes` | List Scenes |
+| `GET` | `/api/v1/lab/seed-scene` | Seed Scene |
+| `GET` | `/api/v1/lab/scenes/{scene_id}` | Get Scene |
+| `PATCH` | `/api/v1/lab/scenes/{scene_id}` | Patch Scene |
+| `POST` | `/api/v1/lab/scenes/{scene_id}/duplicate` | Duplicate Scene |
+| `POST` | `/api/v1/lab/scenes/{scene_id}/runs` | Create Run |
+| `GET` | `/api/v1/lab/scenes/{scene_id}/runs` | List Runs |
+| `GET` | `/api/v1/lab/runs/{run_id}` | Get Run |
+| `POST` | `/api/v1/lab/runs/{run_id}/cancel` | Cancel Run |
+| `GET` | `/api/v1/lab/runs/{run_id}/observations` | Observations |
+| `GET` | `/api/v1/lab/runs/{run_id}/events` | Events |
+| `GET` | `/api/v1/lab/equipment-definitions` | Equipment |
+| `GET` | `/api/v1/lab/reagents` | Reagents |
+| `POST` | `/api/v1/lab/templates` | Create Template |
+| `GET` | `/api/v1/lab/templates` | Templates |
+| `POST` | `/api/v1/lab/templates/{template_id}/instantiate` | Instantiate Template |
+| `GET` | `/api/v1/lab/scenes/{scene_id}/export` | Export Scene |
+
+## Authenticated instrument laboratory
+
+These additive endpoints share the versioned browser contracts and solver/runtime, not a second chemistry implementation. See [LABORATORY.md](../../services/science/LABORATORY.md) for units, credential provisioning, immutable replay and resource bounds.
+
+### `GET /api/v1/lab/capabilities`
+
+**Capabilities.**
+
+Responses: `200` `object`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/scenes`
+
+**Create Scene.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `Idempotency-Key` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `SceneCreate`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `title` | string | yes |  |  |
+| `scene` | LabExperimentScene | yes |  |  |
+| `runtimeCheckpoint` | LabRuntimeCheckpoint \| null | no |  |  |
+| `learningState` | LabLearningState \| null | no |  |  |
+| `editorState` | LabEditorState \| null | no |  |  |
+
+Responses: `201` `SceneResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/scenes`
+
+**List Scenes.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `q` | query | string | no | `""` |  |
+| `limit` | query | integer | no | `25` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `Page_SceneSummary_`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/seed-scene`
+
+**Seed Scene.**
+
+Responses: `200` `object`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/scenes/{scene_id}`
+
+**Get Scene.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+
+Responses: `200` `SceneResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `PATCH /api/v1/lab/scenes/{scene_id}`
+
+**Patch Scene.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+| `If-Match` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `ScenePatch`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `title` | string \| null | no |  |  |
+| `scene` | LabExperimentScene \| null | no |  |  |
+| `runtimeCheckpoint` | LabRuntimeCheckpoint \| null | no |  |  |
+| `learningState` | LabLearningState \| null | no |  |  |
+| `editorState` | LabEditorState \| null | no |  |  |
+
+Responses: `200` `SceneResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/scenes/{scene_id}/duplicate`
+
+**Duplicate Scene.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+| `Idempotency-Key` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `DuplicateRequest | null`
+
+One of: `DuplicateRequest`, `null` (selected by `kind`).
+
+Responses: `201` `SceneResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/scenes/{scene_id}/runs`
+
+**Create Run.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+| `Idempotency-Key` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `RunCreate`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `expectedRevision` | integer | yes |  | Durable saved scene revision; NOT LabAction.expectedRevision (the local runtime revision). |
+| `steps` | array of object | no |  | Only NEW steps, appended after a saved checkpoint. Omit to replay saved work. |
+| `limits` | object \| null | no |  |  |
+
+Responses: `202` `RunResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/scenes/{scene_id}/runs`
+
+**List Runs.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+| `limit` | query | integer | no | `10` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `Page_RunSummary_`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/runs/{run_id}`
+
+**Get Run.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `run_id` | path | string (uuid) | yes |  |  |
+
+Responses: `200` `RunResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/runs/{run_id}/cancel`
+
+**Cancel Run.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `run_id` | path | string (uuid) | yes |  |  |
+
+Responses: `200` `RunResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/runs/{run_id}/observations`
+
+**Observations.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `run_id` | path | string (uuid) | yes |  |  |
+| `limit` | query | integer | no | `250` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `object`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/runs/{run_id}/events`
+
+**Events.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `run_id` | path | string (uuid) | yes |  |  |
+| `Last-Event-ID` | header | string \| null | no |  |  |
+
+Responses: `200` `text/event-stream`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/equipment-definitions`
+
+**Equipment.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `q` | query | string | no | `""` |  |
+| `limit` | query | integer | no | `50` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `object`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/reagents`
+
+**Reagents.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `q` | query | string | no | `""` |  |
+| `limit` | query | integer | no | `25` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `object`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/templates`
+
+**Create Template.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `Idempotency-Key` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `TemplateCreate`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `title` | string | yes |  |  |
+| `sceneId` | string | yes |  |  |
+| `expectedRevision` | integer | yes |  |  |
+| `kind` | `SCENE` \| `ASSEMBLY` | no | `"SCENE"` |  |
+
+Responses: `201` `TemplateResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/templates`
+
+**Templates.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `q` | query | string | no | `""` |  |
+| `limit` | query | integer | no | `10` |  |
+| `offset` | query | integer | no | `0` |  |
+
+Responses: `200` `Page_TemplateResource_`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `POST /api/v1/lab/templates/{template_id}/instantiate`
+
+**Instantiate Template.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `template_id` | path | string (uuid) | yes |  |  |
+| `Idempotency-Key` | header | string \| null | no |  |  |
+
+Request body (`application/json`): `DuplicateRequest | null`
+
+One of: `DuplicateRequest`, `null` (selected by `kind`).
+
+Responses: `201` `SceneResource`; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+### `GET /api/v1/lab/scenes/{scene_id}/export`
+
+**Export Scene.**
+
+| Parameter | In | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `scene_id` | path | string (uuid) | yes |  |  |
+| `format` | query | `xlsx` \| `json` | no | `"json"` |  |
+| `runId` | query | string (uuid) \| null | no |  |  |
+
+Responses: `200` no body; `400` `ProblemDetails`; `401` `ProblemDetails`; `403` `ProblemDetails`; `404` `ProblemDetails`; `409` `ProblemDetails`; `413` `ProblemDetails`; `422` `ProblemDetails`; `428` `ProblemDetails`; `429` `ProblemDetails`; `503` `ProblemDetails`.
+
+*A missing bearer credential is rejected*
+
+```http
+GET /api/v1/lab/scenes
+```
+
+`HTTP 503`
+```json
+{
+  "type": "urn:matterlab:problem:auth-not-configured",
+  "title": "Auth not configured",
+  "status": 503,
+  "detail": "Laboratory access is disabled until an administrator configures bearer principals.",
+  "instance": "/api/v1/lab/scenes",
+  "code": "AUTH_NOT_CONFIGURED",
+  "traceId": "4a1154c6-57f6-4267-863a-8be8620748b0",
+  "details": null
+}
+```
 
 ## Service
 
@@ -114,13 +404,13 @@ GET /health
   "status": "ok",
   "service": "matterlab-science",
   "version": "0.1.0",
-  "time": "2026-11-14T08:28:27.719785Z",
-  "uptime_seconds": 3.313,
+  "time": "2026-11-17T10:46:56.798729Z",
+  "uptime_seconds": 5.168,
   "database": {
     "connected": true,
-    "schema_version": "0005",
-    "migrations_applied": 5,
-    "latency_ms": 3.431
+    "schema_version": "0008",
+    "migrations_applied": 8,
+    "latency_ms": 4.816
   },
   "jobs": {
     "supervisor_running": true,
@@ -183,7 +473,7 @@ GET /v1/engines
       "self_test": {
         "description": "Parse benzene, embed ethanol with ETKDGv3 and minimise it with MMFF94 to convergence",
         "passed": true,
-        "elapsed_seconds": 0.109,
+        "elapsed_seconds": 0.252,
         "detail": null
       }
     },
@@ -216,7 +506,7 @@ GET /v1/engines
       "self_test": {
         "description": "GFN2-xTB single point on H2 (finite negative energy, forces sum to zero)",
         "passed": true,
-        "elapsed_seconds": 0.005,
+        "elapsed_seconds": 0.002,
         "detail": null
       }
     },
@@ -246,12 +536,12 @@ GET /v1/engines
       "self_test": {
         "description": "RHF and RKS(PBE) in STO-3G on H2 (both converge, finite negative energies, two molecular orbitals)",
         "passed": true,
-        "elapsed_seconds": 0.786,
+        "elapsed_seconds": 0.697,
         "detail": null
       }
     }
   ],
-  "detected_at": "2026-11-14T08:28:19.270666Z"
+  "detected_at": "2026-11-17T10:46:41.775994Z"
 }
 ```
 
@@ -979,9 +1269,9 @@ POST /v1/jobs
 `HTTP 202`
 ```json
 {
-  "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+  "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
   "kind": "rdkit.geometry_optimization",
-  "status": "running",
+  "status": "queued",
   "progress": 0.0,
   "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
   "engine": {
@@ -993,11 +1283,11 @@ POST /v1/jobs
   "error": null,
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:28.241119Z",
-  "started_at": "2026-11-14T08:28:28.256738Z",
+  "created_at": "2026-11-17T10:46:58.013354Z",
+  "started_at": null,
   "finished_at": null,
-  "updated_at": "2026-11-14T08:28:28.256738Z",
-  "duration_seconds": 0.02,
+  "updated_at": "2026-11-17T10:46:58.013354Z",
+  "duration_seconds": null,
   "input": {
     "structure": {
       "data": "CCO",
@@ -1020,7 +1310,7 @@ POST /v1/jobs
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:28.240000Z",
+      "time": "2026-11-17T10:46:58.013000Z",
       "level": "info",
       "text": "Queued."
     }
@@ -1055,13 +1345,13 @@ Responses: `200` `Job`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503` `Err
 *The same job once it has finished*
 
 ```http
-GET /v1/jobs/ef3a347a-21b8-4b2b-b1f0-e4b32b445df5
+GET /v1/jobs/0b7ba191-9605-48db-98ea-822293d8c6b0
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+  "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
   "kind": "rdkit.geometry_optimization",
   "status": "succeeded",
   "progress": 1.0,
@@ -1075,11 +1365,11 @@ GET /v1/jobs/ef3a347a-21b8-4b2b-b1f0-e4b32b445df5
   "error": null,
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:28.241119Z",
-  "started_at": "2026-11-14T08:28:28.256738Z",
-  "finished_at": "2026-11-14T08:28:28.800336Z",
-  "updated_at": "2026-11-14T08:28:28.800336Z",
-  "duration_seconds": 0.544,
+  "created_at": "2026-11-17T10:46:58.013354Z",
+  "started_at": "2026-11-17T10:46:58.022273Z",
+  "finished_at": "2026-11-17T10:47:03.739395Z",
+  "updated_at": "2026-11-17T10:47:03.739395Z",
+  "duration_seconds": 5.717,
   "input": {
     "structure": {
       "data": "CCO",
@@ -1104,14 +1394,14 @@ GET /v1/jobs/ef3a347a-21b8-4b2b-b1f0-e4b32b445df5
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:28.240000Z",
+      "time": "2026-11-17T10:46:58.013000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:28.267000Z",
+      "time": "2026-11-17T10:46:58.033000Z",
       "level": "info",
-      "text": "Started in worker process 39."
+      "text": "Started in worker process 54."
     },
     "… 4 more"
   ],
@@ -1212,7 +1502,7 @@ GET /v1/jobs/ef3a347a-21b8-4b2b-b1f0-e4b32b445df5
     "gradient_rms_final_kcal_per_mol_angstrom": 0.00014813067568419605,
     "gradient_rms_initial_kcal_per_mol_angstrom": 14.551535369048594
   },
-  "worker_pid": 39,
+  "worker_pid": 54,
   "provenance": {
     "source": "RDKit",
     "source_key": "rdkit",
@@ -1231,13 +1521,13 @@ GET /v1/jobs/ef3a347a-21b8-4b2b-b1f0-e4b32b445df5
 *A failure is reported, never hidden: the same job kind with a structure RDKit rejects*
 
 ```http
-GET /v1/jobs/66bbf860-7674-4c1e-ab4b-cd3e928f1f15
+GET /v1/jobs/9dd325fa-0435-41c2-b2c8-610dfbd9c68e
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "66bbf860-7674-4c1e-ab4b-cd3e928f1f15",
+  "id": "9dd325fa-0435-41c2-b2c8-610dfbd9c68e",
   "kind": "rdkit.geometry_optimization",
   "status": "failed",
   "progress": 0.0,
@@ -1267,11 +1557,11 @@ GET /v1/jobs/66bbf860-7674-4c1e-ab4b-cd3e928f1f15
   },
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:29.021482Z",
-  "started_at": "2026-11-14T08:28:29.029527Z",
-  "finished_at": "2026-11-14T08:28:33.883152Z",
-  "updated_at": "2026-11-14T08:28:33.883152Z",
-  "duration_seconds": 4.854,
+  "created_at": "2026-11-17T10:47:03.986753Z",
+  "started_at": "2026-11-17T10:47:04.011060Z",
+  "finished_at": "2026-11-17T10:47:13.553354Z",
+  "updated_at": "2026-11-17T10:47:13.553354Z",
+  "duration_seconds": 9.542,
   "input": {
     "structure": {
       "data": "CC(C)(C)(C)C",
@@ -1296,23 +1586,23 @@ GET /v1/jobs/66bbf860-7674-4c1e-ab4b-cd3e928f1f15
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:29.021000Z",
+      "time": "2026-11-17T10:47:03.986000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:29.036000Z",
+      "time": "2026-11-17T10:47:04.072000Z",
       "level": "info",
-      "text": "Started in worker process 52."
+      "text": "Started in worker process 66."
     },
     {
-      "time": "2026-11-14T08:28:33.881000Z",
+      "time": "2026-11-17T10:47:13.552000Z",
       "level": "error",
       "text": "RDKit could not interpret the structure: Explicit valence for atom # 1 C, 5, is greater than permitted"
     }
   ],
   "result": null,
-  "worker_pid": 52,
+  "worker_pid": 66,
   "provenance": {
     "source": "RDKit",
     "source_key": "rdkit",
@@ -1331,13 +1621,13 @@ GET /v1/jobs/66bbf860-7674-4c1e-ab4b-cd3e928f1f15
 *`unsupported`: neither MMFF94 nor UFF has parameters for xenon difluoride, so no geometry is returned*
 
 ```http
-GET /v1/jobs/638b342a-0210-4256-9db6-0b34d4a362c6
+GET /v1/jobs/955a192b-fb97-4581-93c9-b7fbeac3d0ad
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "638b342a-0210-4256-9db6-0b34d4a362c6",
+  "id": "955a192b-fb97-4581-93c9-b7fbeac3d0ad",
   "kind": "rdkit.geometry_optimization",
   "status": "unsupported",
   "progress": 0.15,
@@ -1361,11 +1651,11 @@ GET /v1/jobs/638b342a-0210-4256-9db6-0b34d4a362c6
   },
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:34.013880Z",
-  "started_at": "2026-11-14T08:28:34.035161Z",
-  "finished_at": "2026-11-14T08:28:34.714403Z",
-  "updated_at": "2026-11-14T08:28:34.714403Z",
-  "duration_seconds": 0.679,
+  "created_at": "2026-11-17T10:47:13.776780Z",
+  "started_at": "2026-11-17T10:47:13.794390Z",
+  "finished_at": "2026-11-17T10:47:16.573286Z",
+  "updated_at": "2026-11-17T10:47:16.573286Z",
+  "duration_seconds": 2.779,
   "input": {
     "structure": {
       "data": "F[Xe]F",
@@ -1390,19 +1680,19 @@ GET /v1/jobs/638b342a-0210-4256-9db6-0b34d4a362c6
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:34.013000Z",
+      "time": "2026-11-17T10:47:13.776000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:34.059000Z",
+      "time": "2026-11-17T10:47:13.799000Z",
       "level": "info",
-      "text": "Started in worker process 56."
+      "text": "Started in worker process 72."
     },
     "… 3 more"
   ],
   "result": null,
-  "worker_pid": 56,
+  "worker_pid": 72,
   "provenance": {
     "source": "RDKit",
     "source_key": "rdkit",
@@ -1421,13 +1711,13 @@ GET /v1/jobs/638b342a-0210-4256-9db6-0b34d4a362c6
 *GFN2-xTB single point on water (tblite)*
 
 ```http
-GET /v1/jobs/bc2bb9cf-18f2-4a94-bf7c-433ad4480c74
+GET /v1/jobs/6812611e-5b3b-4ba5-961c-8c3867ef5d81
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "bc2bb9cf-18f2-4a94-bf7c-433ad4480c74",
+  "id": "6812611e-5b3b-4ba5-961c-8c3867ef5d81",
   "kind": "xtb.single_point",
   "status": "succeeded",
   "progress": 1.0,
@@ -1441,11 +1731,11 @@ GET /v1/jobs/bc2bb9cf-18f2-4a94-bf7c-433ad4480c74
   "error": null,
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:34.930468Z",
-  "started_at": "2026-11-14T08:28:34.941700Z",
-  "finished_at": "2026-11-14T08:28:41.046103Z",
-  "updated_at": "2026-11-14T08:28:41.046103Z",
-  "duration_seconds": 6.104,
+  "created_at": "2026-11-17T10:47:16.793736Z",
+  "started_at": "2026-11-17T10:47:16.800349Z",
+  "finished_at": "2026-11-17T10:47:22.509953Z",
+  "updated_at": "2026-11-17T10:47:22.509953Z",
+  "duration_seconds": 5.71,
   "input": {
     "charge": null,
     "structure": {
@@ -1492,24 +1782,24 @@ GET /v1/jobs/bc2bb9cf-18f2-4a94-bf7c-433ad4480c74
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:34.929000Z",
+      "time": "2026-11-17T10:47:16.793000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:34.951000Z",
+      "time": "2026-11-17T10:47:16.810000Z",
       "level": "info",
-      "text": "Started in worker process 72."
+      "text": "Started in worker process 87."
     },
     {
-      "time": "2026-11-14T08:28:40.402000Z",
+      "time": "2026-11-17T10:47:22.089000Z",
       "level": "info",
       "text": "Geometry ready (3 atoms). Running GFN2-xTB with tblite."
     },
     {
-      "time": "2026-11-14T08:28:41.044000Z",
+      "time": "2026-11-17T10:47:22.508000Z",
       "level": "info",
-      "text": "Finished in 6.1 s."
+      "text": "Finished in 5.7 s."
     }
   ],
   "result": {
@@ -1615,9 +1905,9 @@ GET /v1/jobs/bc2bb9cf-18f2-4a94-bf7c-433ad4480c74
       "… 3 more"
     ],
     "gradient_max_hartree_per_bohr": 0.0047459228191490685,
-    "gradient_rms_hartree_per_bohr": 0.0024426952527300586
+    "gradient_rms_hartree_per_bohr": 0.002442695252730059
   },
-  "worker_pid": 72,
+  "worker_pid": 87,
   "provenance": {
     "source": "xTB (tblite)",
     "source_key": "xtb-tblite",
@@ -1636,13 +1926,13 @@ GET /v1/jobs/bc2bb9cf-18f2-4a94-bf7c-433ad4480c74
 *B3LYP/6-31G single point on water (PySCF)*
 
 ```http
-GET /v1/jobs/7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8
+GET /v1/jobs/ca801566-687e-4574-bea8-aaaf7e802945
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8",
+  "id": "ca801566-687e-4574-bea8-aaaf7e802945",
   "kind": "pyscf.single_point",
   "status": "succeeded",
   "progress": 1.0,
@@ -1656,11 +1946,11 @@ GET /v1/jobs/7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8
   "error": null,
   "cancel_requested": false,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:41.211309Z",
-  "started_at": "2026-11-14T08:28:41.219137Z",
-  "finished_at": "2026-11-14T08:28:42.529905Z",
-  "updated_at": "2026-11-14T08:28:42.529905Z",
-  "duration_seconds": 1.311,
+  "created_at": "2026-11-17T10:47:22.572202Z",
+  "started_at": "2026-11-17T10:47:22.578483Z",
+  "finished_at": "2026-11-17T10:47:26.848355Z",
+  "updated_at": "2026-11-17T10:47:26.848355Z",
+  "duration_seconds": 4.27,
   "input": {
     "charge": null,
     "structure": {
@@ -1709,17 +1999,17 @@ GET /v1/jobs/7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:41.210000Z",
+      "time": "2026-11-17T10:47:22.571000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:41.224000Z",
+      "time": "2026-11-17T10:47:22.583000Z",
       "level": "info",
-      "text": "Started in worker process 76."
+      "text": "Started in worker process 94."
     },
     {
-      "time": "2026-11-14T08:28:41.451000Z",
+      "time": "2026-11-17T10:47:24.903000Z",
       "level": "info",
       "text": "Running RKS/b3lyp/6-31g with PySCF (13 basis functions, 10 electrons)."
     },
@@ -1794,21 +2084,21 @@ GET /v1/jobs/7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8
     },
     "spin_square": null,
     "dipole_debye": [
-      2.7416590494429353e-16,
-      3.508642526394238e-15,
-      -2.460502202098402
+      2.1633019992908409e-16,
+      -1.6233121006894358e-14,
+      -2.460502202098427
     ],
     "multiplicity": 1,
     "electron_count": 10,
     "energy_hartree": -76.38492280155388,
-    "homo_lumo_gap_ev": 9.520661830004935,
+    "homo_lumo_gap_ev": 9.520661830004839,
     "mulliken_charges_e": [
-      -0.7065095634091119,
-      0.35325478170455626,
-      0.3532547817045605
+      -0.706509563409119,
+      0.35325478170456126,
+      0.35325478170456026
     ],
-    "homo_energy_hartree": -0.29234895234430214,
-    "lumo_energy_hartree": 0.05752891657210024,
+    "homo_energy_hartree": -0.2923489523443017,
+    "lumo_energy_hartree": 0.05752891657209713,
     "orbital_occupations": [
       2.0,
       2.0,
@@ -1816,18 +2106,18 @@ GET /v1/jobs/7e31bc27-fa85-4cc3-a2e7-4c86ac1a79c8
       "… 10 more"
     ],
     "basis_function_count": 13,
-    "dipole_magnitude_debye": 2.460502202098402,
+    "dipole_magnitude_debye": 2.460502202098427,
     "beta_orbital_occupations": null,
     "orbital_energies_hartree": [
-      -19.133010022242463,
-      -1.019247467183272,
+      -19.133010022242477,
+      -1.0192474671832747,
       -0.5309071944005002,
       "… 10 more"
     ],
     "nuclear_repulsion_hartree": 9.193913160623385,
     "beta_orbital_energies_hartree": null
   },
-  "worker_pid": 76,
+  "worker_pid": 94,
   "provenance": {
     "source": "PySCF",
     "source_key": "pyscf",
@@ -1856,13 +2146,13 @@ Responses: `200` `Job`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503` `Err
 *Cancel a running conformer search*
 
 ```http
-DELETE /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
+DELETE /v1/jobs/95b277ab-7d70-4baf-b45e-a576a30b668b
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "cb62be83-a9ac-44c9-bc5a-8164ae6e4e23",
+  "id": "95b277ab-7d70-4baf-b45e-a576a30b668b",
   "kind": "rdkit.conformer_search",
   "status": "running",
   "progress": 0.0,
@@ -1876,11 +2166,11 @@ DELETE /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
   "error": null,
   "cancel_requested": true,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:42.778682Z",
-  "started_at": "2026-11-14T08:28:42.786201Z",
+  "created_at": "2026-11-17T10:47:27.081320Z",
+  "started_at": "2026-11-17T10:47:27.145411Z",
   "finished_at": null,
-  "updated_at": "2026-11-14T08:28:43.826531Z",
-  "duration_seconds": 1.075,
+  "updated_at": "2026-11-17T10:47:28.484743Z",
+  "duration_seconds": 1.352,
   "input": {
     "structure": {
       "data": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCC",
@@ -1904,18 +2194,18 @@ DELETE /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:42.778000Z",
+      "time": "2026-11-17T10:47:27.081000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:42.791000Z",
+      "time": "2026-11-17T10:47:27.169000Z",
       "level": "info",
-      "text": "Started in worker process 94."
+      "text": "Started in worker process 108."
     }
   ],
   "result": null,
-  "worker_pid": 94,
+  "worker_pid": 108,
   "provenance": {
     "source": "RDKit",
     "source_key": "rdkit",
@@ -1934,13 +2224,13 @@ DELETE /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
 *Shortly afterwards: the worker process is gone and the job is `cancelled`*
 
 ```http
-GET /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
+GET /v1/jobs/95b277ab-7d70-4baf-b45e-a576a30b668b
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "cb62be83-a9ac-44c9-bc5a-8164ae6e4e23",
+  "id": "95b277ab-7d70-4baf-b45e-a576a30b668b",
   "kind": "rdkit.conformer_search",
   "status": "cancelled",
   "progress": 0.0,
@@ -1954,11 +2244,11 @@ GET /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
   "error": null,
   "cancel_requested": true,
   "origin": "service",
-  "created_at": "2026-11-14T08:28:42.778682Z",
-  "started_at": "2026-11-14T08:28:42.786201Z",
-  "finished_at": "2026-11-14T08:28:44.097225Z",
-  "updated_at": "2026-11-14T08:28:44.097225Z",
-  "duration_seconds": 1.311,
+  "created_at": "2026-11-17T10:47:27.081320Z",
+  "started_at": "2026-11-17T10:47:27.145411Z",
+  "finished_at": "2026-11-17T10:47:28.725801Z",
+  "updated_at": "2026-11-17T10:47:28.725801Z",
+  "duration_seconds": 1.58,
   "input": {
     "structure": {
       "data": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCC",
@@ -1982,19 +2272,19 @@ GET /v1/jobs/cb62be83-a9ac-44c9-bc5a-8164ae6e4e23
   },
   "messages": [
     {
-      "time": "2026-11-14T08:28:42.778000Z",
+      "time": "2026-11-17T10:47:27.081000Z",
       "level": "info",
       "text": "Queued."
     },
     {
-      "time": "2026-11-14T08:28:42.791000Z",
+      "time": "2026-11-17T10:47:27.169000Z",
       "level": "info",
-      "text": "Started in worker process 94."
+      "text": "Started in worker process 108."
     },
     "… 2 more"
   ],
   "result": null,
-  "worker_pid": 94,
+  "worker_pid": 108,
   "provenance": {
     "source": "RDKit",
     "source_key": "rdkit",
@@ -2035,7 +2325,7 @@ GET /v1/jobs?input_hash=40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051
 {
   "items": [
     {
-      "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+      "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
       "kind": "rdkit.geometry_optimization",
       "status": "succeeded",
       "progress": 1.0,
@@ -2049,11 +2339,11 @@ GET /v1/jobs?input_hash=40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051
       "error": null,
       "cancel_requested": false,
       "origin": "service",
-      "created_at": "2026-11-14T08:28:28.241119Z",
-      "started_at": "2026-11-14T08:28:28.256738Z",
-      "finished_at": "2026-11-14T08:28:28.800336Z",
-      "updated_at": "2026-11-14T08:28:28.800336Z",
-      "duration_seconds": 0.544
+      "created_at": "2026-11-17T10:46:58.013354Z",
+      "started_at": "2026-11-17T10:46:58.022273Z",
+      "finished_at": "2026-11-17T10:47:03.739395Z",
+      "updated_at": "2026-11-17T10:47:03.739395Z",
+      "duration_seconds": 5.717
     }
   ],
   "total": 1,
@@ -2115,7 +2405,7 @@ GET /v1/data-sources
         }
       ],
       "notes": "Half-lives, decay modes, spins and isotopic abundances from ENSDF (April 2022 snapshot); atomic masses from the AME2020 atomic mass evaluation; see NUBASE2020.",
-      "created_at": "2026-11-14T08:28:10.691359Z"
+      "created_at": "2026-11-17T10:46:31.107317Z"
     },
     {
       "id": 5,
@@ -2129,7 +2419,7 @@ GET /v1/data-sources
       "retrieved_on": null,
       "citations": [],
       "notes": "Fields taken from this source: color for erbium only (PubChem lists none)",
-      "created_at": "2026-11-14T08:28:10.469483Z"
+      "created_at": "2026-11-17T10:46:30.672008Z"
     },
     "… 9 more"
   ],
@@ -2716,8 +3006,8 @@ GET /v1/solvents/ae1b660e-7c56-54c1-8e79-23c5c6c43143
     ],
     "notes": "Data retrieved from PubChem, National Center for Biotechnology Information (NCBI), U.S. National Library of Medicine. Re… (365 characters)"
   },
-  "created_at": "2026-11-14T08:28:12.200564Z",
-  "updated_at": "2026-11-14T08:28:12.200564Z"
+  "created_at": "2026-11-17T10:46:34.241825Z",
+  "updated_at": "2026-11-17T10:46:34.241825Z"
 }
 ```
 
@@ -2899,8 +3189,8 @@ GET /v1/catalysts/f6db166c-3725-5768-ad42-2092c576e928
     ],
     "notes": "Data retrieved from PubChem, National Center for Biotechnology Information (NCBI), U.S. National Library of Medicine. Re… (365 characters)"
   },
-  "created_at": "2026-11-14T08:28:12.200564Z",
-  "updated_at": "2026-11-14T08:28:12.200564Z"
+  "created_at": "2026-11-17T10:46:34.241825Z",
+  "updated_at": "2026-11-17T10:46:34.241825Z"
 }
 ```
 
@@ -3102,7 +3392,7 @@ POST /v1/compounds/search/exact
     "catalog_title": "MATTER LAB local compound catalogue",
     "description": "The compounds table of this MATTER LAB instance (a small starter catalogue seeded from PubChem, plus any imported compou… (224 characters)",
     "records_searched": 296,
-    "searched_at": "2026-11-14T08:28:45.007506Z",
+    "searched_at": "2026-11-17T10:47:29.832338Z",
     "method": "Equality of the standard InChIKey computed by RDKit (SQL lookup on the unique inchikey column)",
     "engine": {
       "engine": "RDKit",
@@ -3136,7 +3426,7 @@ POST /v1/compounds/search/exact
     "catalog_title": "MATTER LAB local compound catalogue",
     "description": "The compounds table of this MATTER LAB instance (a small starter catalogue seeded from PubChem, plus any imported compou… (224 characters)",
     "records_searched": 296,
-    "searched_at": "2026-11-14T08:28:45.034841Z",
+    "searched_at": "2026-11-17T10:47:29.845579Z",
     "method": "Equality of the standard InChIKey computed by RDKit (SQL lookup on the unique inchikey column)",
     "engine": {
       "engine": "RDKit",
@@ -3249,7 +3539,7 @@ POST /v1/compounds/search/substructure
     "catalog_title": "MATTER LAB local compound catalogue",
     "description": "The compounds table of this MATTER LAB instance (a small starter catalogue seeded from PubChem, plus any imported compou… (224 characters)",
     "records_searched": 296,
-    "searched_at": "2026-11-14T08:28:45.318414Z",
+    "searched_at": "2026-11-17T10:47:29.973945Z",
     "method": "RDKit substructure matching (pattern-fingerprint pre-screen, then atom-by-atom match without chirality), run in the scie… (172 characters)",
     "engine": {
       "engine": "RDKit",
@@ -3336,7 +3626,7 @@ POST /v1/compounds/search/similarity
     "catalog_title": "MATTER LAB local compound catalogue",
     "description": "The compounds table of this MATTER LAB instance (a small starter catalogue seeded from PubChem, plus any imported compou… (224 characters)",
     "records_searched": 296,
-    "searched_at": "2026-11-14T08:28:45.353248Z",
+    "searched_at": "2026-11-17T10:47:29.998670Z",
     "method": "Tanimoto similarity of Morgan bit fingerprints (radius 2, 2048 bits, no chirality), computed in the science service with… (167 characters)",
     "engine": {
       "engine": "RDKit",
@@ -3456,8 +3746,8 @@ GET /v1/compounds/8e464cd6-134f-5a66-8f8d-778b6e836760
     ],
     "notes": "Data retrieved from PubChem, National Center for Biotechnology Information (NCBI), U.S. National Library of Medicine. Re… (365 characters)"
   },
-  "created_at": "2026-11-14T08:28:12.200564Z",
-  "updated_at": "2026-11-14T08:28:12.200564Z"
+  "created_at": "2026-11-17T10:46:34.241825Z",
+  "updated_at": "2026-11-17T10:46:34.241825Z"
 }
 ```
 
@@ -3492,13 +3782,13 @@ POST /v1/reactions
 `HTTP 201`
 ```json
 {
-  "id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e",
+  "id": "570ee67d-ee76-4543-9e73-0699b04a4393",
   "name": "Hydrogenation of ethene",
   "reaction_smiles": "C=C.[H][H]>>CC",
   "balanced": true,
   "evidence": "user-input",
-  "created_at": "2026-11-14T08:28:45.396607Z",
-  "updated_at": "2026-11-14T08:28:45.396607Z",
+  "created_at": "2026-11-17T10:47:30.084055Z",
+  "updated_at": "2026-11-17T10:47:30.084055Z",
   "description": null,
   "temperature_k": 298.15,
   "pressure_pa": null,
@@ -3576,13 +3866,13 @@ GET /v1/reactions
 {
   "items": [
     {
-      "id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e",
+      "id": "570ee67d-ee76-4543-9e73-0699b04a4393",
       "name": "Hydrogenation of ethene",
       "reaction_smiles": "C=C.[H][H]>>CC",
       "balanced": true,
       "evidence": "user-input",
-      "created_at": "2026-11-14T08:28:45.396607Z",
-      "updated_at": "2026-11-14T08:28:45.396607Z"
+      "created_at": "2026-11-17T10:47:30.084055Z",
+      "updated_at": "2026-11-17T10:47:30.084055Z"
     }
   ],
   "total": 1,
@@ -3601,7 +3891,7 @@ GET /v1/reactions
 
 Responses: `200` `Reaction`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503` `ErrorResponse`.
 
-Returns the document shown for `POST /v1/reactions` (here: `GET /v1/reactions/4526e24b-6e9d-44ca-bbce-cb840d27cc9e`).
+Returns the document shown for `POST /v1/reactions` (here: `GET /v1/reactions/570ee67d-ee76-4543-9e73-0699b04a4393`).
 
 ### `DELETE /v1/reactions/{reaction_id}`
 
@@ -3640,13 +3930,13 @@ Responses: `201` `Experiment`; `422` `ErrorResponse`; `503` `ErrorResponse`.
 
 ```http
 POST /v1/experiments
-{"title": "Ethanol geometry", "kind": "molecule", "inputs": {"structure": {"format": "smiles", "data": "CCO"}}, "settings": {"force_field": "auto"}, "tags": ["demo"], "reaction_id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e", "calculation_ids": ["ef3a347a-21b8-4b2b-b1f0-e4b32b445df5"]}
+{"title": "Ethanol geometry", "kind": "molecule", "inputs": {"structure": {"format": "smiles", "data": "CCO"}}, "settings": {"force_field": "auto"}, "tags": ["demo"], "reaction_id": "570ee67d-ee76-4543-9e73-0699b04a4393", "calculation_ids": ["0b7ba191-9605-48db-98ea-822293d8c6b0"]}
 ```
 
 `HTTP 201`
 ```json
 {
-  "id": "3af1ff60-a440-460a-8128-937ed3df4f7a",
+  "id": "e2e9f135-62da-4dc3-87dd-bbf8bf659b81",
   "title": "Ethanol geometry",
   "description": null,
   "kind": "molecule",
@@ -3664,11 +3954,11 @@ POST /v1/experiments
   "tags": [
     "demo"
   ],
-  "reaction_id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e",
+  "reaction_id": "570ee67d-ee76-4543-9e73-0699b04a4393",
   "revision": 1,
   "calculations": [
     {
-      "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+      "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
       "kind": "rdkit.geometry_optimization",
       "status": "succeeded",
       "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
@@ -3679,8 +3969,8 @@ POST /v1/experiments
       "method": "MMFF94",
       "converged": true,
       "label": null,
-      "created_at": "2026-11-14T08:28:28.241119Z",
-      "finished_at": "2026-11-14T08:28:28.800336Z"
+      "created_at": "2026-11-17T10:46:58.013354Z",
+      "finished_at": "2026-11-17T10:47:03.739395Z"
     }
   ],
   "provenance": {
@@ -3695,8 +3985,8 @@ POST /v1/experiments
     "citations": [],
     "notes": "Created by a user through the MATTER LAB science API. Not reference data and not verified by the service."
   },
-  "created_at": "2026-11-14T08:28:45.481386Z",
-  "updated_at": "2026-11-14T08:28:45.481386Z"
+  "created_at": "2026-11-17T10:47:30.208237Z",
+  "updated_at": "2026-11-17T10:47:30.208237Z"
 }
 ```
 
@@ -3739,14 +4029,14 @@ Request body (`application/json`): `ExperimentPatch`
 Responses: `200` `Experiment`; `404` `ErrorResponse`; `409` `ErrorResponse`; `422` `ErrorResponse`; `503` `ErrorResponse`.
 
 ```http
-PATCH /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a
+PATCH /v1/experiments/e2e9f135-62da-4dc3-87dd-bbf8bf659b81
 {"notes": "Converged in the first run.", "expected_revision": 1}
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "3af1ff60-a440-460a-8128-937ed3df4f7a",
+  "id": "e2e9f135-62da-4dc3-87dd-bbf8bf659b81",
   "title": "Ethanol geometry",
   "description": null,
   "kind": "molecule",
@@ -3764,11 +4054,11 @@ PATCH /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a
   "tags": [
     "demo"
   ],
-  "reaction_id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e",
+  "reaction_id": "570ee67d-ee76-4543-9e73-0699b04a4393",
   "revision": 2,
   "calculations": [
     {
-      "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+      "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
       "kind": "rdkit.geometry_optimization",
       "status": "succeeded",
       "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
@@ -3779,8 +4069,8 @@ PATCH /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a
       "method": "MMFF94",
       "converged": true,
       "label": null,
-      "created_at": "2026-11-14T08:28:28.241119Z",
-      "finished_at": "2026-11-14T08:28:28.800336Z"
+      "created_at": "2026-11-17T10:46:58.013354Z",
+      "finished_at": "2026-11-17T10:47:03.739395Z"
     }
   ],
   "provenance": {
@@ -3795,15 +4085,15 @@ PATCH /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a
     "citations": [],
     "notes": "Created by a user through the MATTER LAB science API. Not reference data and not verified by the service."
   },
-  "created_at": "2026-11-14T08:28:45.481386Z",
-  "updated_at": "2026-11-14T08:28:45.523056Z"
+  "created_at": "2026-11-17T10:47:30.208237Z",
+  "updated_at": "2026-11-17T10:47:30.382967Z"
 }
 ```
 
 *A stale revision is refused*
 
 ```http
-PATCH /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a
+PATCH /v1/experiments/e2e9f135-62da-4dc3-87dd-bbf8bf659b81
 {"notes": "A second writer with a stale copy", "expected_revision": 1}
 ```
 
@@ -3858,14 +4148,14 @@ Responses: `200` `Experiment`; `404` `ErrorResponse`; `409` `ErrorResponse`; `42
 Responses: `202` `RerunResponse`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503` `ErrorResponse`.
 
 ```http
-POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
+POST /v1/experiments/e2e9f135-62da-4dc3-87dd-bbf8bf659b81/rerun
 ```
 
 `HTTP 202`
 ```json
 {
   "experiment": {
-    "id": "3af1ff60-a440-460a-8128-937ed3df4f7a",
+    "id": "e2e9f135-62da-4dc3-87dd-bbf8bf659b81",
     "title": "Ethanol geometry",
     "description": null,
     "kind": "molecule",
@@ -3883,11 +4173,11 @@ POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
     "tags": [
       "demo"
     ],
-    "reaction_id": "4526e24b-6e9d-44ca-bbce-cb840d27cc9e",
+    "reaction_id": "570ee67d-ee76-4543-9e73-0699b04a4393",
     "revision": 3,
     "calculations": [
       {
-        "id": "ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
+        "id": "0b7ba191-9605-48db-98ea-822293d8c6b0",
         "kind": "rdkit.geometry_optimization",
         "status": "succeeded",
         "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
@@ -3898,11 +4188,11 @@ POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
         "method": "MMFF94",
         "converged": true,
         "label": null,
-        "created_at": "2026-11-14T08:28:28.241119Z",
-        "finished_at": "2026-11-14T08:28:28.800336Z"
+        "created_at": "2026-11-17T10:46:58.013354Z",
+        "finished_at": "2026-11-17T10:47:03.739395Z"
       },
       {
-        "id": "59cea83d-7171-4f07-8d33-5a9bb32b78d7",
+        "id": "cf8cee43-bb3f-45df-9fd5-6ed3478e0e88",
         "kind": "rdkit.geometry_optimization",
         "status": "running",
         "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
@@ -3912,8 +4202,8 @@ POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
         },
         "method": null,
         "converged": null,
-        "label": "rerun of ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
-        "created_at": "2026-11-14T08:28:45.578766Z",
+        "label": "rerun of 0b7ba191-9605-48db-98ea-822293d8c6b0",
+        "created_at": "2026-11-17T10:47:30.527499Z",
         "finished_at": null
       }
     ],
@@ -3929,12 +4219,12 @@ POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
       "citations": [],
       "notes": "Created by a user through the MATTER LAB science API. Not reference data and not verified by the service."
     },
-    "created_at": "2026-11-14T08:28:45.481386Z",
-    "updated_at": "2026-11-14T08:28:45.587943Z"
+    "created_at": "2026-11-17T10:47:30.208237Z",
+    "updated_at": "2026-11-17T10:47:30.536901Z"
   },
   "submitted": [
     {
-      "id": "59cea83d-7171-4f07-8d33-5a9bb32b78d7",
+      "id": "cf8cee43-bb3f-45df-9fd5-6ed3478e0e88",
       "kind": "rdkit.geometry_optimization",
       "status": "running",
       "input_hash": "40e2c883cc83218bbbafc8825a04bfcce63723047e17421c7f5d9051bfd4ad3f",
@@ -3944,8 +4234,8 @@ POST /v1/experiments/3af1ff60-a440-460a-8128-937ed3df4f7a/rerun
       },
       "method": null,
       "converged": null,
-      "label": "rerun of ef3a347a-21b8-4b2b-b1f0-e4b32b445df5",
-      "created_at": "2026-11-14T08:28:45.578766Z",
+      "label": "rerun of 0b7ba191-9605-48db-98ea-822293d8c6b0",
+      "created_at": "2026-11-17T10:47:30.527499Z",
       "finished_at": null
     }
   ],
@@ -3976,7 +4266,7 @@ GET /v1/experiments?tag=demo
 {
   "items": [
     {
-      "id": "3af1ff60-a440-460a-8128-937ed3df4f7a",
+      "id": "e2e9f135-62da-4dc3-87dd-bbf8bf659b81",
       "title": "Ethanol geometry",
       "description": null,
       "kind": "molecule",
@@ -3985,8 +4275,8 @@ GET /v1/experiments?tag=demo
       ],
       "revision": 3,
       "calculation_count": 2,
-      "created_at": "2026-11-14T08:28:45.481386Z",
-      "updated_at": "2026-11-14T08:28:45.587943Z"
+      "created_at": "2026-11-17T10:47:30.208237Z",
+      "updated_at": "2026-11-17T10:47:30.536901Z"
     }
   ],
   "total": 1,
@@ -4042,15 +4332,15 @@ POST /v1/discoveries
 `HTTP 201`
 ```json
 {
-  "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+  "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
   "title": "Candidate A",
   "status": "no-match-in-searched-catalogs",
   "structure_valid": true,
   "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
   "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
   "molecular_formula": "C9H9NO2",
-  "created_at": "2026-11-14T08:28:47.676989Z",
-  "updated_at": "2026-11-14T08:28:47.676989Z",
+  "created_at": "2026-11-17T10:47:40.181956Z",
+  "updated_at": "2026-11-17T10:47:40.181956Z",
   "notes": null,
   "status_meaning": "No identical structure was found in the catalogues that were searched; they are listed under searched_catalogs. Other databases and the literature were not searched.",
   "status_ladder": [
@@ -4093,8 +4383,8 @@ POST /v1/discoveries
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.640998Z",
-      "last_searched_at": "2026-11-14T08:28:47.655545Z",
+      "first_searched_at": "2026-11-17T10:47:40.163543Z",
+      "last_searched_at": "2026-11-17T10:47:40.170110Z",
       "search_count": 2,
       "methods": [
         "exact-inchikey",
@@ -4107,7 +4397,7 @@ POST /v1/discoveries
   ],
   "catalog_searches": [
     {
-      "id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4118,7 +4408,7 @@ POST /v1/discoveries
         "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N"
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.640998Z",
+      "searched_at": "2026-11-17T10:47:40.163543Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4126,7 +4416,7 @@ POST /v1/discoveries
       "http_status": null
     },
     {
-      "id": "e3775260-43b3-4970-b83d-4a8b83d267e5",
+      "id": "71fee1d0-f98c-42a2-9571-25b5624ff352",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4145,7 +4435,7 @@ POST /v1/discoveries
         }
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.655545Z",
+      "searched_at": "2026-11-17T10:47:40.170110Z",
       "outcome": "no-match",
       "matches": [],
       "detail": "0 record(s) at or above Tanimoto 0.7; similarity is a structural heuristic and not an identity match.",
@@ -4153,10 +4443,10 @@ POST /v1/discoveries
       "http_status": null
     }
   ],
-  "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last searched 2026-11-14T08:28:47Z). This describes only those catalogues at those times. It does not show that the compound is absent from other databases or from the literature.",
+  "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last searched 2026-11-17T10:47:40Z). This describes only those catalogues at those times. It does not show that the compound is absent from other databases or from the literature.",
   "evidence": [
     {
-      "id": "73799307-ebc2-45c8-8941-dfd19c48c7a4",
+      "id": "41a669bc-3ead-4891-a319-9d15f3fe34e8",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -4166,10 +4456,10 @@ POST /v1/discoveries
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.697346Z"
+      "created_at": "2026-11-17T10:47:40.189319Z"
     },
     {
-      "id": "b617e8a2-cc0d-4716-b67d-831f832463fa",
+      "id": "0c650741-5a9c-4877-8fbe-aca7f848236e",
       "kind": "structure-validation",
       "summary": "RDKit accepted the structure: O=C(O)C1CC1c1ccncc1 (C9H9NO2), InChIKey YFOFMIZNXREQAS-UHFFFAOYSA-N.",
       "details": {
@@ -4189,10 +4479,10 @@ POST /v1/discoveries
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.711740Z"
+      "created_at": "2026-11-17T10:47:40.194338Z"
     },
     {
-      "id": "013cbe07-dd4f-47c0-b7e3-523e2f12d6ea",
+      "id": "3e0b2c6f-04ed-4881-bc1a-78a515ff1b61",
       "kind": "status-change",
       "summary": "The structure passed RDKit sanitisation.",
       "details": {},
@@ -4202,7 +4492,7 @@ POST /v1/discoveries
       "reference": null,
       "status_before": "user-created",
       "status_after": "structurally-validated",
-      "created_at": "2026-11-14T08:28:47.716479Z"
+      "created_at": "2026-11-17T10:47:40.197223Z"
     },
     "… 3 more"
   ],
@@ -4236,15 +4526,15 @@ POST /v1/discoveries
 `HTTP 201`
 ```json
 {
-  "id": "77bfe5c3-61c0-4f63-b342-15016bb5e804",
+  "id": "4cd514e3-3649-418c-80cd-ca4cb4be662a",
   "title": "Rediscovered",
   "status": "structurally-validated",
   "structure_valid": true,
   "canonical_smiles": "CC(=O)Oc1ccccc1C(=O)O",
   "inchikey": "BSYNRYMUTXBXSQ-UHFFFAOYSA-N",
   "molecular_formula": "C9H8O4",
-  "created_at": "2026-11-14T08:28:47.808209Z",
-  "updated_at": "2026-11-14T08:28:47.808209Z",
+  "created_at": "2026-11-17T10:47:40.263144Z",
+  "updated_at": "2026-11-17T10:47:40.263144Z",
   "notes": null,
   "status_meaning": "RDKit accepts the structure as chemically well-formed. Nothing more is claimed.",
   "status_ladder": [
@@ -4282,8 +4572,8 @@ POST /v1/discoveries
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.772711Z",
-      "last_searched_at": "2026-11-14T08:28:47.780645Z",
+      "first_searched_at": "2026-11-17T10:47:40.246699Z",
+      "last_searched_at": "2026-11-17T10:47:40.251831Z",
       "search_count": 2,
       "methods": "[… 2 items]",
       "identity_search_completed": true,
@@ -4293,7 +4583,7 @@ POST /v1/discoveries
   ],
   "catalog_searches": [
     {
-      "id": "4dab572b-ef2a-4596-9732-d3d70de49b40",
+      "id": "94de1fed-f867-4cb5-a0c2-90a5b5b946de",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4301,7 +4591,7 @@ POST /v1/discoveries
       "match_kind": "identity",
       "parameters": "{… 2 fields}",
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.772711Z",
+      "searched_at": "2026-11-17T10:47:40.246699Z",
       "outcome": "match",
       "matches": "[… 1 items]",
       "detail": null,
@@ -4309,7 +4599,7 @@ POST /v1/discoveries
       "http_status": null
     },
     {
-      "id": "1bccd432-1375-42b2-b7a8-149327fc9d82",
+      "id": "7319f2d0-8080-4621-8aa8-b7c230ae29da",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4317,7 +4607,7 @@ POST /v1/discoveries
       "match_kind": "similarity",
       "parameters": "{… 4 fields}",
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.780645Z",
+      "searched_at": "2026-11-17T10:47:40.251831Z",
       "outcome": "match",
       "matches": "[… 1 items]",
       "detail": "1 record(s) at or above Tanimoto 0.7; similarity is a structural heuristic and not an identity match.",
@@ -4328,7 +4618,7 @@ POST /v1/discoveries
   "statement": "An identical structure (same InChIKey) is listed in: MATTER LAB local compound catalogue. In those catalogues this is a known compound.",
   "evidence": [
     {
-      "id": "cfd0263a-b69c-47e5-9e55-e87ba9cd3a91",
+      "id": "837228eb-f050-4e0d-93d6-0a6787c1f3f4",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -4338,7 +4628,7 @@ POST /v1/discoveries
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.812388Z"
+      "created_at": "2026-11-17T10:47:40.266229Z"
     },
     "… 4 more"
   ],
@@ -4383,22 +4673,22 @@ Responses: `200` `Discovery`; `404` `ErrorResponse`; `409` `ErrorResponse`; `422
 With `{"query_pubchem": true}` the service sends one request to PubChem PUG REST (`/compound/inchikey/<key>/cids/JSON`) and records the request URL, the time, the HTTP status and the outcome. The example below repeats the local searches only.
 
 ```http
-POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
+POST /v1/discoveries/fcf85387-13bf-4a8e-9907-fb70d36d69c2/searches
 {}
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+  "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
   "title": "Candidate A",
   "status": "no-match-in-searched-catalogs",
   "structure_valid": true,
   "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
   "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
   "molecular_formula": "C9H9NO2",
-  "created_at": "2026-11-14T08:28:47.676989Z",
-  "updated_at": "2026-11-14T08:28:47.676989Z",
+  "created_at": "2026-11-17T10:47:40.181956Z",
+  "updated_at": "2026-11-17T10:47:40.181956Z",
   "notes": null,
   "status_meaning": "No identical structure was found in the catalogues that were searched; they are listed under searched_catalogs. Other da… (165 characters)",
   "status_ladder": [
@@ -4439,8 +4729,8 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.640998Z",
-      "last_searched_at": "2026-11-14T08:28:47.882260Z",
+      "first_searched_at": "2026-11-17T10:47:40.163543Z",
+      "last_searched_at": "2026-11-17T10:47:40.318971Z",
       "search_count": 4,
       "methods": "[… 2 items]",
       "identity_search_completed": true,
@@ -4450,7 +4740,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
   ],
   "catalog_searches": [
     {
-      "id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4458,7 +4748,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
       "match_kind": "identity",
       "parameters": "{… 2 fields}",
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.640998Z",
+      "searched_at": "2026-11-17T10:47:40.163543Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4470,7 +4760,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
   "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last sear… (290 characters)",
   "evidence": [
     {
-      "id": "73799307-ebc2-45c8-8941-dfd19c48c7a4",
+      "id": "41a669bc-3ead-4891-a319-9d15f3fe34e8",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -4480,7 +4770,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/searches
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.697346Z"
+      "created_at": "2026-11-17T10:47:40.189319Z"
     },
     "… 7 more"
   ],
@@ -4527,22 +4817,22 @@ Responses: `201` `Discovery`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503
 *Attach a finished calculation*
 
 ```http
-POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
-{"kind": "calculation", "calculation_id": "e87ba128-1481-4271-a12f-6639bc6072ca"}
+POST /v1/discoveries/fcf85387-13bf-4a8e-9907-fb70d36d69c2/evidence
+{"kind": "calculation", "calculation_id": "a37f08f6-7d96-43f7-9362-068a57af70f1"}
 ```
 
 `HTTP 201`
 ```json
 {
-  "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+  "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
   "title": "Candidate A",
   "status": "no-match-in-searched-catalogs",
   "structure_valid": true,
   "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
   "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
   "molecular_formula": "C9H9NO2",
-  "created_at": "2026-11-14T08:28:47.676989Z",
-  "updated_at": "2026-11-14T08:28:50.754574Z",
+  "created_at": "2026-11-17T10:47:40.181956Z",
+  "updated_at": "2026-11-17T10:47:44.023080Z",
   "notes": null,
   "status_meaning": "No identical structure was found in the catalogues that were searched; they are listed under searched_catalogs. Other da… (165 characters)",
   "status_ladder": [
@@ -4583,8 +4873,8 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.640998Z",
-      "last_searched_at": "2026-11-14T08:28:47.882260Z",
+      "first_searched_at": "2026-11-17T10:47:40.163543Z",
+      "last_searched_at": "2026-11-17T10:47:40.318971Z",
       "search_count": 4,
       "methods": "[… 2 items]",
       "identity_search_completed": true,
@@ -4594,7 +4884,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
   ],
   "catalog_searches": [
     {
-      "id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4602,7 +4892,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
       "match_kind": "identity",
       "parameters": "{… 2 fields}",
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.640998Z",
+      "searched_at": "2026-11-17T10:47:40.163543Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4614,7 +4904,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
   "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last sear… (290 characters)",
   "evidence": [
     {
-      "id": "73799307-ebc2-45c8-8941-dfd19c48c7a4",
+      "id": "41a669bc-3ead-4891-a319-9d15f3fe34e8",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -4624,7 +4914,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/evidence
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.697346Z"
+      "created_at": "2026-11-17T10:47:40.189319Z"
     },
     "… 8 more"
   ],
@@ -4668,7 +4958,7 @@ Responses: `200` `Discovery`; `404` `ErrorResponse`; `409` `ErrorResponse`; `422
 *Rungs cannot be skipped*
 
 ```http
-POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
+POST /v1/discoveries/fcf85387-13bf-4a8e-9907-fb70d36d69c2/status
 {"status": "independently-validated", "justification": "skipping ahead"}
 ```
 
@@ -4690,22 +4980,22 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
 *One rung up, backed by the attached calculation*
 
 ```http
-POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
+POST /v1/discoveries/fcf85387-13bf-4a8e-9907-fb70d36d69c2/status
 {"status": "computationally-plausible", "justification": "MMFF94 optimisation converged"}
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+  "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
   "title": "Candidate A",
   "status": "computationally-plausible",
   "structure_valid": true,
   "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
   "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
   "molecular_formula": "C9H9NO2",
-  "created_at": "2026-11-14T08:28:47.676989Z",
-  "updated_at": "2026-11-14T08:28:50.803979Z",
+  "created_at": "2026-11-17T10:47:40.181956Z",
+  "updated_at": "2026-11-17T10:47:44.141750Z",
   "notes": null,
   "status_meaning": "At least one converged calculation for this structure is attached, and the searched catalogues hold no identical structure. A calculation is not an observation.",
   "status_ladder": [
@@ -4746,8 +5036,8 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.640998Z",
-      "last_searched_at": "2026-11-14T08:28:47.882260Z",
+      "first_searched_at": "2026-11-17T10:47:40.163543Z",
+      "last_searched_at": "2026-11-17T10:47:40.318971Z",
       "search_count": 4,
       "methods": "[… 2 items]",
       "identity_search_completed": true,
@@ -4757,7 +5047,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
   ],
   "catalog_searches": [
     {
-      "id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4765,7 +5055,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
       "match_kind": "identity",
       "parameters": "{… 2 fields}",
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.640998Z",
+      "searched_at": "2026-11-17T10:47:40.163543Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4777,7 +5067,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
   "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last sear… (290 characters)",
   "evidence": [
     {
-      "id": "73799307-ebc2-45c8-8941-dfd19c48c7a4",
+      "id": "41a669bc-3ead-4891-a319-9d15f3fe34e8",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -4787,7 +5077,7 @@ POST /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc/status
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.697346Z"
+      "created_at": "2026-11-17T10:47:40.189319Z"
     },
     "… 9 more"
   ],
@@ -4824,21 +5114,21 @@ Responses: `200` `Discovery`; `404` `ErrorResponse`; `422` `ErrorResponse`; `503
 *The candidate with its searches and its complete evidence trail*
 
 ```http
-GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
+GET /v1/discoveries/fcf85387-13bf-4a8e-9907-fb70d36d69c2
 ```
 
 `HTTP 200`
 ```json
 {
-  "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+  "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
   "title": "Candidate A",
   "status": "computationally-plausible",
   "structure_valid": true,
   "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
   "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
   "molecular_formula": "C9H9NO2",
-  "created_at": "2026-11-14T08:28:47.676989Z",
-  "updated_at": "2026-11-14T08:28:50.803979Z",
+  "created_at": "2026-11-17T10:47:40.181956Z",
+  "updated_at": "2026-11-17T10:47:44.141750Z",
   "notes": null,
   "status_meaning": "At least one converged calculation for this structure is attached, and the searched catalogues hold no identical structure. A calculation is not an observation.",
   "status_ladder": [
@@ -4883,8 +5173,8 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
       "records_searched": 296,
-      "first_searched_at": "2026-11-14T08:28:47.640998Z",
-      "last_searched_at": "2026-11-14T08:28:47.882260Z",
+      "first_searched_at": "2026-11-17T10:47:40.163543Z",
+      "last_searched_at": "2026-11-17T10:47:40.318971Z",
       "search_count": 4,
       "methods": [
         "exact-inchikey",
@@ -4897,7 +5187,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
   ],
   "catalog_searches": [
     {
-      "id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4908,7 +5198,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
         "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N"
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.640998Z",
+      "searched_at": "2026-11-17T10:47:40.163543Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4916,7 +5206,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "http_status": null
     },
     {
-      "id": "e3775260-43b3-4970-b83d-4a8b83d267e5",
+      "id": "71fee1d0-f98c-42a2-9571-25b5624ff352",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4935,7 +5225,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
         }
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.655545Z",
+      "searched_at": "2026-11-17T10:47:40.170110Z",
       "outcome": "no-match",
       "matches": [],
       "detail": "0 record(s) at or above Tanimoto 0.7; similarity is a structural heuristic and not an identity match.",
@@ -4943,7 +5233,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "http_status": null
     },
     {
-      "id": "523b992f-914a-4890-8aee-2392abbb8295",
+      "id": "3fcbaacf-862f-40a9-bebf-2bbe62a9e2bf",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4954,7 +5244,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
         "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N"
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.874612Z",
+      "searched_at": "2026-11-17T10:47:40.314373Z",
       "outcome": "no-match",
       "matches": [],
       "detail": null,
@@ -4962,7 +5252,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "http_status": null
     },
     {
-      "id": "d4ba3d8c-7491-472c-a6a2-e0ae9200045c",
+      "id": "940088f6-8b3e-45c2-8fad-a3f91d9e8d3e",
       "catalog_key": "matterlab-compound-catalogue",
       "catalog_title": "MATTER LAB local compound catalogue",
       "catalog_scope": "local",
@@ -4981,7 +5271,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
         }
       },
       "records_searched": 296,
-      "searched_at": "2026-11-14T08:28:47.882260Z",
+      "searched_at": "2026-11-17T10:47:40.318971Z",
       "outcome": "no-match",
       "matches": [],
       "detail": "0 record(s) at or above Tanimoto 0.7; similarity is a structural heuristic and not an identity match.",
@@ -4989,10 +5279,10 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "http_status": null
     }
   ],
-  "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last searched 2026-11-14T08:28:47Z). This describes only those catalogues at those times. It does not show that the compound is absent from other databases or from the literature.",
+  "statement": "No identical structure was found in the searched catalogues: MATTER LAB local compound catalogue (296 records, last searched 2026-11-17T10:47:40Z). This describes only those catalogues at those times. It does not show that the compound is absent from other databases or from the literature.",
   "evidence": [
     {
-      "id": "73799307-ebc2-45c8-8941-dfd19c48c7a4",
+      "id": "41a669bc-3ead-4891-a319-9d15f3fe34e8",
       "kind": "note",
       "summary": "Candidate created from a user-supplied structure.",
       "details": {},
@@ -5002,10 +5292,10 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "reference": null,
       "status_before": null,
       "status_after": "user-created",
-      "created_at": "2026-11-14T08:28:47.697346Z"
+      "created_at": "2026-11-17T10:47:40.189319Z"
     },
     {
-      "id": "b617e8a2-cc0d-4716-b67d-831f832463fa",
+      "id": "0c650741-5a9c-4877-8fbe-aca7f848236e",
       "kind": "structure-validation",
       "summary": "RDKit accepted the structure: O=C(O)C1CC1c1ccncc1 (C9H9NO2), InChIKey YFOFMIZNXREQAS-UHFFFAOYSA-N.",
       "details": {
@@ -5025,10 +5315,10 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.711740Z"
+      "created_at": "2026-11-17T10:47:40.194338Z"
     },
     {
-      "id": "013cbe07-dd4f-47c0-b7e3-523e2f12d6ea",
+      "id": "3e0b2c6f-04ed-4881-bc1a-78a515ff1b61",
       "kind": "status-change",
       "summary": "The structure passed RDKit sanitisation.",
       "details": {},
@@ -5038,12 +5328,12 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "reference": null,
       "status_before": "user-created",
       "status_after": "structurally-validated",
-      "created_at": "2026-11-14T08:28:47.716479Z"
+      "created_at": "2026-11-17T10:47:40.197223Z"
     },
     {
-      "id": "643a4e0a-3a7e-4bd9-b48e-9f8046cd3217",
+      "id": "2f52a1a9-1347-4f4a-9e73-fc0aa939ef1c",
       "kind": "catalog-search",
-      "summary": "Exact InChIKey search of the local catalogue (296 records) at 2026-11-14T08:28:47Z: no identical structure was found.",
+      "summary": "Exact InChIKey search of the local catalogue (296 records) at 2026-11-17T10:47:40Z: no identical structure was found.",
       "details": {
         "outcome": "no-match",
         "catalog_key": "matterlab-compound-catalogue",
@@ -5053,16 +5343,16 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       },
       "recorded_by": "service",
       "calculation_id": null,
-      "catalog_search_id": "8373fcda-492e-4447-b962-594bf0753ca0",
+      "catalog_search_id": "c07683e7-b883-4de9-8076-d01c8da51a98",
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.721296Z"
+      "created_at": "2026-11-17T10:47:40.208214Z"
     },
     {
-      "id": "a782bb7c-17e0-4203-ab00-85fdf7c3bcff",
+      "id": "29368a78-db4f-46d4-acfa-467903ccff1d",
       "kind": "catalog-search",
-      "summary": "Similarity search of the local catalogue (296 records, Tanimoto >= 0.7) at 2026-11-14T08:28:47Z: no record at or above the threshold.",
+      "summary": "Similarity search of the local catalogue (296 records, Tanimoto >= 0.7) at 2026-11-17T10:47:40Z: no record at or above the threshold.",
       "details": {
         "outcome": "no-match",
         "catalog_key": "matterlab-compound-catalogue",
@@ -5072,14 +5362,14 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       },
       "recorded_by": "service",
       "calculation_id": null,
-      "catalog_search_id": "e3775260-43b3-4970-b83d-4a8b83d267e5",
+      "catalog_search_id": "71fee1d0-f98c-42a2-9571-25b5624ff352",
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.726811Z"
+      "created_at": "2026-11-17T10:47:40.211638Z"
     },
     {
-      "id": "8ef1e3d9-b9e7-4ff2-b9c8-4a215b7189dc",
+      "id": "a1e3924f-5196-418f-bd00-74fbd256a744",
       "kind": "status-change",
       "summary": "Every catalogue search that completed found no identical structure. This describes the searched catalogues only.",
       "details": {},
@@ -5089,12 +5379,12 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "reference": null,
       "status_before": "structurally-validated",
       "status_after": "no-match-in-searched-catalogs",
-      "created_at": "2026-11-14T08:28:47.734632Z"
+      "created_at": "2026-11-17T10:47:40.216991Z"
     },
     {
-      "id": "f57f569b-7676-4887-868f-7a8c5b25ff25",
+      "id": "420f002a-bbd4-4e33-9855-1a46dfba48eb",
       "kind": "catalog-search",
-      "summary": "Exact InChIKey search of the local catalogue (296 records) at 2026-11-14T08:28:47Z: no identical structure was found.",
+      "summary": "Exact InChIKey search of the local catalogue (296 records) at 2026-11-17T10:47:40Z: no identical structure was found.",
       "details": {
         "outcome": "no-match",
         "catalog_key": "matterlab-compound-catalogue",
@@ -5104,16 +5394,16 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       },
       "recorded_by": "service",
       "calculation_id": null,
-      "catalog_search_id": "523b992f-914a-4890-8aee-2392abbb8295",
+      "catalog_search_id": "3fcbaacf-862f-40a9-bebf-2bbe62a9e2bf",
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.898726Z"
+      "created_at": "2026-11-17T10:47:40.330032Z"
     },
     {
-      "id": "63c520d3-5a7c-47de-b8b6-0e3949c004bd",
+      "id": "bb69f325-928d-4dea-8e76-c3da97e76d95",
       "kind": "catalog-search",
-      "summary": "Similarity search of the local catalogue (296 records, Tanimoto >= 0.7) at 2026-11-14T08:28:47Z: no record at or above the threshold.",
+      "summary": "Similarity search of the local catalogue (296 records, Tanimoto >= 0.7) at 2026-11-17T10:47:40Z: no record at or above the threshold.",
       "details": {
         "outcome": "no-match",
         "catalog_key": "matterlab-compound-catalogue",
@@ -5123,14 +5413,14 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       },
       "recorded_by": "service",
       "calculation_id": null,
-      "catalog_search_id": "d4ba3d8c-7491-472c-a6a2-e0ae9200045c",
+      "catalog_search_id": "940088f6-8b3e-45c2-8fad-a3f91d9e8d3e",
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:47.904058Z"
+      "created_at": "2026-11-17T10:47:40.337351Z"
     },
     {
-      "id": "3c28d5db-0626-432c-b84e-8830906210d3",
+      "id": "ceb5c3a8-0484-4741-9dad-e1b5ca5ea6d2",
       "kind": "calculation",
       "summary": "Calculation rdkit.geometry_optimization (MMFF94; engine rdkit 2026.09.2) attached: status succeeded, converged, run on the candidate's structure.",
       "details": {
@@ -5140,22 +5430,22 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
         "status": "succeeded",
         "converged": true,
         "input_hash": "08eb415f36bb1d0207e8f460e58fcb7aab532bff9bcad89a13b49b85d075234e",
-        "calculation_id": "e87ba128-1481-4271-a12f-6639bc6072ca",
+        "calculation_id": "a37f08f6-7d96-43f7-9362-068a57af70f1",
         "engine_version": "2026.09.2",
         "calculation_inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
         "structure_matches_candidate": true,
         "counts_towards_computationally_plausible": true
       },
       "recorded_by": "service",
-      "calculation_id": "e87ba128-1481-4271-a12f-6639bc6072ca",
+      "calculation_id": "a37f08f6-7d96-43f7-9362-068a57af70f1",
       "catalog_search_id": null,
       "reference": null,
       "status_before": null,
       "status_after": null,
-      "created_at": "2026-11-14T08:28:50.761855Z"
+      "created_at": "2026-11-17T10:47:44.030939Z"
     },
     {
-      "id": "23d551e1-49ba-4c1b-85b0-3cca29e174c7",
+      "id": "b40e4f4f-696e-4750-98df-4140aa77e478",
       "kind": "status-change",
       "summary": "Status raised at the user's request: MMFF94 optimisation converged",
       "details": {},
@@ -5165,7 +5455,7 @@ GET /v1/discoveries/e45c6aac-06dc-4459-8a91-f326c535d6fc
       "reference": null,
       "status_before": "no-match-in-searched-catalogs",
       "status_after": "computationally-plausible",
-      "created_at": "2026-11-14T08:28:50.811580Z"
+      "created_at": "2026-11-17T10:47:44.148081Z"
     }
   ],
   "derived_by": {
@@ -5227,26 +5517,26 @@ GET /v1/discoveries
 {
   "items": [
     {
-      "id": "e45c6aac-06dc-4459-8a91-f326c535d6fc",
+      "id": "fcf85387-13bf-4a8e-9907-fb70d36d69c2",
       "title": "Candidate A",
       "status": "computationally-plausible",
       "structure_valid": true,
       "canonical_smiles": "O=C(O)C1CC1c1ccncc1",
       "inchikey": "YFOFMIZNXREQAS-UHFFFAOYSA-N",
       "molecular_formula": "C9H9NO2",
-      "created_at": "2026-11-14T08:28:47.676989Z",
-      "updated_at": "2026-11-14T08:28:50.803979Z"
+      "created_at": "2026-11-17T10:47:40.181956Z",
+      "updated_at": "2026-11-17T10:47:44.141750Z"
     },
     {
-      "id": "77bfe5c3-61c0-4f63-b342-15016bb5e804",
+      "id": "4cd514e3-3649-418c-80cd-ca4cb4be662a",
       "title": "Rediscovered",
       "status": "structurally-validated",
       "structure_valid": true,
       "canonical_smiles": "CC(=O)Oc1ccccc1C(=O)O",
       "inchikey": "BSYNRYMUTXBXSQ-UHFFFAOYSA-N",
       "molecular_formula": "C9H8O4",
-      "created_at": "2026-11-14T08:28:47.808209Z",
-      "updated_at": "2026-11-14T08:28:47.808209Z"
+      "created_at": "2026-11-17T10:47:40.263144Z",
+      "updated_at": "2026-11-17T10:47:40.263144Z"
     }
   ],
   "total": 2,
@@ -5266,7 +5556,7 @@ GET /v1/discoveries
 Responses: `204` no body; `404` `ErrorResponse`; `422` `ErrorResponse`; `503` `ErrorResponse`.
 
 ```http
-DELETE /v1/discoveries/77bfe5c3-61c0-4f63-b342-15016bb5e804
+DELETE /v1/discoveries/4cd514e3-3649-418c-80cd-ca4cb4be662a
 ```
 
 `HTTP 204` (no body)
@@ -5374,11 +5664,11 @@ GET /v1/excel/export
 
 HTTP 200
 Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-Content-Disposition: attachment; filename="matterlab-export-20261114T082850Z.xlsx"
-X-MatterLab-Schema-Version: 0005
-X-MatterLab-Exported-At: 2026-11-14T08:28:50Z
+Content-Disposition: attachment; filename="matterlab-export-20261117T104744Z.xlsx"
+X-MatterLab-Schema-Version: 0008
+X-MatterLab-Exported-At: 2026-11-17T10:47:44Z
 
-(472809 bytes: the .xlsx workbook)
+(472824 bytes: the .xlsx workbook)
 ```
 
 | Worksheet | Rows in this export |
@@ -5417,15 +5707,15 @@ POST /v1/excel/import
 `HTTP 200`
 ```json
 {
-  "import_id": "885323de-2e1a-420a-aba2-565d20f3c311",
+  "import_id": "4e86a571-d64f-41ab-9936-8bc67f9e9544",
   "outcome": "applied",
   "written": true,
   "dry_run": false,
   "atomic": false,
   "filename": "lab-compounds.xlsx",
-  "sha256": "740f404f675f454dc8b7c3844adc81d65fc4049bc5feb78e0282d5831a5e6592",
+  "sha256": "f8ac99b1ed13e6f658943f346354c37cfce52c399f5800ebff799b10817204ce",
   "size_bytes": 5241,
-  "imported_at": "2026-11-14T08:28:58Z",
+  "imported_at": "2026-11-17T10:47:55Z",
   "summary": "1 row(s) inserted, 0 updated, 0 unchanged, 1 rejected.",
   "totals": {
     "rows": 2,
@@ -5552,24 +5842,24 @@ GET /v1/compounds?name=Phenacetin
       "formal_charge": 0,
       "external_ids": {},
       "evidence": "user-input",
-      "source": "excel-import@20261114T082858Z-740f404f675f/undeclared@2026"
+      "source": "excel-import@20261117T104755Z-f8ac99b1ed13/undeclared@2026"
     }
   ],
   "total": 1,
   "limit": 50,
   "offset": 0,
   "sources": {
-    "excel-import@20261114T082858Z-740f404f675f/undeclared@2026": {
+    "excel-import@20261117T104755Z-f8ac99b1ed13/undeclared@2026": {
       "source": "Excel import: lab-compounds.xlsx (declared source: Lab inventory 2026)",
       "source_key": "excel-import",
       "kind": "import",
-      "version": "20261114T082858Z-740f404f675f/undeclared@2026",
+      "version": "20261117T104755Z-f8ac99b1ed13/undeclared@2026",
       "publisher": null,
       "url": null,
       "retrieved": null,
       "license": null,
       "citations": [],
-      "notes": "Imported from the workbook 'lab-compounds.xlsx' (SHA-256 740f404f675f454dc8b7c3844adc81d65fc4049bc5feb78e0282d5831a5e659… (238 characters)"
+      "notes": "Imported from the workbook 'lab-compounds.xlsx' (SHA-256 f8ac99b1ed13e6f658943f346354c37cfce52c399f5800ebff799b10817204c… (238 characters)"
     }
   }
 }

@@ -53,9 +53,10 @@ export function installTestApi(): void {
     device: getDeviceInfo,
     /** What is on the 3D stage besides the structure: sizes and settings, not the bulky arrays. */
     stage() {
-      const { surfaces, slice, cloud, cut } = stageContents();
+      const { surfaces, slice, cloud, volume, cut } = stageContents();
       return {
         surfaces: surfaces.map((s) => ({ id: s.id, vertices: s.positions.length / 3, triangles: s.indices.length / 3, color: s.color, colored: s.colors !== undefined, opacity: s.opacity, finish: s.finish })),
+        volume: volume && { dimensions: volume.dimensions, origin: volume.origin, spacing: volume.spacing, samples: volume.values.length, referenceValue: volume.referenceValue, opacity: volume.opacity },
         slice: slice && { center: slice.center, u: slice.u, v: slice.v, width: slice.width, height: slice.height, columns: slice.columns, rows: slice.rows, neutral: slice.neutral, contours: slice.contours },
         cloud: cloud && { dots: cloud.positions.length / 3, signed: cloud.signs !== undefined, size: cloud.size, opacity: cloud.opacity },
         cut,

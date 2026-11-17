@@ -30,7 +30,7 @@ export async function inspectBuild(directory) {
   for (const file of scripts) {
     const script = await readFile(file, 'utf8');
     assert.ok(!script.includes('__MATTERLAB__'), `Production release exposes the molecular test hook: ${relative(directory, file)}`);
-    assert.ok(!script.includes('__MATTERLAB_LAB_TEST__'), `Production release exposes the laboratory test hook: ${relative(directory, file)}`);
+    assert.ok(!script.includes('__MATTERLAB_LAB__') && !script.includes('__MATTERLAB_LAB_TEST__'), `Production release exposes the laboratory test hook: ${relative(directory, file)}`);
   }
   const wasm = files.filter((file) => file.endsWith('.wasm'));
   assert.ok(wasm.length > 0, 'RDKit WebAssembly is absent from the release.');

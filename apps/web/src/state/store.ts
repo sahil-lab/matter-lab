@@ -17,7 +17,7 @@ export type MeasureKind = 'distance' | 'angle' | 'dihedral';
 /** Creative: build freely, caveats stay quiet. Physics: every structural problem is surfaced in the viewport. */
 export type EditMode = 'creative' | 'physics';
 export type InspectorTab = 'inspect' | 'explain' | 'measure' | 'compute';
-export type DialogId = 'periodic-table' | 'library' | 'shortcuts' | 'export' | 'nucleus' | null;
+export type DialogId = 'periodic-table' | 'library' | 'shortcuts' | 'export' | 'nucleus' | 'quantum-comparison' | null;
 export type ExplainLevel = 'beginner' | 'advanced';
 /** What the Explain tab is about: whatever is selected, or one of the calculations done on the structure. */
 export type ExplainSubject = 'selection' | 'optimisation' | 'electrons';

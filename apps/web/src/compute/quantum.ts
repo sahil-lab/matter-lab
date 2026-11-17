@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { DENSITY_COLOR, PHASE_NEGATIVE, PHASE_POSITIVE, SCALE_DENSITY, SCALE_PHASE, SCALE_POTENTIAL, SCALE_POTENTIAL_PLANE, hexToRgb, scaleTexels, srgbToLinear, vertexColors } from '../render/colormap';
 import type { ColorScale } from '../render/colormap';
 import { stageApi } from '../render/viewApi';
-import type { StageCloud, StageSlice, StageSurface } from '../render/viewApi';
+import type { StageCloud, StageSlice, StageSurface, StageVolume } from '../render/viewApi';
 import { cancelJobsOfKind, runJob } from '../science/jobs';
 import { UnsupportedSystem, fields, quantumSupport, quantumSystem, runScf } from '../science/quantum';
 import { JobCancelledError } from '../science/rpc';
@@ -23,6 +23,7 @@ import type {
   SliceResponse,
   SurfacePart,
   SurfaceResponse,
+  VolumeResponse,
   Wavefunction,
 } from '../workers/quantum.worker';
 import { orbitalLabel } from './orbitals';
@@ -50,7 +51,7 @@ export interface QuantumProgress {
 }
 
 export type FieldKind = 'off' | 'orbital' | 'density' | 'potential';
-export type FieldStyle = 'surface' | 'cloud';
+export type FieldStyle = 'surface' | 'cloud' | 'volume';
 export type SliceField = 'density' | 'orbital' | 'potential';
 export type SliceAxis = 'x' | 'y' | 'z' | 'atoms';
 export type MolecularSurfaceKind = 'vdw' | 'sas';
@@ -216,7 +217,7 @@ export function quantumIsCurrent(record: QuantumRecord | null, scene: Scene): re
   return record !== null && record.scene === scene;
 }
 
-function currentRecord(): QuantumRecord | null {
+export function currentRecord(): QuantumRecord | null {
   const state = lab.get();
   const record = get().record;
   return state.workspace === 'architect' && quantumIsCurrent(record, state.scene) ? record : null;
@@ -373,6 +374,7 @@ interface FieldData {
   readonly surface?: SurfaceResponse;
   readonly potential?: EspSurfaceResponse;
   readonly cloud?: CloudResponse;
+  readonly volume?: VolumeResponse;
 }
 
 let fieldData: FieldData | null = null;
@@ -419,6 +421,7 @@ const wavefunctionOf = (record: QuantumRecord): Wavefunction => ({ id: record.id
 function fieldKey(record: QuantumRecord, field: FieldSettings): string {
   if (field.kind === 'potential') return `${record.id}|potential|${field.potentialIso}`;
   const which = field.kind === 'orbital' ? `orbital ${field.orbital}` : 'density';
+  if (field.style === 'volume') return `${record.id}|${which}|volume`;
   return field.style === 'cloud' ? `${record.id}|${which}|cloud|${field.dots}` : `${record.id}|${which}|surface|${field.kind === 'orbital' ? field.orbitalIso : field.densityIso}`;
 }
 
@@ -481,6 +484,20 @@ function fieldCloud(): StageCloud | null {
     // Small and faint, so that thousands of them read as a mist and the atoms stay visible through it.
     size: 0.022,
     opacity: 0.12 + settings.opacity * 0.6,
+  };
+}
+
+function fieldVolume(): StageVolume | null {
+  const data = fieldData;
+  const record = currentRecord();
+  const settings = get().field;
+  if (!data?.volume || !record || data.recordId !== record.id || settings.kind !== data.kind || settings.style !== 'volume') return null;
+  return {
+    values: data.volume.values, dimensions: data.volume.grid.dims,
+    origin: data.volume.grid.origin, spacing: data.volume.grid.spacing,
+    referenceValue: settings.kind === 'orbital' ? settings.orbitalIso : settings.densityIso,
+    colorPositive: settings.kind === 'orbital' ? PHASE_POSITIVE : DENSITY_COLOR, colorNegative: PHASE_NEGATIVE,
+    opacity: settings.opacity,
   };
 }
 
@@ -550,6 +567,7 @@ function publish(): void {
   const settings = get().slice;
   stageApi.setSurfaces([...molecularSurfaces(), ...fieldSurfaces()]);
   stageApi.setCloud(fieldCloud());
+  stageApi.setVolume(fieldVolume());
   stageApi.setSlice(slice);
   const frame = sliceData?.frame;
   stageApi.setCut(slice && frame && settings.cut ? { normal: settings.flipped ? (frame.normal.map((c) => -c) as unknown as Vec3) : frame.normal, point: frame.center } : null);
@@ -626,6 +644,15 @@ function refreshField(): void {
           dots: null,
           captured: null,
           elapsedMs: response.elapsedMs,
+        };
+      } else if (field.style === 'volume') {
+        const response = await request(tracked, name, 'sampled volume', onProgress, (options) =>
+          fields.volume({ wavefunction, field: spec, grid: { ...FIELD_GRID, spacing: 0.18, maxPoints: 500_000 } }, options));
+        data = { ...base, isoValue: null, volume: response };
+        info = {
+          kind: field.kind, style: 'volume', orbital, isoValue: null, parts: [],
+          gridSpacing: response.grid.spacing[0], potentialMin: null, potentialMax: null, potentialRange: null,
+          dots: null, captured: null, elapsedMs: response.elapsedMs,
         };
       } else if (field.style === 'cloud') {
         const response = await request(tracked, name, `dot cloud of ${field.dots.toLocaleString('en-US')} dots`, onProgress, (options) =>

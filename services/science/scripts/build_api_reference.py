@@ -68,7 +68,7 @@ class Client:
         except urllib.error.HTTPError as error:
             status, received, payload = error.code, dict(error.headers.items()), error.read()
         kind = received.get("content-type", received.get("Content-Type", ""))
-        if kind.startswith("application/json") and payload:
+        if payload and (kind.startswith("application/json") or kind.startswith("application/problem+json")):
             return status, received, json.loads(payload)
         return status, received, payload
 
@@ -285,12 +285,14 @@ def build(client: Client) -> str:
     doc.add("## Conventions")
     doc.add(
         "- **JSON everywhere.** Request and response bodies are JSON (the workbook export and upload excepted).",
-        "- **One error shape.** Every non-2xx response is `{\"error\": {\"code\": \"...\", \"message\": \"...\", \"details\": ...}}`. `code` is stable and machine-readable; "
+        "- **Legacy errors.** Legacy `/v1` non-2xx responses are `{\"error\": {\"code\": \"...\", \"message\": \"...\", \"details\": ...}}`. `code` is stable and machine-readable; "
         "`details` depends on the code (for `validation_error` it is a list of `{location, message, type}`). See [Errors](#errors).",
-        "- **Units.** Coordinates are in angstrom. Every numeric field carries its unit in its name (`energy_hartree`, `melting_point_k`, `molecular_weight_g_per_mol`) "
+        "- **Laboratory authentication/errors.** `/api/v1/lab` requires a scoped bearer token and uses RFC 9457 problem details. Owner isolation, revision checks, "
+        "shared Node replay and export semantics are documented in [LABORATORY.md](../../services/science/LABORATORY.md). Legacy `/v1` remains a local shared API.",
+        "- **Units.** Molecular coordinates are in angstrom; laboratory apparatus coordinates are meters. Every numeric field carries its unit in its name (`energy_hartree`, `melting_point_k`, `molecular_weight_g_per_mol`) "
         "or in a `units`/`unit` field next to it.",
         "- **Time.** Timestamps are ISO 8601 in UTC with a `Z` suffix. Retrieval dates are ISO dates.",
-        "- **Nulls.** Every field of a response schema is present. A value that does not exist is `null`; fields are not omitted.",
+        "- **Nulls.** Legacy response fields are present with `null` for absent values. Versioned laboratory DTOs also have explicitly optional fields; consult their schema.",
         "- **Identifiers.** Records have UUIDs. Catalogue compounds, solvents and catalysts have name-based (version 5) UUIDs derived from the InChIKey or the name, "
         "so the same record has the same id in every instance.",
         "- **Provenance.** Every stored record has a source in the registry (`GET /v1/data-sources`). List responses carry `items[].source` (a key into the page's "
@@ -301,7 +303,7 @@ def build(client: Client) -> str:
         "(an empirical model or a pattern definition), `user-input` (typed in or imported; not verified by the service), `unsupported`, `illustrative` (never assigned by the service itself).",
         "- **No invented results.** A structure RDKit rejects comes back with RDKit's own messages. A calculation an engine cannot do ends as `unsupported` or `failed` "
         "with the reason; such a job has no `result`. A search that finds nothing says which catalogue was searched, how many records it held and when, and nothing more.",
-        "- **CORS.** Allowed origins: `http://127.0.0.1:5273`, `http://localhost:5273`, `http://127.0.0.1:4273`, `http://localhost:4273` "
+        "- **CORS.** Allowed origins: `http://127.0.0.1:5273`, `http://localhost:5273`, `http://127.0.0.1:4273`, `http://localhost:4273`, `http://tauri.localhost` "
         "(setting `MATTERLAB_CORS_ORIGINS`).",
     )
 
@@ -310,6 +312,16 @@ def build(client: Client) -> str:
     for method, path, operation in operations:
         rows.append(f"| `{method}` | `{path}` | {cell(operation['summary'])} |")
     doc.add(*rows)
+
+    doc.add("## Authenticated instrument laboratory")
+    doc.add(
+        "These additive endpoints share the versioned browser contracts and solver/runtime, not a second chemistry implementation. "
+        "See [LABORATORY.md](../../services/science/LABORATORY.md) for units, credential provisioning, immutable replay and resource bounds."
+    )
+    for method, path, _ in operations:
+        if path.startswith("/api/v1/lab"):
+            doc.endpoint(method, path)
+    doc.example("GET", "/api/v1/lab/scenes", title="A missing bearer credential is rejected")
 
     # ------------------------------------------------------------------ service
     doc.add("## Service")

@@ -112,6 +112,15 @@ export function FieldLegend() {
       {showField && (
         <div className="ml-legend__row" data-testid="legend-field">
           <EvidenceBadge level="computed" tipPos="bottom" />
+          {info.style === 'volume' && (
+            <>
+              <span className="ml-legend__name">{info.kind === 'orbital' ? orbitalName(info.orbital!) : 'Electron density'} · volume</span>
+              <span className="ml-legend__key"><Swatch color={info.kind === 'orbital' ? PHASE_POSITIVE : DENSITY_COLOR} />{info.kind === 'orbital' ? 'ψ > 0' : 'ρ ≥ 0'}</span>
+              {info.kind === 'orbital' && <span className="ml-legend__key"><Swatch color={PHASE_NEGATIVE} />ψ &lt; 0</span>}
+              <em className="ml-legend__unit">{info.kind === 'orbital' ? UNIT_ORBITAL : UNIT_DENSITY}</em>
+              <span className="ml-legend__key">Opacity is illustrative, not measured absorbance.</span>
+            </>
+          )}
           {info.kind === 'orbital' && info.style === 'surface' && (
             <>
               <span className="ml-legend__name">{orbitalName(info.orbital!)}</span>

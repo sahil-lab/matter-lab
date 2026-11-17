@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-#
 # MATTER LAB science service image.
 # Build context: the repository root (see docker-compose.yml and the root .dockerignore).
 FROM node:24-bookworm-slim AS lab-build

@@ -103,9 +103,10 @@ OIDC provider. Legacy `/v1` remains a shared **local-development** API. Before i
 put the entire service behind an authenticated gateway, provision individual principal scopes,
 TLS, rotation/retention policies, and OS/container resource/egress controls.
 
-CORS defaults remain the four existing local web/preview origins. Desktop builds may explicitly
-add `http://tauri.localhost` and/or `tauri://localhost` to `MATTERLAB_CORS_ORIGINS`; no wildcard or
-credentialed-cookie policy is added. The client refuses remote plaintext HTTP and credentialed URLs.
+CORS defaults include the four existing local web/preview origins and the configured Windows
+WebView origin `http://tauri.localhost`. Other desktop schemes require an explicit
+`MATTERLAB_CORS_ORIGINS` override; no wildcard or credentialed-cookie policy is added.
+The client refuses remote plaintext HTTP and credentialed URLs.
 
 ## Build the shared release (no second catalogue)
 

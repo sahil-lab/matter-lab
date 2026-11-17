@@ -462,6 +462,10 @@ def test_xtb_geometry_optimization(client: TestClient, xtb: dict) -> None:
     assert job["converged"] is True and result["converged"] is True and "LBFGS" in result["optimizer"] and "ase" in job["software"]
     assert result["energy_final_hartree"] < result["energy_initial_hartree"]
     assert result["max_force_final_ev_per_angstrom"] < result["force_tolerance_ev_per_angstrom"] < result["max_force_initial_ev_per_angstrom"]
+    forces = result["forces_ev_per_angstrom"]
+    assert len(forces) == len(stretched) and all(len(vector) == 3 for vector in forces)
+    assert max(math.sqrt(sum(value * value for value in vector)) for vector in forces) == pytest.approx(result["max_force_final_ev_per_angstrom"], rel=1e-10, abs=1e-12)
+    assert all(abs(sum(vector[axis] for vector in forces)) < 1e-6 for axis in range(3))
     frames = result["trajectory"]["frames"]
     assert result["trajectory"]["energy_unit"] == "hartree" and len(frames) == result["steps"] + 1
     assert frames[0]["energy"] == pytest.approx(result["energy_initial_hartree"], abs=1e-10)

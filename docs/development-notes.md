@@ -3,7 +3,82 @@
 How MATTER LAB was built, what was verified and when, and what went wrong on the way. Times are
 local (UTC+5:30).
 
-## How the work was organised
+## Laboratory expansion (17 November 2026)
+
+The expansion used ten isolated Git worktrees and the supplied Agent 01-10 briefs. The canonical
+contracts were agreed first; the chemistry/runtime and persistence teams shared one TypeScript
+solver and replay engine. Several agent sessions ended with connection/proxy failures. Their
+committed and interrupted work was recovered in the integration checkout, reviewed at the
+integration boundaries and exercised rather than assumed complete. Apparatus geometry and final
+composition were completed by the orchestrator.
+
+The existing molecular editor was preserved. Added flows include the separate meter-scale
+instrument room, all 21 apparatus types, accessible and pointer assembly, real conserved titration,
+independent stations, guided/precision evidence, local/remote notebooks, immutable server replay,
+catalogue and Excel UI, workbench archives, remote quantum jobs, actual volume fields and pinned
+comparison views. See [the user guide](laboratory.md) and [current feature status](feature-status.md).
+
+Verified milestones:
+
+- The complete science-service suite passed: **185 tests in 856.07 seconds**, against actual
+  PostgreSQL, RDKit, xTB and PySCF. This includes per-atom xTB force checks and shared Node replay.
+- The fresh production build passed the connected database/save/replay flow, real titration to
+  equivalence, from-empty apparatus assembly, forced WebGL fallback, ray-marched volume and
+  independent pinned-comparison tests (six cases, 6.6 minutes).
+- Two additional production cases passed: duplicated stations running independently and reopening
+  both notebooks, and low-quality/reduced-motion rendering with unchanged science (5.4 minutes).
+- All workspace and QA TypeScript checks passed. The learning notebook regression reproduces
+  and fixes the old eight-attempt limit, which prevented larger valid station sets from saving.
+  Notebook byte/node limits remain enforced without discarding evidence.
+- The production-artifact guard now checks the actual laboratory test-hook name as well as the
+  molecular hook; its five harness tests pass.
+- The service image was rebuilt, and OpenAPI plus real HTTP examples were regenerated for the
+  additive laboratory API. Docker recovery preserved the original PostgreSQL volume.
+
+Integration defects fixed included overlapping command/clock revisions, stale indicator cohorts,
+per-event learning snapshot duplication, checkpoint node limits, a modal unmounted by closing
+its parent menu, and a WebView origin missing from CORS. A stale unrelated server on port 5273
+served older code; validation therefore used a fresh production preview on 4273 rather than
+terminating a process with unconfirmed ownership.
+
+Desktop prerequisites were installed with explicit user approval: Microsoft C++ Build Tools,
+the Windows SDK, Rust MSVC and the pinned Tauri CLI. A real Cargo lock was generated. Desktop
+build/runtime and final aggregate regression outcomes are recorded separately below when measured;
+toolchain availability alone is not a desktop-support claim.
+
+Final aggregate checks: **2,683 correctness tests in 81 files passed**, and **143 production-build
+browser tests passed** in 28.5 minutes, including the live backend and PySCF/xTB flows.
+The first aggregate unit run found a stale selector test fixture: the shared seed now really has an
+indicator, so its later solve correctly returned a new color. The regression now removes the
+indicator through a real accepted configuration action and verifies that the historical color is
+withheld; no scientific assertion was relaxed. The inventory accounts for all 2,690 tests, including
+the seven separate absolute-performance cases.
+
+The first unsigned Windows executable and 7.95 MiB NSIS installer built successfully. Rust format
+and release-mode Clippy checks passed. Actual WebView2 use verified RDKit/WASM, WebGPU laboratory
+rendering and worker-driven pH/probe changes after a metered dose. The user chose to leave the app
+open after interacting with it, so isolated FPS certification and further native control were not
+performed. This does not claim an installer/uninstaller or Authenticode validation.
+
+All **seven serial CPU performance tests passed** with the existing thresholds (38.85 seconds).
+The final visual pass produced 14 actual captures and measured 1/10/16 stations with 8/80/128
+apparatus: approximately 55-60 FPS at 1366 x 768 on WebGPU, with the native application still open.
+Those are explicitly non-isolated samples. This pass also found two integration defects:
+WebGPU counters were being read before rendering, after Three's reset, and standalone camera
+controls retained absolute positioning inside the library. Counters now sample after rendering;
+the controls remain inside the scrollable library. Typechecking, nine renderer tests, the actual
+WebGPU/WebGL/low-power layout regression and both capture/measurement cases passed afterwards.
+
+The final unsigned desktop candidate was rebuilt separately from the executable the user kept
+open; the locked incremental build took 5 minutes 41 seconds. Its 8,346,066-byte NSIS artifact and
+SHA-256 are in [the desktop verification record](../apps/desktop/README.md).
+The normal production artifact check passed: 42 files, 11 scripts, one WASM module,
+29,402,052 bytes including maps, with neither test hook exposed.
+
+The sections below preserve the original molecular-only build history; their dated blockers and
+missing-feature statements are not the current release status.
+
+## Original molecular build: how the work was organised
 
 The specification asks for ten agents on isolated branches with an integration branch. That is not
 how it was done.
@@ -41,7 +116,7 @@ afterwards for publication to [sahil-lab/matter-lab](https://github.com/sahil-la
 
 ## What was verified
 
-Final state, 16 November 2026.
+Historical molecular-only state, 16 November 2026.
 
 | Check | Result | When |
 | --- | --- | --- |
@@ -114,7 +189,7 @@ Not verified at all:
   same machine and the same GPU. None of those processes was touched. Port 5173 was taken from the
   start, which is why this project uses 5273 and 4273.
 
-## Open points
+## Original open points (16 November)
 
 - **Third-party source terms** in `packages/reactions/data/sources` still apply. The project owner
   confirmed permission to redistribute the NIST WebBook excerpts for the public publication on

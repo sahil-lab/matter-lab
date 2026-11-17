@@ -17,6 +17,7 @@
 .laboratory-timeline { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(320px, 1.3fr); gap: 14px; align-items: start; }
 .laboratory-view-options { color: #dae8f1; font-size: 12px; background: #102433ed; border: 1px solid #395366; border-radius: 8px; padding: 8px 12px; margin: 12px; }
 .laboratory-view-options summary { cursor: pointer; }
+.laboratory-view-options .lab-view-controls { position: static; max-width: none; margin-top: 10px; padding: 0; border: 0; background: none; box-shadow: none; }
 .laboratory-runtime-error { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; max-width: min(560px, 90vw); }
 .laboratory-tabs { padding: 10px 12px; }
 @media (max-width: 1100px) { .laboratory-timeline { grid-template-columns: 1fr; } }

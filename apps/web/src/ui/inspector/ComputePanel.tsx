@@ -19,6 +19,7 @@ import { lab, useLab } from '../../state/store';
 import { LineChart, formatNumber } from '../charts';
 import { Button, EvidenceBadge, Note, Section } from '../kit';
 import { QuantumPanel } from './QuantumPanel';
+import { RemoteQuantumPanel } from './RemoteQuantumPanel';
 
 const minus = (text: string) => text.replace(/-/g, '−');
 /** A value that rounds to zero is written as zero, never as "−0.000". */
@@ -267,6 +268,8 @@ export function ComputePanel() {
       </Section>
       <div className="ml-divider" />
       <QuantumPanel />
+      <div className="ml-divider" />
+      <RemoteQuantumPanel />
     </>
   );
 }

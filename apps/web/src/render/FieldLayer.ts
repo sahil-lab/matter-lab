@@ -23,8 +23,9 @@ import {
   Vector2,
   Vector3,
 } from 'three';
-import type { WebGLRenderer } from 'three';
-import type { StageCloud, StageCut, StageSlice, StageSurface } from './viewApi';
+import type { Camera, InstancedMesh, WebGLRenderer } from 'three';
+import type { StageCloud, StageCut, StageSlice, StageSurface, StageVolume } from './viewApi';
+import { VolumeLayer } from './VolumeLayer';
 
 const SLICE_VERTEX = /* glsl */ `
 uniform vec2 uGrid;
@@ -141,6 +142,7 @@ export class FieldLayer {
   private readonly surfaces = new Map<string, SurfaceEntry>();
   private readonly cutPlane = new Plane();
   private cut = false;
+  private readonly volume = new VolumeLayer();
 
   private readonly sliceMaterial = new ShaderMaterial({
     vertexShader: SLICE_VERTEX,
@@ -196,7 +198,7 @@ export class FieldLayer {
       const target = renderer.getRenderTarget();
       this.cloudMaterial.uniforms.uViewport!.value = target ? target.height : renderer.getDrawingBufferSize(size).y;
     };
-    this.object.add(this.sliceMesh, this.cloudPoints);
+    this.object.add(this.sliceMesh, this.cloudPoints, this.volume.object);
   }
 
   setSurfaces(list: readonly StageSurface[]): void {
@@ -325,6 +327,7 @@ export class FieldLayer {
   }
 
   setCut(cut: StageCut | null): void {
+    this.volume.setCut(cut);
     this.cut = cut !== null;
     if (cut) {
       // three.js keeps the side the plane's normal points to, so the plane faces the other way.
@@ -332,6 +335,14 @@ export class FieldLayer {
       this.cutPlane.setFromNormalAndCoplanarPoint(normal, new Vector3(...cut.point));
     }
     for (const entry of this.surfaces.values()) this.applyCut(entry.material);
+  }
+
+  setVolume(volume: StageVolume | null): void {
+    this.volume.set(volume);
+  }
+
+  prepareVolumeDepth(renderer: WebGLRenderer, camera: Camera, meshes: readonly InstancedMesh[]): void {
+    this.volume.prepareDepth(renderer, camera, meshes);
   }
 
   private applyCut(material: MeshPhysicalMaterial): void {
@@ -343,6 +354,7 @@ export class FieldLayer {
   }
 
   dispose(): void {
+    this.volume.dispose();
     for (const entry of this.surfaces.values()) {
       entry.geometry.dispose();
       entry.material.dispose();

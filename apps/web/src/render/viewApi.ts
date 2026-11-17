@@ -92,6 +92,7 @@ export interface StageApi {
   setSurfaces(surfaces: readonly StageSurface[]): void;
   setSlice(slice: StageSlice | null): void;
   setCloud(cloud: StageCloud | null): void;
+  setVolume(volume: StageVolume | null): void;
   /** Removes the part of every surface on the side the normal points to; `null` shows them whole. */
   setCut(cut: StageCut | null): void;
 }
@@ -159,14 +160,26 @@ export interface StageCut {
   readonly point: Vec3;
 }
 
-const idleStage: StageApi = { setTransient: () => {}, setGhost: () => {}, setSurfaces: () => {}, setSlice: () => {}, setCloud: () => {}, setCut: () => {} };
+export interface StageVolume {
+  readonly values: Float32Array;
+  readonly dimensions: readonly [number, number, number];
+  readonly origin: Vec3;
+  readonly spacing: Vec3;
+  readonly referenceValue: number;
+  readonly colorPositive: string;
+  readonly colorNegative: string;
+  readonly opacity: number;
+}
+
+const idleStage: StageApi = { setTransient: () => {}, setGhost: () => {}, setSurfaces: () => {}, setSlice: () => {}, setCloud: () => {}, setVolume: () => {}, setCut: () => {} };
 let stage: StageApi = idleStage;
 
 /** What was last asked for, so a view that mounts later (a new canvas after a quality change) shows it too. */
-const requested: { surfaces: readonly StageSurface[]; slice: StageSlice | null; cloud: StageCloud | null; cut: StageCut | null; ghost: GhostGeometry | null } = {
+const requested: { surfaces: readonly StageSurface[]; slice: StageSlice | null; cloud: StageCloud | null; volume: StageVolume | null; cut: StageCut | null; ghost: GhostGeometry | null } = {
   surfaces: [],
   slice: null,
   cloud: null,
+  volume: null,
   cut: null,
   ghost: null,
 };
@@ -189,6 +202,10 @@ export const stageApi: StageApi = {
     requested.cloud = cloud;
     stage.setCloud(cloud);
   },
+  setVolume: (volume) => {
+    requested.volume = volume;
+    stage.setVolume(volume);
+  },
   setCut: (cut) => {
     requested.cut = cut;
     stage.setCut(cut);
@@ -201,6 +218,7 @@ export function installStageApi(impl: StageApi): () => void {
   impl.setSurfaces(requested.surfaces);
   impl.setSlice(requested.slice);
   impl.setCloud(requested.cloud);
+  impl.setVolume(requested.volume);
   impl.setCut(requested.cut);
   return () => {
     if (stage === impl) stage = idleStage;
@@ -208,8 +226,8 @@ export function installStageApi(impl: StageApi): () => void {
 }
 
 /** What is on stage besides the structure, for tests and diagnostics. */
-export function stageContents(): { surfaces: readonly StageSurface[]; slice: StageSlice | null; cloud: StageCloud | null; cut: StageCut | null; ghost: GhostGeometry | null } {
-  return { surfaces: requested.surfaces, slice: requested.slice, cloud: requested.cloud, cut: requested.cut, ghost: requested.ghost };
+export function stageContents(): Readonly<typeof requested> {
+  return { ...requested };
 }
 
 /** Per-frame view facts for DOM widgets that track the camera (axis gizmo, scale bar). */

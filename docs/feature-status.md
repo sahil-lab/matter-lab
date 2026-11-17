@@ -6,6 +6,23 @@ is missing. "Not implemented" means there is nothing, and nothing pretends other
 
 Where a test suite is named, its last result is in [development-notes.md](development-notes.md).
 
+## Instrument laboratory expansion
+
+| Feature | State | Notes |
+| --- | --- | --- |
+| Separate 3D instrument room and studio | Implemented | Molecular data stays in angstroms; instrument geometry stays in meters. Returning preserves the molecular document |
+| 21 apparatus definitions and original procedural assets | Implemented | Calibrated vessel interiors, actual connection sockets and bounded quality/resource choices |
+| Drag-and-drop, numeric placement, attachment and operational controls | Implemented | From-empty assembly and camera-lock behavior verified in the real browser; keyboard-accessible alternatives, grouping, locking, duplication and preparation undo |
+| Glass, calibrated liquid, accepted-transfer droplets and indicator colors | Implemented | Inventory and color come from current solver/runtime observations, not the graphics |
+| Strong/weak monoprotic titration | Implemented | Conserved analytical inventory and electroneutrality at 298.15 K; one supported weak family at a time; assumptions and source constants are visible |
+| Guided/free/challenge/precision modes | Implemented | Goals and endpoint evidence come from accepted actions; tutorial advancement is not a scientific achievement |
+| Independent workstations and custom assemblies | Implemented | Browser-tested duplication and independent execution. Maximum 32 stations/512 apparatus, plus notebook byte/node budgets; not infinite resources |
+| Local/JSON and authenticated PostgreSQL notebooks | Implemented | Version checks, explicit offline/conflict states, strict restore/replay, editor and learning sidecars |
+| Server replay, reusable templates, Excel exports | Implemented | Same versioned TypeScript solver/runtime in a bounded Node subprocess; server results are stored independently |
+| Arbitrary chemistry, heating, conductivity and fluid dynamics | Not implemented | Apparatus geometry does not pretend to supply an unvalidated measurement or reaction model |
+
+[Controls, save/reopen and scientific limits](laboratory.md).
+
 ## The workspace (Part 2)
 
 | Feature | State | Notes |
@@ -87,21 +104,21 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Density isosurface, potential mapped on a density surface | Implemented | |
 | Quantitative colour legends with units | Implemented | Legend colours are tested against the pixels drawn |
 | Cutting plane with contours, able to cut surfaces open | Implemented | |
-| Volumetric rendering | Partial | Dot clouds sampled from the field, and cutting planes. No ray-marched volume |
+| Volumetric rendering | Implemented | Ray marching of real computed density/orbital grids, dot clouds and cutting planes. Optical opacity is illustrative, not measured absorbance; the renderer depth-clips against atoms and bonds |
 | Stepping through orbitals | Implemented | |
-| Comparing two states or two calculations side by side | Not implemented | |
-| Geometry optimisation at the quantum level, atomic forces | Not implemented in the application | Optimisation is by force field. The science service offers GFN-xTB optimisation, but the interface does not call it |
-| Open-shell systems, elements beyond argon, larger basis sets | Not implemented | Refused with the reason |
+| Comparing two states or two calculations side by side | Implemented | Pin two actual calculations and their displayed fields; each view has independent camera controls. Editing the molecule does not rewrite either snapshot |
+| Geometry optimisation at the quantum level, atomic forces | Implemented through connected service | GFN2-xTB/ASE optimization with convergence, forces and a guarded, undoable geometry application. No stale result can overwrite a changed molecule |
+| Open-shell systems, elements beyond argon, larger basis sets | Partial | The connected PySCF/xTB engines have their own supported elements, spin and size limits. Local RHF remains closed-shell H-Ar; orbital display uses the local model |
 
 ## Computation architecture (Part 7)
 
 | Item | State | Notes |
 | --- | --- | --- |
 | React, TypeScript, Vite, Three.js, React Three Fiber, drei, zustand, d3 | Used | |
-| WebGPU | Not implemented | WebGL 2 only |
+| WebGPU | Partial | Instrument room supports experimental WebGPU with WebGL 2 fallback. Molecular canvas retains its validated WebGL 2 pipeline |
 | WebAssembly | Partial | RDKit runs as WebAssembly. The force-field, quantum and reaction engines are TypeScript in Web Workers |
 | Transferable typed arrays | Used | For field and mesh data. SharedArrayBuffer is not used |
-| Rust, C++, Tauri desktop packaging | Not implemented | The application is a web application |
+| Rust, C++, Tauri desktop packaging | Implemented for Windows, unsigned | Locked x64 executable and NSIS installer built; actual WebView2/WASM/laboratory use verified. No signing, installer/uninstaller certification or Linux/macOS claim. Scientific engines remain shared JS/WASM/Python, not rewritten C++ algorithms |
 | RDKit, PySCF, xTB (tblite), ASE, NumPy, SciPy | Used | RDKit in the browser and in the service; the others in the service only |
 | Psi4, OpenMM, Cantera | Not used | |
 | Backend | Partial | A Python FastAPI service with worker processes, not Rust Axum. Typed HTTP API with an OpenAPI description |
@@ -117,10 +134,10 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Compound catalogue | Partial | 296 compounds, 48 solvents, 33 catalysts and 176 functional groups in the service; 63 structures in the application |
 | Data from IUPAC, PubChem, NIST, evaluated isotope data | Implemented | With citations, retrieval dates and licence notes |
 | Open Reaction Database | Not implemented | No reaction data are imported |
-| Excel workbook with the ten named sheets, export and import | Partial | Implemented and tested in the science service. There is no button for it in the interface |
-| Schema migrations, validation, provenance fields, units, source versions | Implemented | Five SQL migrations |
+| Excel workbook with the ten named sheets, export and import | Implemented | Connected-science UI provides preview/commit import and export. The laboratory notebook also exports apparatus, connections, conditions, measurements, curves and sources |
+| Schema migrations, validation, provenance fields, units, source versions | Implemented | Eight forward-only SQL migrations, including laboratory scenes/runs and learning/editor sidecars |
 | Substructure and similarity search | Partial | With RDKit, in memory. Not a database index, so it does not scale to millions of records |
-| **The interface talking to the service** | **Not implemented** | The service is complete behind its documented API and has its own tests, but the web application stores everything in the browser and never calls it |
+| **The interface talking to the service** | **Implemented** | Verified connection, catalogue lookup, generated model opening, remote quantum jobs, workbench archives and authenticated laboratory notebooks. Offline drafts are explicitly not remote saves |
 
 ## Discovery Vault (Part 9)
 
@@ -136,7 +153,7 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Report | Implemented | A readable report (Markdown) and the complete record (JSON) |
 | Importing a record | Implemented | Identifiers are derived again and the status is cut back to what the evidence in the file carries |
 | Structural comparison | Implemented | Recorded against optimised geometry |
-| Storage | Partial | In the browser (IndexedDB), on one device. Not in PostgreSQL |
+| Storage | Implemented | Local working candidates remain in IndexedDB. Complete candidate reports can be archived to PostgreSQL and validated again on reopen; archived client claims are not promoted to certified server evidence |
 
 ## Explanations (Part 10)
 
@@ -157,7 +174,7 @@ Where a test suite is named, its last result is in [development-notes.md](develo
 | Instanced atoms and bonds, PBR materials, antialiasing, environment lighting | Implemented | |
 | Ambient occlusion, selective bloom, selection outlines | Implemented | |
 | Molecular surfaces and isosurfaces | Implemented | |
-| Volumetric field rendering | Partial | Dot clouds and cutting planes |
+| Volumetric field rendering | Implemented | Computed scalar-grid ray marching, dot clouds and cutting planes |
 | Trajectories | Partial | The optimiser's path is replayed by buffer updates. There are no molecular-dynamics trajectories |
 | Picking | Implemented | Analytic ray tests; every atom is tested, without a spatial index |
 | Adaptive level of detail, dynamic resolution | Implemented | |
@@ -183,6 +200,13 @@ or battery-powered machine moves the numbers. On the integrated GPU of the devel
   while one runs (26 to 51 fps, with single frame gaps of up to 184 ms).
 
 No other hardware was measured, and the machine was never idle during a run.
+
+The instrument room has its own [rendering report](benchmarks/laboratory.md) and
+[desktop/laptop captures](screenshots/laboratory/README.md). At 1366 x 768, the recorded WebGPU
+samples were about 55-60 FPS for 1, 10 and 16 stations (up to 128 apparatus). The native app remained
+open at the user's request; these are shared-machine measurements, not isolated certification.
+The single-station Balanced sample was 59.8 FPS, below a strict 60-FPS target. The separate seven
+CPU performance assertions passed without changing their thresholds.
 
 ## Quality assurance (Part 16)
 
@@ -212,4 +236,6 @@ with real mouse and keyboard input; the service tests need Docker.
 
 ## Process (Part 13)
 
-Not as specified. See [development-notes.md](development-notes.md).
+The original molecular build did not use the requested ten-agent branch process. The laboratory
+expansion did use ten assigned specialist worktrees; failed sessions were recovered and integrated
+by the orchestrator. See [development-notes.md](development-notes.md).

@@ -9,8 +9,8 @@ import {
   ObservationTimeline, ScientificExplanationPanel, TitrationHUD,
 } from '../design-system/lab';
 import type { LabPanelVisibility } from '../design-system/lab/types';
-import type { ScienceClient } from '../services/science-client';
 import { saveDownload } from '../services/science-client';
+import { useScienceConnection } from '../services/connection';
 import { notify } from '../state/actions';
 import { BackendPanel } from '../ui/backend';
 import { ApparatusModel } from './apparatus/ApparatusModel';
@@ -41,6 +41,7 @@ declare global {
       session: LaboratorySession;
       snapshot(): RuntimeSnapshot;
       metrics(): LabFrameMetrics | null;
+      openDraft(draft: SceneDraft): Promise<void>;
     };
   }
 }
@@ -158,7 +159,7 @@ function ActiveLaboratory({ session, initial, onExit, replace }: {
   const [busy, setBusy] = useState(false);
   const [notebook, setNotebook] = useState<SceneDraft | null>(null);
   const [connectionOpen, setConnectionOpen] = useState(false);
-  const [service, setService] = useState<ScienceClient | null>(null);
+  const service = useScienceConnection((state) => state.client);
   const [confirmedRevision, setConfirmedRevision] = useState<number | null>(initial.scene.revision > 0 ? initial.scene.revision : null);
   const [newSetup, setNewSetup] = useState<'assembled' | 'empty' | null>(null);
   const [doseMl, setDoseMl] = useState('0.05');
@@ -191,9 +192,9 @@ function ActiveLaboratory({ session, initial, onExit, replace }: {
   }, [session, saveLocal, report]);
   useEffect(() => {
     if (!(import.meta.env.DEV || import.meta.env.VITE_TEST_API === '1')) return;
-    window.__MATTERLAB_LAB__ = { session, snapshot: session.runtime.reader.getSnapshot, metrics: () => metrics.current };
+    window.__MATTERLAB_LAB__ = { session, snapshot: session.runtime.reader.getSnapshot, metrics: () => metrics.current, openDraft: replace };
     return () => { if (window.__MATTERLAB_LAB__?.session === session) delete window.__MATTERLAB_LAB__; };
-  }, [session]);
+  }, [session, replace]);
 
   async function perform(operation: () => Promise<unknown>) {
     if (busy) return;
@@ -332,7 +333,7 @@ function ActiveLaboratory({ session, initial, onExit, replace }: {
     />
     <div className="ml-lab" style={{ display: 'contents' }}>
       <LabDialog open={connectionOpen} title="Connected science" size="large" onClose={() => setConnectionOpen(false)}>
-        <BackendPanel onClientChange={setService} />
+        <BackendPanel />
       </LabDialog>
       <LabDialog open={notebook !== null} title="Laboratory notebook" size="large" onClose={() => setNotebook(null)}>
         {notebook && <>

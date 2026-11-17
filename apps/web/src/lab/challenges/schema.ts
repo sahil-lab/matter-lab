@@ -1,9 +1,9 @@
-import { APPARATUS_KINDS, CAPABILITIES, CONNECTION_KINDS, EVIDENCE_VALUES, LAB_JSON_SCHEMA, UUID_PATTERN } from '@matterlab/contracts';
+import { APPARATUS_KINDS, CAPABILITIES, CONNECTION_KINDS, EVIDENCE_VALUES, LAB_JSON_SCHEMA, LAB_LIMITS, UUID_PATTERN } from '@matterlab/contracts';
 import type { JsonSchema } from '@matterlab/contracts';
 import { freezeJson } from './json.ts';
 
 export const LEARNING_STATE_LIMITS = Object.freeze({
-  maxBytes: 4 * 1024 * 1024, maxAttempts: 8, maxTrialsPerAttempt: 30,
+  maxBytes: 4 * 1024 * 1024, maxAttempts: LAB_LIMITS.maxStations, maxTrialsPerAttempt: 30,
   maxEvents: 20_000, maxObservations: 20_000, maxDepth: 48, maxNodes: 300_000,
 });
 const ref = (name: string): JsonSchema => ({ $ref: `#/$defs/${name}` });

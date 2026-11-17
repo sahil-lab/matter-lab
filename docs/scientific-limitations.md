@@ -72,8 +72,9 @@ structure they were computed for and disappear when it is edited.
   tens of kJ/mol, and for water the dipole comes out at 1.71 D against a measured 1.85 D.
 - Even-electron systems with an open-shell ground state (O2, stretched bonds) are computed as
   closed-shell singlets, which is a poor model for them.
-- Single points only: the geometry is used as drawn. There are no gradients, optimisation,
-  frequencies, excited states, solvent or temperature.
+- The local RHF solver computes single points at the drawn geometry. The separate connected
+  GFN2-xTB service can optimize geometry and report Cartesian forces; it is a semiempirical model,
+  not an extension of the local RHF wavefunction. Frequencies and excited-state dynamics are absent.
 - Mulliken charges are a bookkeeping convention that depends strongly on the basis set.
 - The implementation itself is verified: energies agree with PySCF to 1e-8 hartree on 48 systems.
   That checks the arithmetic, not how close the model is to experiment.
@@ -81,7 +82,30 @@ structure they were computed for and disappear when it is edited.
   percent to a few percent and are shown to three significant figures. The "molecular surface" is a
   union of van der Waals spheres (optionally grown by a 1.4 Å probe), not a quantum-mechanical
   surface.
-- Volume display is by dot clouds and cutting planes. There is no ray-marched volume rendering.
+- Volume display includes ray-marched real scalar grids, dot clouds and cutting planes. Optical
+  opacity is an illustrative transfer function, not measured absorption or a count of electrons.
+  The grid and bounded ray sampling limit spatial resolution; sharp nuclear peaks are not resolved.
+- Pinned comparison views retain two computed snapshots. Energy differences are offered only for
+  matching elemental composition, charge and electron count, and are not experimental stability claims.
+
+## Instrument laboratory and titration
+
+- Apparatus coordinates are meters, never the angstrom coordinates of the molecular editor.
+  Volumes are liters, analytical inventory is moles, concentrations mol/L and temperature kelvin.
+- The only inventory writer is the event runtime. Transfers conserve volume and each analytical
+  component; preparation, reset and import have explicit recorded meanings. Displayed droplets
+  never add or remove liquid.
+- Acid/base results solve mass balance and electroneutrality with water autoionization. The
+  supported temperature is 298.15 K, with ideal activities; higher ionic strength has stated limits.
+  Strong monoprotic acid/base and one weak acetate or ammonia family are supported. Polyprotic
+  chemistry, mixed weak families, unmodeled calorimetry/conductivity and arbitrary products are refused.
+- Indicator colors use solver-provided fractions and source metadata, but the color anchors are
+  illustrative. Endpoint is a learner-selected operational observation, distinct from equivalence.
+- Glassware is original calibrated procedural geometry, not certified real apparatus. Upright
+  calibration neglects wetting films, thermal expansion and outlet dead volume. Droplets and
+  stirring motion are illustrative, not fluid dynamics.
+- A saved learning notebook is client evidence, not authenticated experimental proof. Server
+  replays use the same pinned runtime and solver and persist their own immutable results.
 
 ## Reactions
 

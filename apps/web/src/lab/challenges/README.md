@@ -95,7 +95,7 @@ which are stored once in the trial's immutable observation array. The definition
 apparatus definitions and science reference are pinned. No score or completion counter is
 trusted or persisted. `evaluateTrial` derives scores; `deriveAchievements` derives achievements.
 
-Limits: 4 MiB UTF-8, 8 attempts, 30 trials per attempt, 20,000 accepted events and 20,000
+Limits: 4 MiB UTF-8, one attempt per supported station (currently 32), 30 trials per attempt, 20,000 accepted events and 20,000
 observations across a sidecar. Oversize evidence is rejected, never silently truncated.
 Unknown versions, duplicate JSON keys, unsafe values, foreign run/station/epoch records,
 repeated scopes/action IDs, and mismatched endpoint claims are rejected.

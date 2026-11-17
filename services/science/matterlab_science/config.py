@@ -15,6 +15,7 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:5273",
     "http://127.0.0.1:4273",
     "http://localhost:4273",
+    "http://tauri.localhost",
 )
 
 _SERVICE_ROOT = Path(__file__).resolve().parents[1]

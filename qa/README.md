@@ -77,9 +77,16 @@ available. Browser, GPU, ten-station and 100-equipment performance results must 
 renderer, hardware, resolution, workload and frame-time distribution. Do not run simultaneous
 GPU suites against the shared machine.
 
-The laboratory's drag/attach/fill/valve/equivalence/save/replay acceptance tests are integrated only
-after approved runtime, apparatus, interaction and persistence handoffs. A production-loading
-smoke is not a substitute for that vertical slice.
+The laboratory's drag/attach/fill/valve/equivalence/save/replay acceptance tests are in
+`apps/web/e2e/laboratory.spec.ts`. They include from-empty assembly, independent stations and
+WebGL/low-power invariance. Run `.\tools\test-connected.ps1 -Production` for the real authenticated
+browser/API/PostgreSQL flow; the credential is passed only in process memory and trace capture is
+disabled for that test.
+
+`playwright test --config playwright.laboratory-review.config.ts` from `apps/web` builds a fresh
+preview, captures the actual desktop/laptop views and measures 1/10/16 stations (8/80/128 apparatus).
+Outputs go to `docs/screenshots/laboratory` and `docs/benchmarks/laboratory.{json,md}`. The report
+states whether targets were met; rendering successfully is not represented as passing an FPS target.
 
 ## CI and supported-target evidence
 

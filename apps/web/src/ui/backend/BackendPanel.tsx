@@ -7,12 +7,15 @@ import type {
   CompoundRecord, ElementRecord, ScientificEngine, ServiceHealth, SourcedPage, WorkbookFormat, WorkbookImportReport,
 } from '../../services/science-client';
 import { Button, Note } from '../kit';
+import { setScienceConnection, useScienceConnection } from '../../services/connection';
+import { WorkbenchNotebookPanel } from './WorkbenchNotebookPanel';
 import './backend.css';
 
 export interface BackendPanelProps {
   readonly initialBaseUrl?: string;
   readonly onClientChange?: (client: ScienceClient | null) => void;
   readonly onChooseCompound?: (compound: CompoundRecord) => void;
+  readonly onWorkbenchOpened?: () => void;
 }
 
 function message(error: unknown): string {
@@ -25,11 +28,11 @@ function importReport(error: unknown): WorkbookImportReport | null {
   return report.outcome === 'rejected' && Array.isArray(report.errors) ? report as WorkbookImportReport : null;
 }
 
-export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientChange, onChooseCompound }: BackendPanelProps) {
-  const [baseUrl, setBaseUrl] = useState(initialBaseUrl);
+export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientChange, onChooseCompound, onWorkbenchOpened }: BackendPanelProps) {
+  const [baseUrl, setBaseUrl] = useState(() => useScienceConnection.getState().client?.baseUrl ?? initialBaseUrl);
   const [token, setToken] = useState('');
-  const [client, setClient] = useState<ScienceClient | null>(null);
-  const [tab, setTab] = useState<'connection' | 'catalogue' | 'excel'>('connection');
+  const [client, setClient] = useState<ScienceClient | null>(() => useScienceConnection.getState().client);
+  const [tab, setTab] = useState<'connection' | 'catalogue' | 'excel' | 'notebooks'>('connection');
   const [health, setHealth] = useState<ServiceHealth | null>(null);
   const [engines, setEngines] = useState<readonly ScientificEngine[]>([]);
   const [busy, setBusy] = useState(false);
@@ -52,6 +55,7 @@ export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientCha
   function invalidate() {
     request.current?.abort();
     setClient(null);
+    setScienceConnection(null);
     callback.current?.(null);
     setHealth(null);
     setEngines([]);
@@ -88,12 +92,15 @@ export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientCha
   function connect(event: FormEvent) {
     event.preventDefault();
     void perform(async (signal) => {
-      const next = new ScienceClient({ baseUrl, token: () => token });
+      const cached = useScienceConnection.getState().client;
+      const next = !token && cached?.baseUrl === baseUrl ? cached : new ScienceClient({ baseUrl, token: () => token });
       const [status, inventory] = await Promise.all([next.health(signal), next.engines(signal)]);
+      if (token.trim()) await next.json('/api/v1/lab/capabilities', { signal });
       if (signal.aborted) return;
       setHealth(status);
       setEngines(inventory.engines);
       setClient(next);
+      setScienceConnection(next);
       callback.current?.(next);
       setNotice('PostgreSQL connection verified. Scientific engines are listed below; unavailable methods are not simulated.');
     });
@@ -158,12 +165,13 @@ export function BackendPanel({ initialBaseUrl = DEFAULT_SCIENCE_URL, onClientCha
     <section className="ml-backend-panel" aria-label="Backend, catalogue and Excel">
       <header><h2>Connected science</h2><p>PostgreSQL is the remote source of truth. Browser drafts are not remote saves.</p></header>
       <nav aria-label="Backend sections" className="ml-backend-tabs">
-        {(['connection', 'catalogue', 'excel'] as const).map((value) => (
+        {(['connection', 'catalogue', 'excel', 'notebooks'] as const).map((value) => (
           <Button key={value} active={tab === value} onClick={() => setTab(value)}>{value === 'excel' ? 'Excel' : value[0].toUpperCase() + value.slice(1)}</Button>
         ))}
       </nav>
       {error && <div role="alert"><Note severity="error">{error}</Note></div>}
       {notice && <div role="status"><Note severity="info">{notice}</Note></div>}
+      {tab === 'notebooks' && <WorkbenchNotebookPanel client={client} onOpened={onWorkbenchOpened} />}
       {!client && tab !== 'connection' && <Note severity="warning">Not connected. Verify the backend in Connection before reading or writing remote data.</Note>}
 
       {tab === 'connection' && <>
