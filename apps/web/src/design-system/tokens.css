@@ -1,0 +1,191 @@
+/*
+ * MATTER LAB — Astra design tokens (Agent 01: Creative Direction and UI).
+ *
+ * Every custom property here is namespaced `--astra-*` so this stylesheet can be loaded in the
+ * same document as the existing v1 application (`styles/app.css`, `styles/lab.css`, unnamespaced
+ * `--bg`, `--text`, …) without ever overriding one of its tokens. Component classes in this system
+ * use the `astra-` prefix for the same reason.
+ *
+ * Art direction: midnight-navy depth with a cool/warm lighting contrast — a cold instrument-glass
+ * blue for flow, selection and primary action, and a warm flame-amber for energy, heat and
+ * affirmative highlights — over a near-black navy base, with restrained glass elevation and
+ * precision, tabular-numeric scientific typography. Typefaces are the three variable fonts the
+ * application already loads (Space Grotesk, Inter, JetBrains Mono); originality here comes from the
+ * palette, scale, radii, motion and composition, not a new font download.
+ */
+
+:root {
+  /* ---------- Color: midnight-navy depth scale ---------- */
+  --astra-depth-0: #04070d;
+  --astra-depth-1: #070b15;
+  --astra-depth-2: #0b1220;
+  --astra-depth-3: #121c30;
+  --astra-depth-4: #1a2740;
+  --astra-depth-5: #243552;
+
+  --astra-bg: var(--astra-depth-0);
+  --astra-surface: var(--astra-depth-2);
+  --astra-surface-raised: var(--astra-depth-3);
+  --astra-surface-hover: var(--astra-depth-4);
+
+  /* Glass: a cooler, slightly more saturated frost than the v1 app, for "premium glass elevation". */
+  --astra-glass-fill: linear-gradient(165deg, rgba(32, 48, 78, 0.78) 0%, rgba(10, 16, 28, 0.82) 100%);
+  --astra-glass-fill-solid: linear-gradient(165deg, rgba(30, 45, 74, 0.96) 0%, rgba(8, 13, 23, 0.96) 100%);
+  --astra-glass-border: rgba(150, 190, 230, 0.16);
+  --astra-glass-border-strong: rgba(150, 190, 230, 0.32);
+  --astra-glass-blur: blur(26px) saturate(165%);
+  --astra-glass-sheen: linear-gradient(115deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 32%);
+
+  /* Cool accent: instrument-glass / Cherenkov blue. Flow, selection, primary actions, links. */
+  --astra-cool-300: #9fd8ff;
+  --astra-cool-400: #6cc3ff;
+  --astra-cool-500: #3fa9ff;
+  --astra-cool-600: #1c86e8;
+  --astra-cool-700: #0f63b8;
+  --astra-cool-ink: #03101e;
+
+  /* Warm accent: flame amber / copper. Heat, energy, affirmative emphasis, equivalence markers. */
+  --astra-warm-300: #ffd8a6;
+  --astra-warm-400: #ffb86b;
+  --astra-warm-500: #ff9c3d;
+  --astra-warm-600: #e87d1f;
+  --astra-warm-700: #b85c10;
+  --astra-warm-ink: #210f02;
+
+  /* Semantic */
+  --astra-ok: #5fe3a6;
+  --astra-ok-ink: #042417;
+  --astra-warning: #ffcf5c;
+  --astra-warning-ink: #241b00;
+  --astra-danger: #ff6b7a;
+  --astra-danger-ink: #230408;
+  --astra-info: var(--astra-cool-400);
+
+  /* Text */
+  --astra-text: #eef5ff;
+  --astra-text-2: #9db2cf;
+  --astra-text-3: #6d8099;
+  --astra-text-disabled: #47546a;
+  --astra-text-on-cool: var(--astra-cool-ink);
+  --astra-text-on-warm: var(--astra-warm-ink);
+
+  /* Evidence levels (shared contract §3: REFERENCE_MEASURED / MODEL_CALCULATED / ILLUSTRATIVE /
+     UNVERIFIED / UNSUPPORTED). Distinct hues so the level reads even without the label text. */
+  --astra-evidence-reference: #5fe3a6;
+  --astra-evidence-model: var(--astra-cool-400);
+  --astra-evidence-illustrative: #b79bff;
+  --astra-evidence-unverified: var(--astra-warning);
+  --astra-evidence-unsupported: var(--astra-danger);
+
+  /* Borders / separators */
+  --astra-stroke: rgba(157, 178, 207, 0.14);
+  --astra-stroke-strong: rgba(157, 178, 207, 0.28);
+  --astra-hover: rgba(157, 178, 207, 0.09);
+  --astra-press: rgba(157, 178, 207, 0.16);
+  --astra-focus-ring: var(--astra-cool-400);
+
+  /* ---------- Shape ---------- */
+  --astra-radius-xs: 6px;
+  --astra-radius-sm: 10px;
+  --astra-radius-md: 14px;
+  --astra-radius-lg: 20px;
+  --astra-radius-xl: 28px;
+  --astra-radius-pill: 999px;
+
+  /* ---------- Depth / elevation ---------- */
+  --astra-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --astra-shadow-2: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 12px 32px -12px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --astra-shadow-3: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 64px -16px rgba(0, 0, 0, 0.72), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --astra-shadow-cinematic: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 40px 120px -24px rgba(0, 0, 0, 0.85), 0 8px 28px rgba(0, 0, 0, 0.5);
+  --astra-glow-cool: 0 0 0 1px rgba(63, 169, 255, 0.4), 0 0 28px rgba(63, 169, 255, 0.22);
+  --astra-glow-warm: 0 0 0 1px rgba(255, 156, 61, 0.4), 0 0 28px rgba(255, 156, 61, 0.22);
+
+  /* ---------- Typography ---------- */
+  --astra-font-ui: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --astra-font-display: 'Space Grotesk Variable', 'Space Grotesk', var(--astra-font-ui);
+  --astra-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --astra-text-2xs: 10.5px;
+  --astra-text-xs: 11.5px;
+  --astra-text-sm: 13px;
+  --astra-text-md: 15px;
+  --astra-text-lg: 18px;
+  --astra-text-xl: 23px;
+  --astra-text-2xl: 30px;
+  --astra-text-3xl: 42px;
+
+  --astra-tracking-eyebrow: 0.14em;
+  --astra-tracking-tight: -0.01em;
+
+  /* ---------- Spacing (4px base grid) ---------- */
+  --astra-space-1: 4px;
+  --astra-space-2: 8px;
+  --astra-space-3: 12px;
+  --astra-space-4: 16px;
+  --astra-space-5: 20px;
+  --astra-space-6: 24px;
+  --astra-space-8: 32px;
+  --astra-space-10: 40px;
+  --astra-space-12: 48px;
+  --astra-space-16: 64px;
+  --astra-space-20: 80px;
+
+  /* ---------- Motion ---------- */
+  --astra-ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --astra-ease-entrance: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --astra-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --astra-ease-emphasized: cubic-bezier(0.3, 0, 0.1, 1);
+
+  --astra-duration-instant: 90ms;
+  --astra-duration-fast: 150ms;
+  --astra-duration-base: 240ms;
+  --astra-duration-slow: 420ms;
+  --astra-duration-cinematic: 900ms;
+
+  /*
+   * ---------- Layout ----------
+   * Panel widths are tuned so the 3D viewport keeps roughly 75-85% of the screen width (the
+   * brief's "full-screen lab shell where 75-85% of the usable area can be a 3D viewport"): with
+   * both side panels open at 1920x1080 the viewport is ~76%; collapsing either panel (it slides
+   * fully out of the layout; the reopen control lives in the top nav) only increases that share.
+   * The top nav and bottom dock are thin translucent strips (<=5% of height) rather than opaque
+   * columns, so they are not counted against the viewport share the way the side panels are. See
+   * `lab/shell/README.md`.
+   */
+  --astra-nav-h: 56px;
+  --astra-library-w: 220px;
+  --astra-inspector-w: 236px;
+  --astra-dock-h: 176px;
+  --astra-dock-h-collapsed: 44px;
+
+  /* ---------- Z-index scale ---------- */
+  --astra-z-viewport: 0;
+  --astra-z-chrome: 10;
+  --astra-z-overlay: 100;
+  --astra-z-modal: 200;
+  --astra-z-cinematic: 300;
+  --astra-z-toast: 400;
+}
+
+/* Reduced-motion: every Astra transition/animation collapses to (near) nothing. Components should
+   also prefer `prefers-reduced-motion` directly for logic (skipping camera/scroll theatrics), but
+   this is the CSS-only backstop so no animation ships undampened by accident. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --astra-duration-instant: 0ms;
+    --astra-duration-fast: 0ms;
+    --astra-duration-base: 0ms;
+    --astra-duration-slow: 0ms;
+    --astra-duration-cinematic: 0ms;
+  }
+}
+
+/* The in-app "Reduce motion" toggle (design-system/motion.ts) forces the same collapse regardless
+   of the OS setting, for users who want stillness here without changing their system preference. */
+[data-astra-motion='reduced'] {
+  --astra-duration-instant: 0ms;
+  --astra-duration-fast: 0ms;
+  --astra-duration-base: 0ms;
+  --astra-duration-slow: 0ms;
+  --astra-duration-cinematic: 0ms;
+}
