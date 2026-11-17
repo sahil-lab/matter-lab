@@ -296,39 +296,86 @@ export class ExperimentEngine {
     const source = findStation(this.scene, sourceStationId);
     if (!source.ok) throw new Error(source.reason);
     const copyContents = options?.copyContents ?? true;
+    const newStationId = generateUUID();
 
-    const newStationId = this.createStation(options?.name ?? `${source.value.name} (copy)`);
-    const idMap = new Map<UUID, UUID>();
-    const sourceInstances = this.scene.apparatus.filter((a) => a.stationId === sourceStationId);
-    for (const instance of sourceInstances) {
-      const newId = generateUUID();
-      idMap.set(instance.id, newId);
-      this.dispatchOrThrow(buildPlaceAction(newId, instance.definitionId, newStationId, instance.transform, { ...instance.config }));
-    }
-    const sourceInstanceIds = new Set(sourceInstances.map((a) => a.id));
-    for (const connection of this.scene.connections) {
-      if (!sourceInstanceIds.has(connection.from.instanceId) || !sourceInstanceIds.has(connection.to.instanceId)) continue;
-      const fromId = idMap.get(connection.from.instanceId)!;
-      const toId = idMap.get(connection.to.instanceId)!;
-      this.dispatchOrThrow(buildAttachAction(fromId, connection.from.socketId, toId, connection.to.socketId));
-    }
-    if (copyContents) {
+    try {
+      this.dispatchOrThrow(buildCreateStationAction(newStationId, options?.name ?? `${source.value.name} (copy)`));
+      const idMap = new Map<UUID, UUID>();
+      const sourceInstances = this.scene.apparatus.filter((a) => a.stationId === sourceStationId);
       for (const instance of sourceInstances) {
-        const contents = this.scene.containerStates[instance.id];
-        if (!contents || (contents.volumeL <= 0 && contents.species.length === 0)) continue;
-        const newId = idMap.get(instance.id)!;
-        this.dispatchOrThrow(
-          buildFillAction(newId, {
-            volumeL: contents.volumeL,
-            species: contents.species,
-            temperatureK: contents.temperatureK,
-            modelId: contents.modelId,
-          }),
-        );
+        const newId = generateUUID();
+        idMap.set(instance.id, newId);
+        this.dispatchOrThrow(buildPlaceAction(newId, instance.definitionId, newStationId, instance.transform, { ...instance.config }));
       }
+      const sourceInstanceIds = new Set(sourceInstances.map((a) => a.id));
+      for (const connection of this.scene.connections) {
+        if (!sourceInstanceIds.has(connection.from.instanceId) || !sourceInstanceIds.has(connection.to.instanceId)) continue;
+        const fromId = idMap.get(connection.from.instanceId)!;
+        const toId = idMap.get(connection.to.instanceId)!;
+        this.dispatchOrThrow(buildAttachAction(fromId, connection.from.socketId, toId, connection.to.socketId));
+      }
+      if (copyContents) {
+        for (const instance of sourceInstances) {
+          const contents = this.scene.containerStates[instance.id];
+          if (!contents || (contents.volumeL <= 0 && contents.species.length === 0)) continue;
+          const newId = idMap.get(instance.id)!;
+          this.dispatchOrThrow(
+            buildFillAction(newId, {
+              volumeL: contents.volumeL,
+              species: contents.species,
+              temperatureK: contents.temperatureK,
+              modelId: contents.modelId,
+            }),
+          );
+        }
+      }
+      return newStationId;
+    } catch (error) {
+      // Every step above re-derives from a source that was already validated once (same
+      // definitionId, same socket ids, same already-valid contents), so in practice this should
+      // never trigger. It exists as a defensive guarantee: a partially-built station is never left
+      // behind for a caller to stumble on, whatever the cause of the failure.
+      this.rollBackPartialStation(newStationId, error);
+      throw error;
     }
-    return newStationId;
   }
+
+  /** Removes everything belonging to `stationId` directly (not through the reducer, since this recovers from our own failed multi-step operation rather than an external edit request) and appends one honest log entry noting the rollback — the append-only log still records that the attempt happened, it just also records that it was undone. */
+  private rollBackPartialStation(stationId: UUID, cause: unknown): void {
+    const removedInstanceIds = new Set(this.scene.apparatus.filter((a) => a.stationId === stationId).map((a) => a.id));
+    const containerStates = { ...this.scene.containerStates };
+    for (const id of removedInstanceIds) delete containerStates[id];
+    const revisionBefore = this.scene.revision;
+    this.scene = {
+      ...this.scene,
+      stations: this.scene.stations.filter((s) => s.id !== stationId),
+      apparatus: this.scene.apparatus.filter((a) => a.stationId !== stationId),
+      connections: this.scene.connections.filter((c) => !removedInstanceIds.has(c.from.instanceId) && !removedInstanceIds.has(c.to.instanceId)),
+      containerStates,
+      revision: revisionBefore + 1,
+    };
+    this.clocksByStation.delete(stationId);
+
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    const action: LabAction = {
+      actionId: generateUUID(),
+      atSimulationS: 0,
+      targetInstanceId: stationId,
+      type: 'CUSTOM',
+      payload: { kind: 'DUPLICATE_STATION_ROLLED_BACK', reason },
+    };
+    const { events, record } = appendEvent(this.events, {
+      action,
+      sceneRevisionBefore: revisionBefore,
+      sceneRevisionAfter: this.scene.revision,
+      outcome: 'REJECTED',
+      rejectionReason: `duplicateStation failed partway through and the partial station was rolled back: ${reason}`,
+      receivedAt: this.deps.now(),
+    });
+    this.events = events;
+    this.emit({ kind: 'ACTION_RECORDED', record });
+  }
+
 
   // --- events --------------------------------------------------------------------------------------
 

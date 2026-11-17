@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { ExperimentPlugin } from '@matterlab/contracts';
 import { createDefinitionRegistry, VERTICAL_SLICE_DEFINITIONS } from '../registry';
 import { createDefaultPlugins } from '../plugins';
 import {
@@ -241,6 +242,66 @@ describe('ExperimentEngine: full titration vertical slice', () => {
     const newFlask = newInstances.find((i) => i.definitionId === 'flask.conical.250ml')!;
     expect(scene.containerStates[newFlask.id]!.volumeL).toBeCloseTo(0.025, 9);
     expect(scene.containerStates[rig.flaskId]!.volumeL).toBeCloseTo(0.025, 9); // original untouched
+  });
+
+  it('duplicateStation rolls back cleanly if a step fails partway through, leaving no partial station behind', () => {
+    // Fault injection: the real registry answers normally for the original assembly (one PLACE of
+    // the bench, plus one ATTACH that resolves the bench's socket - two lookups of
+    // 'bench.standard'), then starts reporting the bench definition as missing. duplicateStation's
+    // own PLACE of a new bench is the third lookup, so it fails only during the duplicate attempt.
+    const realRegistry = createDefinitionRegistry(VERTICAL_SLICE_DEFINITIONS);
+    let benchLookups = 0;
+    const flakyRegistry = {
+      get(definitionId: string) {
+        if (definitionId === 'bench.standard') {
+          benchLookups += 1;
+          if (benchLookups > 2) return undefined;
+        }
+        return realRegistry.get(definitionId);
+      },
+    };
+    const engine = new ExperimentEngine(buildEmptyExperimentScene(1), {
+      registry: flakyRegistry,
+      solver: createFakeStrongAcidStrongBaseSolverClient(),
+      plugins: createDefaultPlugins(),
+    });
+    const rig = assembleTitrationStation(engine, 'Station 1');
+    const sceneBeforeDuplicate = engine.getScene();
+
+    expect(() => engine.duplicateStation(rig.stationId)).toThrow();
+
+    const sceneAfter = engine.getScene();
+    expect(sceneAfter.stations).toHaveLength(1); // the partially-created second station is gone
+    expect(sceneAfter.apparatus).toHaveLength(sceneBeforeDuplicate.apparatus.length); // no orphaned instances
+    const lastEvent = engine.getEventLog()[engine.getEventLog().length - 1]!;
+    expect(lastEvent.outcome).toBe('REJECTED');
+    expect(lastEvent.rejectionReason).toMatch(/rolled back/i);
+  });
+
+  it('the plugin architecture is genuinely pluggable: a second, unrelated ExperimentPlugin coexists without any reducer change', async () => {
+    // A trivial, non-chemistry plugin that never matches anything real — it exists only to prove
+    // the engine picks the plugin that actually supports a station's apparatus arrangement, not
+    // simply "the first one registered" or "the only one registered". It invents no chemistry.
+    const neverSupportedPlugin: ExperimentPlugin = {
+      id: 'always-unsupported-test-plugin',
+      title: 'Test-only plugin that never supports anything',
+      supportedModelIds: ['test-never-v1'],
+      detectSupport: () => ({ supported: false, reason: 'This test plugin never supports any arrangement.' }),
+      selectObservationTargets: () => [],
+      buildSolverRequest: () => null,
+    };
+    const engine = new ExperimentEngine(buildEmptyExperimentScene(1), {
+      registry: createDefinitionRegistry(VERTICAL_SLICE_DEFINITIONS),
+      solver: createFakeStrongAcidStrongBaseSolverClient(),
+      plugins: [neverSupportedPlugin, ...createDefaultPlugins()],
+    });
+    const rig = assembleTitrationStation(engine, 'Station 1');
+
+    expect(engine.getStationSupport(rig.stationId).supported).toBe(true); // the titration plugin, not the dummy one
+
+    engine.dispatchOrThrow(buildFillAction(rig.flaskId, HCL_25ML_0_1M));
+    await engine.settle();
+    expect(engine.getLatestObservation(rig.flaskId, 'PH')).toBeDefined(); // a real plugin still answered
   });
 
   it('publishes an event stream: ACTION_RECORDED then OBSERVATION_RECORDED with the same data a consumer would read back', async () => {
