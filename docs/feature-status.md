@@ -213,3 +213,26 @@ with real mouse and keyboard input; the service tests need Docker.
 ## Process (Part 13)
 
 Not as specified. See [development-notes.md](development-notes.md).
+
+## The Astra expansion
+
+Not part of the build specification above; a separate, in-progress ten-agent extension (an
+immersive 3D laboratory and titration game), additive at `/lab` and not connected to anything in
+this document. Full detail, including the integration contract for the other nine agents, is in
+[`apps/web/src/lab/shell/README.md`](../apps/web/src/lab/shell/README.md); this entry exists so this
+file's own promise ("nothing pretends otherwise") covers the new route too.
+
+| Feature | State | Notes |
+| --- | --- | --- |
+| Design tokens, motion system (reduced-motion aware), primitive component library | Implemented | `apps/web/src/design-system/`; namespaced (`--astra-*`, `astra-*`) so it cannot collide with the v1 app's styles |
+| Full-screen lab shell: top nav, collapsible apparatus library and inspector, timeline/playback dock | Implemented | `apps/web/src/lab/shell/`; geometric no-overlap and viewport-share tests at 1920×1080/1366×768/1280×800 (`e2e/astra-lab.spec.ts`) |
+| Skippable onboarding cinematic, no-delay return | Implemented | `OnboardingIntro.tsx`; reduced motion shows the same content without the staggered reveal |
+| Titration HUD, scientific explanation panel, pH-vs-volume chart | Implemented as presentation only | Props-driven from the shared contract's `Observation`/`RunResult` shape; the true default is "No simulation connected", with an explicitly watermarked sample-data preview for reviewing the populated states |
+| Component gallery (`/lab/gallery`) | Implemented | Populated, loading, warning, unsupported, empty and error states for every key component |
+| 3D environment, camera control | Not implemented | Agent 02's track; the viewport is an honest placeholder frame Agent 02's renderer mounts into unchanged |
+| Apparatus models, sockets, capabilities | Not implemented | Agent 03's track; the equipment library uses a placeholder catalog with `lucide-react` glyphs, not real thumbnails |
+| Placement, snapping, drag interaction | Not implemented | Agent 04's track |
+| Titration/chemistry solver | Not implemented | Agent 06's track; no pH, volume or equivalence value in this worktree is computed — they are either absent or sample data |
+| Experiment graph, simulation runtime, persistence of lab scenes | Not implemented | Agents 07 and 09's tracks |
+| Guided/challenge/free/precision gameplay modes | Not implemented | Agent 08's track; a `labMode` field is reserved in the shell's state for it |
+

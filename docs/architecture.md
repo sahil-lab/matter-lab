@@ -122,3 +122,22 @@ See [feature-status.md](feature-status.md).
 
  science service (FastAPI) ── PostgreSQL        not connected to the UI; documented HTTP API
 ```
+
+## The Astra expansion (`apps/web/src/design-system/`, `apps/web/src/lab/`)
+
+An in-progress, separately built extension: an immersive 3D laboratory and titration game, built to
+the ten-agent brief in `00_SHARED_INTEGRATION_CONTRACT.md` and `Agent_01`–`Agent_10` at the
+repository root. It is additive and route-separated from everything above, not a replacement for
+any of it: `/` still serves the application described in this document; `/lab` serves the Astra
+shell. `main.tsx` is a two-line router between `bootMatterLab.tsx` (this document's application,
+unchanged) and `lab/shell/bootAstraLab.tsx`, each a separate Vite chunk, so visiting one route does
+not download the other's bundle (confirmed with `npm run build`: the v1 chunk carries the RDKit
+WASM/worker stack and is roughly forty times larger).
+
+As of this writing only the Agent 01 slice (creative direction and UI shell) has been built in this
+worktree — the 3D environment, apparatus definitions, interaction/editor, chemistry solver,
+experiment runtime, gameplay modes and backend persistence described in the other nine agent briefs
+are each separate, independently developed tracks of work and are not present here. The shell's own
+default state is therefore an honest "disconnected", never an invented reading; see
+[`apps/web/src/lab/shell/README.md`](../apps/web/src/lab/shell/README.md) for exactly what is and
+is not implemented, the integration contract for the other nine agents, and how to run its tests.
