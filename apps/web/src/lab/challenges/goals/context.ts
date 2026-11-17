@@ -1,10 +1,10 @@
 /**
  * Pure read helpers over `EvaluationContext`. Every function here only reads the shared contract
- * types (apparatus, connections, containers, events, run results) — none of them infer a chemical
- * result or a success state from render/animation state.
+ * types (apparatus, connections, containers, events, observations) — none of them infer a
+ * chemical result or a success state from render/animation state.
  */
 
-import type { ApparatusInstance, ApparatusKind, ConnectionKind, ContainerContents, ExperimentScene, LabEvent, Observation, ObservationType, RunResult, UUID } from '../contracts';
+import type { ApparatusInstance, ApparatusKind, ConnectionKind, ContainerContents, ExperimentScene, LabEventRecord, Observation, ObservationType, UUID } from '../contracts';
 import type { GoalRoleBindings, RelativeRelation } from './types';
 
 export function apparatusById(scene: ExperimentScene | null, id: UUID): ApparatusInstance | undefined {
@@ -58,59 +58,88 @@ export function relationHolds(a: ApparatusInstance, b: ApparatusInstance, relati
   }
 }
 
+/** Only successfully-applied actions of `type` targeting `instanceId`, in event order. Never counts a REJECTED or DUPLICATE attempt. */
+function appliedActionsOf(events: readonly LabEventRecord[], type: string, instanceId?: UUID): LabEventRecord[] {
+  return events.filter((record) => record.outcome === 'APPLIED' && record.action.type === type && (instanceId === undefined || record.action.targetInstanceId === instanceId));
+}
+
 /**
- * Sum of `TRANSFER` action volumes matching the given source/receiver instance. The shared
- * contract types `LabAction.payload` as an open record; this reads the `sourceInstanceId` /
- * `receiverInstanceId` / `volumeL` fields the vertical slice (contract section 6) implies a
- * TRANSFER carries. Flagged for reconciliation once Agent 07 publishes the exact payload shape.
+ * Sum of real, accepted `TRANSFER` action volumes out of `sourceId` (optionally only those
+ * received by `receiverId`). Matches `buildTransferAction` in
+ * `apps/web/src/lab/experiments/runtime/actions.ts`: `targetInstanceId` is the *source*;
+ * `payload = { toInstanceId, volumeL }`.
  */
-export function sumTransferredVolumeL(events: readonly LabEvent[], filter: { readonly sourceId?: UUID; readonly receiverId?: UUID }): number {
+export function sumTransferredVolumeL(events: readonly LabEventRecord[], filter: { readonly sourceId?: UUID; readonly receiverId?: UUID }): number {
   let total = 0;
-  for (const event of events) {
-    if (event.kind !== 'ACTION_APPLIED' || event.action.type !== 'TRANSFER') continue;
-    const payload = event.action.payload as { sourceInstanceId?: UUID; receiverInstanceId?: UUID; volumeL?: number };
-    if (filter.sourceId !== undefined && payload.sourceInstanceId !== filter.sourceId) continue;
-    if (filter.receiverId !== undefined && payload.receiverInstanceId !== filter.receiverId) continue;
+  for (const record of appliedActionsOf(events, 'TRANSFER', filter.sourceId)) {
+    const payload = record.action.payload as { toInstanceId?: UUID; volumeL?: number };
+    if (filter.receiverId !== undefined && payload.toInstanceId !== filter.receiverId) continue;
     if (typeof payload.volumeL === 'number' && Number.isFinite(payload.volumeL)) total += payload.volumeL;
   }
   return total;
 }
 
-/** Number of `SET_VALVE` actions on `instanceId` that actually opened it (opening > 0). */
-export function countValveOpenings(events: readonly LabEvent[], instanceId: UUID): number {
-  return events.filter((event) => {
-    if (event.kind !== 'ACTION_APPLIED' || event.action.type !== 'SET_VALVE' || event.action.targetInstanceId !== instanceId) return false;
-    const payload = event.action.payload as { opening?: number };
-    return typeof payload.opening === 'number' && payload.opening > 0;
+/** Number of real, accepted `SET_VALVE` actions on `instanceId` that actually opened it (`valveOpening > 0`). */
+export function countValveOpenings(events: readonly LabEventRecord[], instanceId: UUID): number {
+  return appliedActionsOf(events, 'SET_VALVE', instanceId).filter((record) => {
+    const payload = record.action.payload as { valveOpening?: number };
+    return typeof payload.valveOpening === 'number' && payload.valveOpening > 0;
   }).length;
 }
 
-export function observationsOfType(runResults: readonly RunResult[], type: ObservationType, apparatusId?: UUID): Observation[] {
-  const out: Observation[] = [];
-  for (const run of runResults) {
-    for (const obs of run.observations) {
-      if (obs.type === type && (apparatusId === undefined || obs.apparatusId === apparatusId)) out.push(obs);
-    }
-  }
-  return out;
+export function observationsOfType(observations: readonly Observation[], type: ObservationType, apparatusId?: UUID): Observation[] {
+  return observations.filter((obs) => obs.type === type && (apparatusId === undefined || obs.apparatusId === apparatusId));
 }
 
-export function latestObservationOfType(runResults: readonly RunResult[], type: ObservationType, apparatusId?: UUID): Observation | undefined {
-  const all = observationsOfType(runResults, type, apparatusId);
+export function latestObservationOfType(observations: readonly Observation[], type: ObservationType, apparatusId?: UUID): Observation | undefined {
+  const all = observationsOfType(observations, type, apparatusId);
   return all.length === 0 ? undefined : all.reduce((latest, o) => (o.timeS > latest.timeS ? o : latest));
 }
 
-/**
- * Reads the equivalence-point volume from `RunResult.solverDiagnostics.equivalenceVolumeL`.
- * FLAGGED INTEGRATION POINT: the shared contract types `solverDiagnostics` as an open record
- * specifically for method-specific extras, and Agent 06's brief requires computing an
- * "equivalence estimate" among its reference quantities — this is the key we expect that estimate
- * under. Returns `undefined` (never a guess) until a real run result supplies it.
- */
-export function equivalenceVolumeL(runResults: readonly RunResult[]): number | undefined {
-  for (let i = runResults.length - 1; i >= 0; i--) {
-    const value = runResults[i]!.solverDiagnostics?.['equivalenceVolumeL'];
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
+export interface FillCharge {
+  readonly volumeL: number;
+  readonly totalMoles: number;
+}
+
+/** The first real, accepted `FILL` action on `instanceId`: its charged volume and total species moles. Matches `buildFillAction`'s `{ volumeL, species, temperatureK, modelId }` payload. */
+export function firstAppliedFill(events: readonly LabEventRecord[], instanceId: UUID): FillCharge | undefined {
+  for (const record of appliedActionsOf(events, 'FILL', instanceId)) {
+    const payload = record.action.payload as { volumeL?: number; species?: readonly { readonly moles?: number }[] };
+    if (typeof payload.volumeL !== 'number' || !Array.isArray(payload.species)) continue;
+    const totalMoles = payload.species.reduce((sum, s) => sum + (typeof s.moles === 'number' ? s.moles : 0), 0);
+    return { volumeL: payload.volumeL, totalMoles };
   }
   return undefined;
+}
+
+/**
+ * Molarity of `speciesId` as charged by `instanceId`'s own first, real, accepted `FILL` action —
+ * deliberately *not* the vessel's current live concentration. Once titrant starts flowing, a real
+ * `TRANSFER` genuinely dilutes the flask (the inventory ledger conserves moles, not
+ * concentration), so "did you prepare the right reagent" must be checked against what was actually
+ * charged in, or it would silently go from met back to unmet again as the titration progresses.
+ */
+export function firstFilledMolarityOfSpecies(events: readonly LabEventRecord[], instanceId: UUID, speciesId: string): number {
+  for (const record of appliedActionsOf(events, 'FILL', instanceId)) {
+    const payload = record.action.payload as { volumeL?: number; species?: readonly { readonly speciesId?: string; readonly moles?: number }[] };
+    if (typeof payload.volumeL !== 'number' || !(payload.volumeL > 0) || !Array.isArray(payload.species)) continue;
+    const moles = payload.species.filter((s) => s.speciesId === speciesId).reduce((sum, s) => sum + (typeof s.moles === 'number' ? s.moles : 0), 0);
+    return moles / payload.volumeL;
+  }
+  return 0;
+}
+
+/**
+ * The theoretical equivalence volume: moles of analyte charged into `analyteInstanceId` divided by
+ * the titrant's molarity in `titrantInstanceId`, both read from their own first `FILL` action.
+ * Pure stoichiometry from the authoritative, conserved inventory — this never asks Agent 06's
+ * solver for the answer, so it is available even before any observation has been computed, and it
+ * cannot be invalidated by a later solver response.
+ */
+export function equivalenceVolumeFromFills(events: readonly LabEventRecord[], analyteInstanceId: UUID, titrantInstanceId: UUID): number | undefined {
+  const analyte = firstAppliedFill(events, analyteInstanceId);
+  const titrant = firstAppliedFill(events, titrantInstanceId);
+  if (!analyte || !titrant || !(titrant.volumeL > 0) || !(titrant.totalMoles > 0)) return undefined;
+  const titrantMolarityMolPerL = titrant.totalMoles / titrant.volumeL;
+  return analyte.totalMoles / titrantMolarityMolPerL;
 }

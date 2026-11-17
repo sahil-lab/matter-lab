@@ -1,50 +1,60 @@
 /**
- * Reconstructs `TrialRecord`s purely from the event log and run results — the one mechanism used
- * for both a live Agent 07 stream and the fixture demo runtime, so "what counts as a trial" is
- * defined in exactly one place. A trial ends at each `CUSTOM` action whose payload has
- * `kind: 'MARK_ENDPOINT'` (FLAGGED CONVENTION: Agent 07/04 should emit exactly this shape when the
- * learner marks an endpoint; reconcile the key names once their real dispatch exists).
+ * Reconstructs `TrialRecord`s purely from the event log and the observation ledger — the one
+ * mechanism used for both a live `ExperimentEngine` and fixture test data, so "what counts as a
+ * trial" is defined in exactly one place. A trial ends at each successfully-applied `CUSTOM`
+ * action whose payload has `kind: 'MARK_ENDPOINT'` (FLAGGED CONVENTION: Agent 04's editor should
+ * dispatch exactly this `LabAction` when the learner marks an endpoint; reconcile the key names if
+ * their real dispatch differs). Observations have no `runId` in the real contract (they are a flat,
+ * continuously-growing ledger per apparatus), so they are sliced into a trial by *simulation time*
+ * instead: everything recorded between the previous trial boundary and this one.
  */
 
-import type { LabEvent, RunResult, UUID } from '../contracts';
+import type { LabEventRecord, Observation, UUID } from '../contracts';
 import type { EndpointMark, TrialRecord } from './types';
 
 interface MarkEndpointPayload {
   readonly deliveredVolumeL?: number;
-  readonly runId?: UUID;
   readonly indicatorColorNote?: string;
 }
 
-function isMarkEndpoint(event: LabEvent): event is Extract<LabEvent, { kind: 'ACTION_APPLIED' }> {
-  return event.kind === 'ACTION_APPLIED' && event.action.type === 'CUSTOM' && (event.action.payload as { kind?: string }).kind === 'MARK_ENDPOINT';
+function isAppliedMarkEndpoint(record: LabEventRecord): boolean {
+  return record.outcome === 'APPLIED' && record.action.type === 'CUSTOM' && (record.action.payload as { kind?: string }).kind === 'MARK_ENDPOINT';
 }
 
-export function deriveTrialsFromLog(events: readonly LabEvent[], runResults: readonly RunResult[]): TrialRecord[] {
-  const sorted = [...events].sort((a, b) => a.sequence - b.sequence);
+export function deriveTrialsFromLog(events: readonly LabEventRecord[], observations: readonly Observation[]): TrialRecord[] {
+  const sortedEvents = [...events].sort((a, b) => a.sequence - b.sequence);
+  const sortedObservations = [...observations].sort((a, b) => a.timeS - b.timeS);
   const trials: TrialRecord[] = [];
-  let sliceStart = 0;
-  let trialStartS = sorted[0] && sorted[0].kind === 'ACTION_APPLIED' ? sorted[0].action.atSimulationS : 0;
+  let eventSliceStart = 0;
+  let observationCursor = 0;
+  let trialStartS = sortedEvents[0]?.action.atSimulationS ?? 0;
   let counter = 0;
 
-  for (let i = 0; i < sorted.length; i++) {
-    const event = sorted[i]!;
-    if (!isMarkEndpoint(event)) continue;
+  for (let i = 0; i < sortedEvents.length; i++) {
+    const record = sortedEvents[i]!;
+    if (!isAppliedMarkEndpoint(record)) continue;
     counter += 1;
-    const payload = event.action.payload as MarkEndpointPayload;
-    const sliceEvents = sorted.slice(sliceStart, i + 1);
-    const runId = payload.runId ?? '';
-    const matchingRunResults = runResults.filter((r) => r.runId === runId);
-    const endpoint: EndpointMark | null = typeof payload.deliveredVolumeL === 'number' ? { runId, deliveredVolumeL: payload.deliveredVolumeL, markedAtSimulationS: event.action.atSimulationS, indicatorColorNote: payload.indicatorColorNote } : null;
+    const payload = record.action.payload as MarkEndpointPayload;
+    const endS = record.action.atSimulationS;
+    const sliceEvents = sortedEvents.slice(eventSliceStart, i + 1);
+
+    const sliceObservations: Observation[] = [];
+    while (observationCursor < sortedObservations.length && sortedObservations[observationCursor]!.timeS <= endS) {
+      sliceObservations.push(sortedObservations[observationCursor]!);
+      observationCursor += 1;
+    }
+
+    const endpoint: EndpointMark | null = typeof payload.deliveredVolumeL === 'number' ? { deliveredVolumeL: payload.deliveredVolumeL, markedAtSimulationS: endS, indicatorColorNote: payload.indicatorColorNote } : null;
     trials.push({
       trialId: `trial-${counter}`,
       startedAtSimulationS: trialStartS,
-      completedAtSimulationS: event.action.atSimulationS,
+      completedAtSimulationS: endS,
       events: sliceEvents,
-      runResults: matchingRunResults,
+      observations: sliceObservations,
       endpoint,
     });
-    sliceStart = i + 1;
-    trialStartS = event.action.atSimulationS;
+    eventSliceStart = i + 1;
+    trialStartS = endS;
   }
   return trials;
 }
@@ -56,3 +66,4 @@ export function withInterpretations(trials: readonly TrialRecord[], answers: Rea
     return answer ? { ...trial, ...answer } : trial;
   });
 }
+

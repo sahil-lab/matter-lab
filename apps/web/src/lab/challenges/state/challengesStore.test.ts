@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createFakeStrongAcidStrongBaseSolverClient } from '../../experiments/testFixtures/fakeSolverClient';
 import { createInMemoryAttemptRepository } from '../persistence';
+import { HCL_SPECIES_ID, NAOH_SPECIES_ID } from '../titrationObjective';
 import {
   deleteAttempt,
   exportNotebookJson,
@@ -9,25 +11,40 @@ import {
   setMode,
   toggleCompare,
   useChallenges,
-  useFixtureDemoSource,
   useLiveSource,
+  useRealEngineSource,
 } from './challengesStore';
 
-function driveOneGuidedTitration(markedVolumeL = 0.025): void {
-  const runtime = useFixtureDemoSource();
+/**
+ * Drives one full guided titration through a real `ExperimentEngine` station (Agent 07's actual
+ * runtime), using a fast, in-process, clearly-labelled test solver double (Agent 07's own
+ * `createFakeStrongAcidStrongBaseSolverClient`) instead of shelling out to Agent 06's real Python
+ * bridge on every assertion — `integration/realEngineSource.test.ts` separately proves the real
+ * bridge works. `await settle()` is required after every FILL/TRANSFER on the flask: the engine's
+ * observation ledger discards a response as stale once a newer request for the same container has
+ * already been issued, so this mirrors how a real user would see one reading land before adding more.
+ */
+async function driveOneGuidedTitration(markedVolumeL = 0.025): Promise<void> {
+  const runtime = useRealEngineSource(createFakeStrongAcidStrongBaseSolverClient({ acidSpeciesId: HCL_SPECIES_ID, baseSpeciesId: NAOH_SPECIES_ID }));
   setMode('guided');
-  runtime.placeApparatus('stand');
-  runtime.placeApparatus('clamp');
-  runtime.attach('clamp', 'stand');
-  runtime.placeApparatus('burette');
-  runtime.attach('burette', 'clamp');
-  runtime.placeApparatus('flask');
+  runtime.placeStand();
+  runtime.placeClamp();
+  runtime.attachClampToStand();
+  runtime.placeBurette();
+  runtime.attachBuretteToClamp();
+  runtime.placeFlask();
+  runtime.connectBuretteToFlask();
   runtime.fillHcl();
+  await runtime.settle();
   runtime.fillNaoh();
-  runtime.openStopcock(0.3);
-  for (let mL = 2; mL <= 24; mL += 2) runtime.deliverTo(mL / 1000);
-  runtime.deliverTo(markedVolumeL);
+  runtime.setStopcock(0.3);
+  // At least 3 pH readings before marking the endpoint, finishing exactly at `markedVolumeL`.
+  for (const step of [markedVolumeL * 0.4, markedVolumeL * 0.4, markedVolumeL * 0.2]) {
+    runtime.deliverIncrement(step);
+    await runtime.settle();
+  }
   runtime.markEndpoint();
+  await runtime.settle();
 }
 
 describe('challengesStore', () => {
@@ -48,8 +65,8 @@ describe('challengesStore', () => {
     expect(() => exportNotebookJson()).not.toThrow();
   });
 
-  it('drives a full guided attempt through the fixture demo source, scores it and saves it', async () => {
-    driveOneGuidedTitration();
+  it('drives a full guided attempt through a real engine source, scores it and saves it', async () => {
+    await driveOneGuidedTitration();
     const state = useChallenges.getState();
     expect(state.evaluation.complete).toBe(true);
     expect(state.score).not.toBeNull();
@@ -64,9 +81,9 @@ describe('challengesStore', () => {
   });
 
   it('compares two saved attempts once both are selected', async () => {
-    driveOneGuidedTitration(0.0249);
+    await driveOneGuidedTitration(0.0249);
     const first = await finishAttempt();
-    driveOneGuidedTitration(0.0255);
+    await driveOneGuidedTitration(0.0255);
     const second = await finishAttempt();
     expect(first).not.toBeNull();
     expect(second).not.toBeNull();

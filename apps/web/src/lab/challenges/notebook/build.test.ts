@@ -28,7 +28,7 @@ describe('buildNotebook', () => {
   });
 
   it('never invents a conclusion when nothing has been measured yet', () => {
-    const notebook = buildNotebook(PRECISION_TITRATION_OBJECTIVE, { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 });
+    const notebook = buildNotebook(PRECISION_TITRATION_OBJECTIVE, { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 });
     expect(notebook.rows).toHaveLength(0);
     expect(notebook.meanVolumeL).toBeNull();
     expect(notebook.conclusion.evidence).toBe('UNSUPPORTED');

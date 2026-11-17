@@ -7,7 +7,7 @@ describe('buildReplayTimeline', () => {
     const trial = buildFixtureTrial();
     const timeline = buildReplayTimeline(trial);
     expect(timeline.trialId).toBe(trial.trialId);
-    expect(timeline.steps.length).toBe(trial.events.length);
+    expect(timeline.steps.length).toBe(trial.events.length + trial.observations.length);
     for (let i = 1; i < timeline.steps.length; i++) {
       expect(timeline.steps[i]!.cumulativeVolumeL).toBeGreaterThanOrEqual(timeline.steps[i - 1]!.cumulativeVolumeL);
     }

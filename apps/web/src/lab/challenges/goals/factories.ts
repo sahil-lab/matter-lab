@@ -32,16 +32,16 @@ export function deliveredVolumeWithin(sourceRole: string, minL: number, maxL: nu
   return { kind: 'deliveredVolumeWithin', sourceRole, receiverRole, minL, maxL };
 }
 
-export function endpointCaptured(tolerancePctOfEquivalence?: number, absoluteFloorL?: number): GoalPredicate {
-  return { kind: 'endpointCaptured', tolerancePctOfEquivalence, absoluteFloorL };
+export function endpointCaptured(options?: { readonly analyteRole?: string; readonly titrantRole?: string; readonly tolerancePctOfEquivalence?: number; readonly absoluteFloorL?: number }): GoalPredicate {
+  return { kind: 'endpointCaptured', ...options };
 }
 
 export function repeatTrials(count: number): GoalPredicate {
   return { kind: 'repeatTrialsAtLeast', count };
 }
 
-export function runSucceeded(methodId?: string): GoalPredicate {
-  return { kind: 'runSucceeded', methodId };
+export function runSucceeded(type?: ObservationType): GoalPredicate {
+  return { kind: 'runSucceeded', type };
 }
 
 export function observationRecorded(type: ObservationType, count?: number): GoalPredicate {

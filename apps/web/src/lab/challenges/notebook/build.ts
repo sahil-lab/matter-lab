@@ -5,8 +5,8 @@
  * written about it: nothing here is invented to fill a gap.
  */
 
-import type { Evidence, Observation } from '../contracts';
-import { equivalenceVolumeL, observationsOfType } from '../goals';
+import type { Evidence, Observation, UUID } from '../contracts';
+import { equivalenceVolumeFromFills, evaluateObjective, observationsOfType } from '../goals';
 import type { EvaluationContext, Objective, TrialRecord } from '../goals';
 import { mean, rsdPercent, sampleStdDev } from '../scoring/math';
 import { orderedTransfers, trialReferenceQuantities } from '../scoring/signals';
@@ -14,11 +14,8 @@ import type { TransferSample } from '../scoring/signals';
 import type { NotebookConclusion, NotebookCurve, NotebookData, NotebookTrialRow } from './types';
 
 function trialEvidence(trial: TrialRecord): Evidence {
-  const last = trial.runResults[trial.runResults.length - 1];
-  if (!last) return 'UNSUPPORTED';
-  if (last.status === 'SUCCEEDED') return 'MODEL_CALCULATED';
-  if (last.status === 'UNSUPPORTED') return 'UNSUPPORTED';
-  return 'UNVERIFIED';
+  const last = trial.observations[trial.observations.length - 1];
+  return last?.evidence ?? 'UNSUPPORTED';
 }
 
 function cumulativeVolumeAtTime(transfers: readonly TransferSample[], timeS: number): number {
@@ -27,11 +24,11 @@ function cumulativeVolumeAtTime(transfers: readonly TransferSample[], timeS: num
   return total;
 }
 
-function buildRow(trial: TrialRecord, index: number): NotebookTrialRow {
+function buildRow(trial: TrialRecord, index: number, analyteId: UUID | undefined, titrantId: UUID | undefined): NotebookTrialRow {
   const deliveredVolumeL = trial.endpoint?.deliveredVolumeL ?? null;
-  const equivalence = equivalenceVolumeL(trial.runResults) ?? null;
+  const equivalence = analyteId && titrantId ? (equivalenceVolumeFromFills(trial.events, analyteId, titrantId) ?? null) : null;
   const deviationL = deliveredVolumeL !== null && equivalence !== null ? Math.abs(deliveredVolumeL - equivalence) : null;
-  const ref = trialReferenceQuantities(trial);
+  const ref = trialReferenceQuantities(trial, analyteId, titrantId);
   const expectedAnalyteMolarity =
     deliveredVolumeL !== null && ref.titrantMolarityMolPerL !== undefined && ref.analyteVolumeL ? (ref.titrantMolarityMolPerL * deliveredVolumeL) / ref.analyteVolumeL : null;
   return {
@@ -47,7 +44,7 @@ function buildRow(trial: TrialRecord, index: number): NotebookTrialRow {
 }
 
 function buildCurve(trial: TrialRecord, index: number): NotebookCurve {
-  const phObservations: Observation[] = [...observationsOfType(trial.runResults, 'PH')].sort((a, b) => a.timeS - b.timeS);
+  const phObservations: Observation[] = [...observationsOfType(trial.observations, 'PH')].sort((a, b) => a.timeS - b.timeS);
   const transfers = orderedTransfers(trial.events);
   const points = phObservations.map((obs) => ({ volumeL: cumulativeVolumeAtTime(transfers, obs.timeS), ph: obs.quantity.value }));
   const evidence = phObservations.length > 0 ? (phObservations.every((o) => o.evidence === 'REFERENCE_MEASURED') ? 'REFERENCE_MEASURED' : phObservations[0]!.evidence) : 'UNSUPPORTED';
@@ -78,8 +75,16 @@ function buildConclusion(objective: Objective, rows: readonly NotebookTrialRow[]
   return { headline: `${completed.length} of ${objective.requiredTrials} required trial(s) recorded for "${objective.title}".`, paragraphs, evidence };
 }
 
-export function buildNotebook(objective: Objective, ctx: EvaluationContext): NotebookData {
-  const rows = ctx.trials.map((trial, i) => buildRow(trial, i + 1));
+export interface NotebookRoles {
+  readonly analyteRole?: string;
+  readonly titrantRole?: string;
+}
+
+export function buildNotebook(objective: Objective, ctx: EvaluationContext, roles: NotebookRoles = {}): NotebookData {
+  const { bindings } = evaluateObjective(objective, ctx);
+  const analyteId = bindings[roles.analyteRole ?? 'flask'];
+  const titrantId = bindings[roles.titrantRole ?? 'burette'];
+  const rows = ctx.trials.map((trial, i) => buildRow(trial, i + 1, analyteId, titrantId));
   const curves = ctx.trials.map((trial, i) => buildCurve(trial, i + 1));
   const volumes = rows.map((r) => r.deliveredVolumeL).filter((v): v is number => v !== null);
   const meanVolumeL = volumes.length > 0 ? mean(volumes) : null;

@@ -5,7 +5,7 @@
  * Agent 06's scientific results. Nothing here inspects render/animation state.
  */
 
-import type { ApparatusKind, Capability, ConnectionKind, ExperimentScene, LabEvent, ObservationType, RunResult, UUID } from '../contracts';
+import type { ApparatusKind, Capability, ConnectionKind, ExperimentScene, LabEventRecord, Observation, ObservationType, UUID } from '../contracts';
 
 /** Named slots resolved to concrete instance ids as the user places apparatus, e.g. `stand` -> some UUID. */
 export type GoalRoleBindings = Readonly<Record<string, UUID>>;
@@ -21,9 +21,9 @@ export type GoalPredicate =
   | { readonly kind: 'valveOperated'; readonly role: string; readonly minOpenings?: number }
   | { readonly kind: 'deliveredVolumeWithin'; readonly sourceRole: string; readonly receiverRole?: string; readonly minL: number; readonly maxL: number }
   | { readonly kind: 'observationRecorded'; readonly type: ObservationType; readonly count?: number }
-  | { readonly kind: 'endpointCaptured'; readonly tolerancePctOfEquivalence?: number; readonly absoluteFloorL?: number }
+  | { readonly kind: 'endpointCaptured'; readonly analyteRole?: string; readonly titrantRole?: string; readonly tolerancePctOfEquivalence?: number; readonly absoluteFloorL?: number }
   | { readonly kind: 'repeatTrialsAtLeast'; readonly count: number }
-  | { readonly kind: 'runSucceeded'; readonly methodId?: string }
+  | { readonly kind: 'runSucceeded'; readonly type?: ObservationType }
   | { readonly kind: 'all'; readonly of: readonly GoalPredicate[] }
   | { readonly kind: 'any'; readonly of: readonly GoalPredicate[] }
   | { readonly kind: 'not'; readonly of: GoalPredicate };
@@ -36,21 +36,20 @@ export interface PredicateResult {
   readonly bindings: GoalRoleBindings;
 }
 
-/** One endpoint mark the user made for a single run of the experiment. */
+/** One endpoint mark the user made during a trial. */
 export interface EndpointMark {
-  readonly runId: UUID;
   readonly deliveredVolumeL: number;
   readonly markedAtSimulationS: number;
   readonly indicatorColorNote?: string;
 }
 
-/** One completed pass through an objective: its own event slice, run results and endpoint mark. */
+/** One completed pass through an objective: its own event slice, the observations recorded during it, and an endpoint mark. */
 export interface TrialRecord {
   readonly trialId: UUID;
   readonly startedAtSimulationS: number;
   readonly completedAtSimulationS: number;
-  readonly events: readonly LabEvent[];
-  readonly runResults: readonly RunResult[];
+  readonly events: readonly LabEventRecord[];
+  readonly observations: readonly Observation[];
   readonly endpoint: EndpointMark | null;
   /** Free-text conclusion the learner wrote for this trial; shown in the notebook, not auto-graded. */
   readonly interpretation?: string;
@@ -61,13 +60,13 @@ export interface TrialRecord {
 /** Everything the goal evaluator and scoring rubric are allowed to look at. Nothing else exists to them. */
 export interface EvaluationContext {
   readonly scene: ExperimentScene | null;
-  readonly events: readonly LabEvent[];
-  readonly runResults: readonly RunResult[];
+  readonly events: readonly LabEventRecord[];
+  readonly observations: readonly Observation[];
   readonly trials: readonly TrialRecord[];
   readonly nowSimulationS: number;
 }
 
-export const EMPTY_CONTEXT: EvaluationContext = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 };
+export const EMPTY_CONTEXT: EvaluationContext = { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 };
 
 export interface GoalStep {
   readonly id: string;

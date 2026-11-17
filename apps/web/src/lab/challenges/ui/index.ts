@@ -4,6 +4,6 @@ export * from './AccessibleChecklist';
 export * from './ScoreCard';
 export * from './NotebookView';
 export * from './ReplayCompareView';
-export * from './DemoControls';
+export * from './EngineControls';
 export * from './AttemptsPanel';
 export * from './ChallengesWorkspace';

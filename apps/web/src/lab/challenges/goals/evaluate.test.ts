@@ -6,7 +6,7 @@ import type { EvaluationContext } from './types';
 
 describe('evaluateObjective (strong acid / strong base guided titration)', () => {
   it('reports every step unmet against an empty context', () => {
-    const empty: EvaluationContext = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 };
+    const empty: EvaluationContext = { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 };
     const evaluation = evaluateObjective(GUIDED_TITRATION_OBJECTIVE, empty);
     expect(evaluation.completedCount).toBe(0);
     expect(evaluation.firstUnmetIndex).toBe(0);
@@ -34,7 +34,7 @@ describe('evaluateObjective (strong acid / strong base guided titration)', () =>
   });
 
   it('treats Free Experiment as having no forced objective', () => {
-    const empty: EvaluationContext = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 };
+    const empty: EvaluationContext = { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 };
     const evaluation = evaluateObjective({ id: 'free', title: 'Free', summary: '', mode: 'free', steps: [], requiredTrials: 0 }, empty);
     expect(evaluation.complete).toBe(true);
     expect(evaluation.totalCount).toBe(0);
@@ -52,7 +52,7 @@ describe('evaluateObjective (strong acid / strong base guided titration)', () =>
   it('does not let an unrelated UI action (no matching observed event) silently satisfy a goal', () => {
     // A scene with every apparatus placed and connected, but no FILL/TRANSFER/observation events at all.
     const ctx = buildFixtureContext();
-    const noEvents: EvaluationContext = { ...ctx, events: [], runResults: [], trials: [] };
+    const noEvents: EvaluationContext = { ...ctx, events: [], observations: [], trials: [] };
     const evaluation = evaluateObjective(GUIDED_TITRATION_OBJECTIVE, noEvents);
     const stopcockStep = evaluation.steps.find((s) => s.step.id === 'open-stopcock')!;
     expect(stopcockStep.result.met).toBe(false);

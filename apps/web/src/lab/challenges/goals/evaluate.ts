@@ -5,7 +5,7 @@
 
 import { DEFAULT_APPARATUS_LABEL_LOOKUP } from '../contracts';
 import type { ApparatusLabelLookup } from '../contracts';
-import { areConnected, apparatusById, containerOf, countValveOpenings, equivalenceVolumeL, findUnboundApparatusByKind, molarityOfSpecies, observationsOfType, relationHolds, sumTransferredVolumeL } from './context';
+import { areConnected, apparatusById, countValveOpenings, equivalenceVolumeFromFills, findUnboundApparatusByKind, firstFilledMolarityOfSpecies, observationsOfType, relationHolds, sumTransferredVolumeL } from './context';
 import type { EvaluationContext, GoalPredicate, GoalRoleBindings, PredicateResult } from './types';
 
 function capitalize(text: string): string {
@@ -56,7 +56,7 @@ export function evaluatePredicate(predicate: GoalPredicate, ctx: EvaluationConte
     case 'containerSpecies': {
       const id = bindings[predicate.role];
       if (!id) return waitingFor(predicate.role, bindings);
-      const molarity = molarityOfSpecies(containerOf(ctx.scene, id), predicate.speciesId);
+      const molarity = firstFilledMolarityOfSpecies(ctx.events, id, predicate.speciesId);
       const min = predicate.minMolarity ?? Number.EPSILON;
       const max = predicate.maxMolarity ?? Infinity;
       const met = molarity >= min && molarity <= max;
@@ -87,7 +87,7 @@ export function evaluatePredicate(predicate: GoalPredicate, ctx: EvaluationConte
       };
     }
     case 'observationRecorded': {
-      const count = observationsOfType(ctx.runResults, predicate.type).length;
+      const count = observationsOfType(ctx.observations, predicate.type).length;
       const need = predicate.count ?? 1;
       const met = count >= need;
       return { met, detail: met ? `${count} ${predicate.type} observation(s) recorded.` : `Take a ${predicate.type} reading.`, bindings };
@@ -96,8 +96,10 @@ export function evaluatePredicate(predicate: GoalPredicate, ctx: EvaluationConte
       const lastTrial = ctx.trials[ctx.trials.length - 1];
       const mark = lastTrial?.endpoint;
       if (!mark) return { met: false, detail: 'Mark the endpoint once the indicator changes colour.', bindings };
-      const equivalence = equivalenceVolumeL(ctx.runResults);
-      if (equivalence === undefined) return { met: false, detail: 'Endpoint marked, but the equivalence point is not yet known from the solver.', bindings };
+      const analyteId = bindings[predicate.analyteRole ?? 'flask'];
+      const titrantId = bindings[predicate.titrantRole ?? 'burette'];
+      const equivalence = analyteId && titrantId ? equivalenceVolumeFromFills(ctx.events, analyteId, titrantId) : undefined;
+      if (equivalence === undefined) return { met: false, detail: 'Endpoint marked, but the equivalence point is not yet known (both vessels must be filled first).', bindings };
       const floor = predicate.absoluteFloorL ?? 0.0005;
       const tolerance = Math.max(floor, ((predicate.tolerancePctOfEquivalence ?? 4) / 100) * equivalence);
       const deviation = Math.abs(mark.deliveredVolumeL - equivalence);
@@ -116,10 +118,10 @@ export function evaluatePredicate(predicate: GoalPredicate, ctx: EvaluationConte
       return { met, detail: `${completed} of ${predicate.count} required trial(s) completed.`, bindings };
     }
     case 'runSucceeded': {
-      const matching = predicate.methodId ? ctx.runResults.filter((r) => r.methodId === predicate.methodId) : ctx.runResults;
+      const matching = predicate.type ? ctx.observations.filter((o) => o.type === predicate.type) : ctx.observations;
       const last = matching[matching.length - 1];
-      const met = last?.status === 'SUCCEEDED';
-      return { met, detail: met ? 'Latest run succeeded.' : last ? `Latest run status: ${last.status}.` : 'No run yet.', bindings };
+      const met = last !== undefined && last.evidence !== 'UNSUPPORTED';
+      return { met, detail: met ? 'The solver produced a real result.' : last ? `Latest observation is ${last.evidence}, not yet a supported result.` : 'No observation yet.', bindings };
     }
     case 'all': {
       let current = bindings;

@@ -11,7 +11,7 @@
  * gives every hint caption a readable noun.
  */
 
-import type { ApparatusKind, UUID } from './sceneTypes';
+import type { ApparatusKind, UUID } from '@matterlab/contracts';
 
 export type HighlightTarget =
   /** A specific placed instance, optionally one of its sockets. */

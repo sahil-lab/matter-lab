@@ -4,7 +4,7 @@ import { GUIDED_TITRATION_OBJECTIVE } from '../titrationObjective';
 import type { EvaluationContext } from '../goals';
 import { buildChecklist, deriveHint } from './engine';
 
-const EMPTY: EvaluationContext = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 };
+const EMPTY: EvaluationContext = { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 };
 
 describe('deriveHint', () => {
   it('points at the apparatus palette for the first step when nothing is placed', () => {
@@ -29,7 +29,7 @@ describe('deriveHint', () => {
       apparatus: full.scene!.apparatus.filter((a) => a.kind === 'STAND' || a.kind === 'CLAMP'),
       connections: full.scene!.connections.filter((c) => c.kind === 'MECHANICAL' && c.from.instanceId !== 'fixture-burette' && c.to.instanceId !== 'fixture-burette'),
     };
-    const partial: EvaluationContext = { scene: partialScene, events: [], runResults: [], trials: [], nowSimulationS: 0 };
+    const partial: EvaluationContext = { scene: partialScene, events: [], observations: [], trials: [], nowSimulationS: 0 };
     const hint = deriveHint(GUIDED_TITRATION_OBJECTIVE, partial);
     expect(hint!.stepId).toBe('mount-burette');
     expect(hint!.highlightTargets.some((t) => t.kind === 'paletteCategory' && t.apparatusKind === 'BURETTE')).toBe(true);

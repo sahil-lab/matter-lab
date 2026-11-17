@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GameMode } from '../goals';
+import { createHttpSolverClient } from '../integration/httpSolverClient';
 import {
   deleteAttempt,
   exportNotebookJson,
@@ -12,11 +13,11 @@ import {
   toggleCompare,
   toggleHints,
   useChallenges,
-  useFixtureDemoSource,
+  useRealEngineSource,
 } from '../state';
 import { AccessibleChecklist } from './AccessibleChecklist';
 import { AttemptsPanel } from './AttemptsPanel';
-import { DemoControls } from './DemoControls';
+import { EngineControls } from './EngineControls';
 import { HintOverlay } from './HintOverlay';
 import { NotebookView } from './NotebookView';
 import { CompareView, ReplayView } from './ReplayCompareView';
@@ -56,7 +57,7 @@ function InterpretationForm({ trialId }: { trialId: string }) {
 export function ChallengesWorkspace() {
   const mode = useChallenges((s) => s.mode);
   const dataSourceKind = useChallenges((s) => s.dataSourceKind);
-  const demoRuntime = useChallenges((s) => s.demoRuntime);
+  const engineSource = useChallenges((s) => s.engineSource);
   const hint = useChallenges((s) => s.hint);
   const hintsEnabled = useChallenges((s) => s.hintsEnabled);
   const reducedMotion = useChallenges((s) => s.reducedMotion);
@@ -88,8 +89,8 @@ export function ChallengesWorkspace() {
           ))}
         </div>
         <div className="lc-headeractions">
-          <button type="button" onClick={() => useFixtureDemoSource()}>
-            {dataSourceKind === 'fixture-demo' ? 'Restart fixture demo' : 'Start fixture demo'}
+          <button type="button" onClick={() => useRealEngineSource(createHttpSolverClient())}>
+            {dataSourceKind === 'real-engine' ? 'Restart experiment engine' : 'Start experiment engine'}
           </button>
           <label>
             <input type="checkbox" checked={hintsEnabled} onChange={toggleHints} /> Hints
@@ -104,12 +105,12 @@ export function ChallengesWorkspace() {
 
       {dataSourceKind === 'live' && (
         <p className="lc-note" role="status">
-          Experiment runtime not connected yet (Agent 07 experiment graph and Agent 06 titration solver are pending integration). Start the fixture demo to exercise this surface end-to-end with
-          clearly labelled fixture data.
+          Experiment runtime not connected yet. Start the experiment engine to wire in Agent 07's real `ExperimentEngine` and Agent 06's real titration solver (reached through the dev-only
+          `/__agent08__/titration-solve` bridge route) and exercise this surface end to end with genuine chemistry.
         </p>
       )}
 
-      {demoRuntime && <DemoControls runtime={demoRuntime} />}
+      {engineSource && <EngineControls runtime={engineSource} />}
 
       <div className="lc-columns">
         <section aria-label="Guided checklist">
@@ -125,8 +126,8 @@ export function ChallengesWorkspace() {
               Trials completed: {evaluation.trialsCompleted} of {evaluation.trialsRequired} required.
             </p>
           )}
-          {mode === 'precision' && demoRuntime && evaluation.trialsCompleted < evaluation.trialsRequired && lastTrial?.endpoint && (
-            <button type="button" onClick={() => demoRuntime.startNewTrial()}>
+          {mode === 'precision' && engineSource && evaluation.trialsCompleted < evaluation.trialsRequired && lastTrial?.endpoint && (
+            <button type="button" onClick={() => engineSource.startNewTrial()}>
               Start repeat trial
             </button>
           )}

@@ -5,17 +5,16 @@
  * is reused across Guided (stepwise hints), Challenge (flat success criteria, no overlay) and
  * Precision (same criteria plus repeat trials) so the three modes never drift apart.
  *
- * FLAGGED ASSUMPTION: `HCL_SPECIES_ID`/`NAOH_SPECIES_ID` stand in for whatever resolved chemical
- * species identifiers Agent 06 actually publishes (the shared contract requires "resolved chemical
- * species", but does not fix a naming scheme). Reconcile these constants once Agent 06's species
- * registry exists.
+ * Species ids (`hydrochloric-acid`, `sodium-hydroxide`) match Agent 06's real species registry
+ * (`services/science/titration/species.py`), vendored into this repository for the real solver
+ * bridge — see `apps/web/src/lab/challenges/integration/`.
  */
 
 import type { Objective } from './goals';
 import { apparatusPlaced, buretteMounted, containerHasSpecies, deliveredVolumeWithin, endpointCaptured, flaskLocatedBelow, hasConnection, observationRecorded } from './goals';
 
-export const HCL_SPECIES_ID = 'HCl(aq)';
-export const NAOH_SPECIES_ID = 'NaOH(aq)';
+export const HCL_SPECIES_ID = 'hydrochloric-acid';
+export const NAOH_SPECIES_ID = 'sodium-hydroxide';
 
 /** The benchmark case from Agent 06's brief: 25.00 mL of 0.100 mol/L HCl titrated by 0.100 mol/L NaOH. */
 export const TITRATION_BENCHMARK = {
@@ -75,6 +74,14 @@ export const TITRATION_STEPS = [
     accessibleHint: 'Move the flask until it is centred underneath the burette.',
   },
   {
+    id: 'connect-fluid-path',
+    title: 'Connect the burette tip to the flask',
+    instructions: "Attach the burette's delivery tip to the flask's mouth so titrant has somewhere to go.",
+    predicate: hasConnection('burette', 'flask', 'FLUID'),
+    highlightRoles: ['burette', 'flask'],
+    accessibleHint: "Select the burette's tip socket and connect it to the flask's mouth socket. The real experiment engine only delivers titrant automatically once this fluid path exists.",
+  },
+  {
     id: 'prepare-aliquot',
     title: 'Prepare the HCl aliquot',
     instructions: `Fill the flask with ${(TITRATION_BENCHMARK.aliquotVolumeL * 1000).toFixed(2)} mL of ${TITRATION_BENCHMARK.aliquotMolarity.toFixed(3)} mol/L HCl.`,
@@ -110,7 +117,7 @@ export const TITRATION_STEPS = [
     id: 'capture-endpoint',
     title: 'Identify the endpoint',
     instructions: 'Mark the endpoint once the indicator changes colour, then compare it with the computed equivalence point.',
-    predicate: endpointCaptured(4),
+    predicate: endpointCaptured({ tolerancePctOfEquivalence: 4 }),
     highlightRoles: ['flask'],
     accessibleHint: 'When the indicator changes colour, mark the endpoint. The app compares your reading with the computed equivalence point.',
   },

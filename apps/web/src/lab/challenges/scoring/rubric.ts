@@ -6,8 +6,9 @@
  * change just because the scene was re-rendered or the camera moved.
  */
 
-import { equivalenceVolumeL, evaluateObjective } from '../goals';
-import type { EvaluationContext, GoalPredicate, GoalRoleBindings, Objective, TrialRecord } from '../goals';
+import type { UUID } from '../contracts';
+import { equivalenceVolumeFromFills, evaluateObjective } from '../goals';
+import type { EvaluationContext, GoalPredicate, Objective, TrialRecord } from '../goals';
 import { clamp01, linearScore, mean, rsdPercent } from './math';
 import { orderedTransfers, trialReferenceQuantities } from './signals';
 import type { RubricDimensionScore, ScoreBand, ScoreBreakdown } from './types';
@@ -80,14 +81,12 @@ function scoreSetup(objective: Objective, ctx: EvaluationContext): RubricDimensi
   };
 }
 
-function instrumentOperationForTrial(trial: TrialRecord, roles: Required<ScoringRoles>, bindings: GoalRoleBindings): { readonly score01: number; readonly flag: string | null } {
-  const sourceId = bindings[roles.burette];
-  const receiverId = bindings[roles.flask];
+function instrumentOperationForTrial(trial: TrialRecord, sourceId: UUID | undefined, receiverId: UUID | undefined): { readonly score01: number; readonly flag: string | null } {
   const transfers = orderedTransfers(trial.events, { sourceId, receiverId });
   if (transfers.length === 0) return { score01: 0, flag: 'No titrant delivered yet.' };
 
   const granularity01 = clamp01(transfers.length / 8);
-  const equivalence = equivalenceVolumeL(trial.runResults);
+  const equivalence = sourceId && receiverId ? equivalenceVolumeFromFills(trial.events, receiverId, sourceId) : undefined;
   let cumulative = 0;
   const nearIncrements: number[] = [];
   let overshootFlag = false;
@@ -106,11 +105,11 @@ function instrumentOperationForTrial(trial: TrialRecord, roles: Required<Scoring
   return { score01, flag: overshootFlag ? 'Overshot well past the equivalence point before slowing down.' : null };
 }
 
-function scoreInstrumentOperation(ctx: EvaluationContext, bindings: GoalRoleBindings, roles: Required<ScoringRoles>): RubricDimensionScore {
+function scoreInstrumentOperation(ctx: EvaluationContext, sourceId: UUID | undefined, receiverId: UUID | undefined): RubricDimensionScore {
   if (ctx.trials.length === 0) {
     return { id: 'instrumentOperation', label: 'Instrument operation', score01: 0, weight: WEIGHTS.instrumentOperation, evidence: 'UNSUPPORTED', detail: 'No trial recorded yet.' };
   }
-  const perTrial = ctx.trials.map((t) => instrumentOperationForTrial(t, roles, bindings));
+  const perTrial = ctx.trials.map((t) => instrumentOperationForTrial(t, sourceId, receiverId));
   const flag = perTrial.map((p) => p.flag).find((f): f is string => f !== null);
   return {
     id: 'instrumentOperation',
@@ -122,18 +121,18 @@ function scoreInstrumentOperation(ctx: EvaluationContext, bindings: GoalRoleBind
   };
 }
 
-function endpointDetectionForTrial(trial: TrialRecord): number | null {
+function endpointDetectionForTrial(trial: TrialRecord, analyteId: UUID | undefined, titrantId: UUID | undefined): number | null {
   const mark = trial.endpoint;
   if (!mark) return null;
-  const equivalence = equivalenceVolumeL(trial.runResults);
+  const equivalence = analyteId && titrantId ? equivalenceVolumeFromFills(trial.events, analyteId, titrantId) : undefined;
   if (equivalence === undefined) return null;
   const deviationL = Math.abs(mark.deliveredVolumeL - equivalence);
   // Within 0.2 mL of the computed equivalence point: full marks. 1.5 mL or more away: zero.
   return linearScore(deviationL, 0.0002, 0.0015);
 }
 
-function scoreEndpointDetection(ctx: EvaluationContext): RubricDimensionScore {
-  const scores = ctx.trials.map(endpointDetectionForTrial).filter((s): s is number => s !== null);
+function scoreEndpointDetection(ctx: EvaluationContext, analyteId: UUID | undefined, titrantId: UUID | undefined): RubricDimensionScore {
+  const scores = ctx.trials.map((t) => endpointDetectionForTrial(t, analyteId, titrantId)).filter((s): s is number => s !== null);
   if (scores.length === 0) {
     return {
       id: 'endpointDetection',
@@ -150,7 +149,7 @@ function scoreEndpointDetection(ctx: EvaluationContext): RubricDimensionScore {
     score01: mean(scores),
     weight: WEIGHTS.endpointDetection,
     evidence: 'MODEL_CALCULATED',
-    detail: `Average deviation-based score over ${scores.length} trial(s), compared with the solver's computed equivalence point.`,
+    detail: `Average deviation-based score over ${scores.length} trial(s), compared with the computed equivalence point.`,
   };
 }
 
@@ -178,8 +177,8 @@ function scoreRepeatability(ctx: EvaluationContext): RubricDimensionScore {
   };
 }
 
-function interpretationForTrial(trial: TrialRecord): number | null {
-  const ref = trialReferenceQuantities(trial);
+function interpretationForTrial(trial: TrialRecord, analyteId: UUID | undefined, titrantId: UUID | undefined): number | null {
+  const ref = trialReferenceQuantities(trial, analyteId, titrantId);
   if (ref.titrantMolarityMolPerL === undefined || !ref.analyteVolumeL) return null;
   if (trial.reportedAnalyteMolarity === undefined || trial.endpoint === null) return null;
   const expected = (ref.titrantMolarityMolPerL * trial.endpoint.deliveredVolumeL) / ref.analyteVolumeL;
@@ -189,8 +188,8 @@ function interpretationForTrial(trial: TrialRecord): number | null {
   return linearScore(relativeError, 0.02, 0.2);
 }
 
-function scoreInterpretation(ctx: EvaluationContext): RubricDimensionScore {
-  const scores = ctx.trials.map(interpretationForTrial).filter((s): s is number => s !== null);
+function scoreInterpretation(ctx: EvaluationContext, analyteId: UUID | undefined, titrantId: UUID | undefined): RubricDimensionScore {
+  const scores = ctx.trials.map((t) => interpretationForTrial(t, analyteId, titrantId)).filter((s): s is number => s !== null);
   if (scores.length === 0) {
     return {
       id: 'interpretation',
@@ -218,16 +217,18 @@ function bandFor(overall01: number): ScoreBand {
   return 'novice';
 }
 
-/** Pure, deterministic: the same objective and the same saved event/run/trial data always score the same. */
+/** Pure, deterministic: the same objective and the same saved event/observation/trial data always score the same. */
 export function scoreAttempt(objective: Objective, ctx: EvaluationContext, roles: ScoringRoles = {}): ScoreBreakdown {
   const resolvedRoles: Required<ScoringRoles> = { ...DEFAULT_ROLES, ...roles };
   const evaluation = evaluateObjective(objective, ctx);
+  const sourceId = evaluation.bindings[resolvedRoles.burette];
+  const receiverId = evaluation.bindings[resolvedRoles.flask];
   const dimensions: readonly RubricDimensionScore[] = [
     scoreSetup(objective, ctx),
-    scoreInstrumentOperation(ctx, evaluation.bindings, resolvedRoles),
-    scoreEndpointDetection(ctx),
+    scoreInstrumentOperation(ctx, sourceId, receiverId),
+    scoreEndpointDetection(ctx, receiverId, sourceId),
     scoreRepeatability(ctx),
-    scoreInterpretation(ctx),
+    scoreInterpretation(ctx, receiverId, sourceId),
   ];
   const overall01 = dimensions.reduce((sum, d) => sum + d.score01 * d.weight, 0);
   return {

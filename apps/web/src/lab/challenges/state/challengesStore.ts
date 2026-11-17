@@ -7,13 +7,14 @@
 
 import { create } from 'zustand';
 import { downloadText } from '../../../state/commands';
-import type { ExperimentRuntimeSource, LabEvent, UUID } from '../contracts';
+import type { ExperimentRuntimeSource, LabEventRecord, Observation, SolverClient, UUID } from '../contracts';
 import { NOT_CONNECTED_SOURCE } from '../contracts';
-import { FixtureDemoRuntime } from '../demo';
 import { deriveTrialsFromLog, evaluateObjective, withInterpretations } from '../goals';
 import type { EvaluationContext, GameMode, Objective, ObjectiveEvaluation } from '../goals';
+import { EMPTY_CONTEXT } from '../goals';
 import { buildChecklist, deriveHint } from '../hints';
 import type { ChecklistItem, HintDescriptor } from '../hints';
+import { createRealEngineSource, RealEngineRuntimeSource } from '../integration/realEngineSource';
 import { buildNotebook } from '../notebook';
 import type { NotebookData } from '../notebook';
 import { createIndexedDbAttemptRepository, deriveAchievements, summarise } from '../persistence';
@@ -32,31 +33,26 @@ export const OBJECTIVES_BY_MODE: Readonly<Record<GameMode, Objective>> = {
   precision: PRECISION_TITRATION_OBJECTIVE,
 };
 
-export type DataSourceKind = 'live' | 'fixture-demo';
+export type DataSourceKind = 'live' | 'real-engine';
 export type InterpretationAnswer = { readonly reportedAnalyteMolarity?: number; readonly interpretation?: string };
-
-const EMPTY_CTX: EvaluationContext = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 };
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function latestSimulationTime(events: readonly LabEvent[]): number {
+function latestSimulationTime(events: readonly LabEventRecord[], observations: readonly Observation[]): number {
   let latest = 0;
-  for (const event of events) {
-    const t = event.kind === 'ACTION_APPLIED' ? event.action.atSimulationS : event.kind === 'OBSERVATION_RECORDED' ? event.observation.timeS : event.kind === 'SCENE_RESET' ? event.atSimulationS : 0;
-    if (t > latest) latest = t;
-  }
+  for (const record of events) if (record.action.atSimulationS > latest) latest = record.action.atSimulationS;
+  for (const observation of observations) if (observation.timeS > latest) latest = observation.timeS;
   return latest;
 }
 
 interface ChallengesState {
   readonly dataSourceKind: DataSourceKind;
   readonly source: ExperimentRuntimeSource;
-  readonly demoRuntime: FixtureDemoRuntime | null;
+  readonly engineSource: RealEngineRuntimeSource | null;
   readonly mode: GameMode;
   readonly objective: Objective;
-  readonly stationId: UUID | null;
   readonly hintsEnabled: boolean;
   readonly reducedMotion: boolean;
   readonly interpretationAnswers: ReadonlyMap<UUID, InterpretationAnswer>;
@@ -77,21 +73,20 @@ interface ChallengesState {
 
 function initialState(): ChallengesState {
   const objective = OBJECTIVES_BY_MODE.guided;
-  const evaluation = evaluateObjective(objective, EMPTY_CTX);
+  const evaluation = evaluateObjective(objective, EMPTY_CONTEXT);
   return {
     dataSourceKind: 'live',
     source: NOT_CONNECTED_SOURCE,
-    demoRuntime: null,
+    engineSource: null,
     mode: 'guided',
     objective,
-    stationId: null,
     hintsEnabled: true,
     reducedMotion: prefersReducedMotion(),
     interpretationAnswers: new Map(),
-    ctx: EMPTY_CTX,
+    ctx: EMPTY_CONTEXT,
     evaluation,
-    hint: deriveHint(objective, EMPTY_CTX),
-    checklist: buildChecklist(objective, EMPTY_CTX),
+    hint: deriveHint(objective, EMPTY_CONTEXT),
+    checklist: buildChecklist(objective, EMPTY_CONTEXT),
     score: null,
     notebook: null,
     repository: createIndexedDbAttemptRepository(),
@@ -113,39 +108,45 @@ let unsubscribeSource: (() => void) | null = null;
 /** Rebuilds `ctx`, `evaluation`, `hint`, `checklist`, `score` and `notebook` from the current source. Call after any source/mode/answer change. */
 export function refreshFromSource(): void {
   const s = get();
-  const stationId = s.stationId ?? s.source.listStations()[0] ?? null;
-  if (!stationId) {
-    const evaluation = evaluateObjective(s.objective, EMPTY_CTX);
-    set({ stationId: null, ctx: EMPTY_CTX, evaluation, hint: deriveHint(s.objective, EMPTY_CTX), checklist: buildChecklist(s.objective, EMPTY_CTX), score: null, notebook: null });
+  const scene = s.source.getScene();
+  if (!scene) {
+    const evaluation = evaluateObjective(s.objective, EMPTY_CONTEXT);
+    set({ ctx: EMPTY_CONTEXT, evaluation, hint: deriveHint(s.objective, EMPTY_CONTEXT), checklist: buildChecklist(s.objective, EMPTY_CONTEXT), score: null, notebook: null });
     return;
   }
-  const scene = s.source.getScene(stationId);
-  const events = s.source.getEvents(stationId);
-  const runResults = s.source.getRunResults(stationId);
-  const trials = withInterpretations(deriveTrialsFromLog(events, runResults), s.interpretationAnswers);
-  const ctx: EvaluationContext = { scene, events, runResults, trials, nowSimulationS: latestSimulationTime(events) };
+  const events = s.source.getEventLog();
+  const observations = s.source.getObservations();
+  const trials = withInterpretations(deriveTrialsFromLog(events, observations), s.interpretationAnswers);
+  const ctx: EvaluationContext = { scene, events, observations, trials, nowSimulationS: latestSimulationTime(events, observations) };
   const evaluation = evaluateObjective(s.objective, ctx);
   const score = s.mode === 'free' ? null : scoreAttempt(s.objective, ctx);
   const notebook = s.mode === 'free' ? null : buildNotebook(s.objective, ctx);
-  set({ stationId, ctx, evaluation, hint: deriveHint(s.objective, ctx), checklist: buildChecklist(s.objective, ctx), score, notebook });
+  set({ ctx, evaluation, hint: deriveHint(s.objective, ctx), checklist: buildChecklist(s.objective, ctx), score, notebook });
 }
 
-function attachSource(source: ExperimentRuntimeSource, dataSourceKind: DataSourceKind, demoRuntime: FixtureDemoRuntime | null): void {
+function attachSource(source: ExperimentRuntimeSource, dataSourceKind: DataSourceKind, engineSource: RealEngineRuntimeSource | null): void {
   unsubscribeSource?.();
-  set({ source, dataSourceKind, demoRuntime, stationId: null, interpretationAnswers: new Map(), compareIds: [], comparison: null, startedAt: new Date().toISOString() });
+  set({ source, dataSourceKind, engineSource, interpretationAnswers: new Map(), compareIds: [], comparison: null, startedAt: new Date().toISOString() });
   unsubscribeSource = source.subscribe(refreshFromSource);
   refreshFromSource();
 }
 
-/** Connects the honest "nothing real yet" source: used when this surface is embedded in the real app before Agent 07 lands. */
+/** Connects the honest "nothing real yet" source: used before any real engine has been started. */
 export function useLiveSource(): void {
   attachSource(NOT_CONNECTED_SOURCE, 'live', null);
 }
 
-/** Connects the labelled fixture/demo runtime so the full pipeline can be exercised and screenshotted today. */
-export function useFixtureDemoSource(): FixtureDemoRuntime {
-  const runtime = new FixtureDemoRuntime();
-  attachSource(runtime, 'fixture-demo', runtime);
+/**
+ * Connects a fresh real `ExperimentEngine` station (Agent 07's actual runtime, Agent 07's own
+ * vertical-slice apparatus registry and titration plugin) driven by `solver` — a real `SolverClient`
+ * reaching Agent 06's actual titration solver (see `integration/pythonSolverClient.ts` for
+ * Node/tests, `integration/httpSolverClient.ts` for the browser dev route). Replaces the old
+ * labelled fixture demo: every number downstream of this now comes from the real engine and the
+ * real solver, not a scripted formula.
+ */
+export function useRealEngineSource(solver: SolverClient): RealEngineRuntimeSource {
+  const runtime = createRealEngineSource(solver);
+  attachSource(runtime, 'real-engine', runtime);
   return runtime;
 }
 
@@ -153,8 +154,8 @@ export function setMode(mode: GameMode): void {
   if (get().mode === mode) return;
   set({ mode, objective: OBJECTIVES_BY_MODE[mode] });
   // A new mode starts a fresh attempt against a clean bench, whichever source is behind it.
-  if (get().dataSourceKind === 'fixture-demo') useFixtureDemoSource();
-  else refreshFromSource();
+  get().engineSource?.resetAll();
+  refreshFromSource();
 }
 
 export function toggleHints(): void {
@@ -240,9 +241,4 @@ export function exportTemplate(name: string, description: string): void {
 /** Swaps the attempt repository (used by tests and, later, by an HTTP-backed Agent 09 implementation). */
 export function setAttemptRepository(repository: ChallengeAttemptRepository): void {
   set({ repository, attempts: [], achievements: [] });
-}
-
-export function resetDemo(): void {
-  const s = get();
-  s.demoRuntime?.resetAll();
 }

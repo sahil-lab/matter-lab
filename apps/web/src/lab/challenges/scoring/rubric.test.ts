@@ -31,7 +31,7 @@ describe('scoreAttempt', () => {
   });
 
   it('reports endpoint detection as UNSUPPORTED when no endpoint has been marked yet', () => {
-    const ctx = { scene: null, events: [], runResults: [], trials: [], nowSimulationS: 0 } as const;
+    const ctx = { scene: null, events: [], observations: [], trials: [], nowSimulationS: 0 } as const;
     const score = scoreAttempt(GUIDED_TITRATION_OBJECTIVE, ctx);
     const endpoint = score.dimensions.find((d) => d.id === 'endpointDetection')!;
     expect(endpoint.evidence).toBe('UNSUPPORTED');
