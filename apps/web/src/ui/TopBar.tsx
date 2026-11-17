@@ -19,6 +19,7 @@ import {
   Redo2,
   Save,
   SlidersHorizontal,
+  Sparkles,
   TriangleAlert,
   Undo2,
   Vault,
@@ -357,6 +358,15 @@ export function TopBar({ children }: { children?: ReactNode }) {
         </div>
         <div className="ml-sep" />
         <WorkspaceSwitch />
+        <div className="ml-sep" />
+        <Button
+          tip="Open the Astra 3D laboratory — an in-progress, separately built expansion"
+          tipPos="bottom"
+          onClick={() => window.location.assign('/lab')}
+          data-testid="open-astra-lab"
+        >
+          <Sparkles /> <span className="ml-hide-narrow">Astra lab</span>
+        </Button>
         {architect && (
           <>
             <div className="ml-sep" />

@@ -1,25 +1,16 @@
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '@fontsource-variable/space-grotesk';
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import { restorePreferences, restoreSession } from './state/persistence';
-import { lab } from './state/store';
-import './styles/app.css';
-import './styles/lab.css';
 
-const hasQualityPreference = restorePreferences();
-restoreSession();
-// A restored session is the baseline, not an unsaved change.
-lab.set((s) => ({ savedRevision: s.revision }));
-
-if (import.meta.env.DEV || import.meta.env.VITE_TEST_API === '1') {
-  void import('./testApi').then((m) => m.installTestApi());
+/**
+ * The only routing this single-page app needs: `/lab` is the Astra 3D laboratory (Agent 01's
+ * shell; see `lab/shell/bootAstraLab.tsx`), and everything else is the existing v1 MATTER LAB
+ * application (`bootMatterLab.tsx`, unchanged). Both are dynamic imports so visiting one route
+ * never downloads the other's bundle.
+ */
+if (window.location.pathname.startsWith('/lab')) {
+  const pathname = window.location.pathname;
+  void import('./lab/shell/bootAstraLab').then((m) => m.bootAstraLab(pathname));
+} else {
+  void import('./bootMatterLab').then((m) => m.bootMatterLab());
 }
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App hasQualityPreference={hasQualityPreference} />
-  </StrictMode>,
-);
