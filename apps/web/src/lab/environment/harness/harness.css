@@ -1,0 +1,119 @@
+/* Agent 02's lab-environment harness: a functional test/QA shell, not final production UI. Reuses the
+   app's colour and type tokens (imported alongside this file) for a consistent dark look. */
+
+html,
+body,
+#lab-root {
+  margin: 0;
+  height: 100%;
+  background: var(--bg, #080d18);
+  color: var(--text, #e3f1ff);
+  font-family: var(--font-ui, system-ui, sans-serif);
+}
+
+.lab-harness {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.lab-harness canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lab-harness__panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 300px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  padding: 14px;
+  border-radius: var(--r-md, 12px);
+  background: var(--glass-fill-solid, rgba(15, 25, 42, 0.92));
+  border: 1px solid var(--stroke, rgba(135, 170, 198, 0.15));
+  backdrop-filter: var(--blur, blur(18px));
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-harness__panel h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-display, inherit);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-2, #87aac6);
+}
+
+.lab-harness__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.lab-harness__panel button {
+  font: inherit;
+  color: var(--text, #e3f1ff);
+  background: var(--glass, #172337);
+  border: 1px solid var(--stroke, rgba(135, 170, 198, 0.15));
+  border-radius: var(--r-sm, 8px);
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+.lab-harness__panel button:hover {
+  background: var(--hover, rgba(135, 170, 198, 0.1));
+}
+
+.lab-harness__panel button[aria-pressed='true'] {
+  background: var(--accent-soft, rgba(85, 226, 209, 0.13));
+  border-color: var(--accent-ring, rgba(85, 226, 209, 0.45));
+  color: var(--accent, #55e2d1);
+}
+
+.lab-harness__panel button:focus-visible,
+.lab-harness__panel input:focus-visible {
+  outline: 2px solid var(--accent, #55e2d1);
+  outline-offset: 2px;
+}
+
+.lab-harness__panel button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lab-harness__panel-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--text-2, #87aac6);
+  background: var(--glass-fill-solid, rgba(15, 25, 42, 0.92));
+  border: 1px solid var(--stroke, rgba(135, 170, 198, 0.15));
+  border-radius: var(--r-sm, 8px);
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+.lab-harness__perf {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm, 8px);
+  background: var(--glass-fill-solid, rgba(15, 25, 42, 0.92));
+  border: 1px solid var(--stroke, rgba(135, 170, 198, 0.15));
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  pointer-events: none;
+}
