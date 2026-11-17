@@ -32,10 +32,10 @@ export function ApparatusShowcaseApp() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#05080e', fontFamily: 'system-ui, sans-serif', color: '#e8edf5' }}>
-      <Canvas camera={{ position: [1.6, 1.6, 1.9], fov: 45 }} shadows dpr={[1, 2]}>
+      <Canvas camera={{ position: [2.6, 2.1, 3.0], fov: 45 }} shadows dpr={[1, 2]}>
         <color attach="background" args={['#05080e']} />
         <ApparatusShowcaseScene showSockets={showSockets} valveOpenFraction={valve} stirrerSpeedFraction={speed} />
-        <OrbitControls target={[0, 1, 0]} makeDefault />
+        <OrbitControls target={[0.05, 0.85, 0]} makeDefault />
       </Canvas>
 
       <div style={{ position: 'absolute', top: 16, left: 16, width: 340, background: 'rgba(8,13,24,0.82)', border: '1px solid #233049', borderRadius: 10, padding: 14 }}>
